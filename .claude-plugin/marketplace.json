@@ -1,0 +1,19 @@
+{
+  "name": "myr2d2",
+  "owner": {
+    "name": "Eric Lu (tingyulu)",
+    "url": "https://github.com/tingyulu"
+  },
+  "plugins": [
+    {
+      "name": "myr2d2-zh-tw",
+      "source": "./plugins/zh-tw",
+      "description": "MyR2D2 繁中版(主版本)— save-all / handoff / pickup / token-optimizer / flight-to-calendar。與 en 版擇一安裝(skill 同名)。"
+    },
+    {
+      "name": "myr2d2-en",
+      "source": "./plugins/en",
+      "description": "MyR2D2 English edition — save-all / handoff / pickup / token-optimizer / flight-to-calendar. Install either this or zh-tw (same skill names)."
+    }
+  ]
+}

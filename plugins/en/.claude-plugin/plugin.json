@@ -1,0 +1,12 @@
+{
+  "name": "myr2d2-en",
+  "description": "MyR2D2 English edition — your everyday astromech droid: pre-reboot landing checks (save-all), cross-session baton passes (handoff/pickup), multi-agent quota discipline (token-optimizer), flights to calendar (flight-to-calendar).",
+  "version": "0.1.0",
+  "author": {
+    "name": "Eric Lu (tingyulu)",
+    "url": "https://github.com/tingyulu"
+  },
+  "homepage": "https://github.com/tingyulu/MyR2D2",
+  "license": "MIT",
+  "keywords": ["skills", "handoff", "session-management", "token-optimization"]
+}
