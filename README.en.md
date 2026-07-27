@@ -1,6 +1,6 @@
 # MyR2D2 🤖
 
-### Your everyday astromech droid — a bilingual skillset for Claude (zh-TW primary)
+### Your everyday astromech droid — a Claude skillset (zh-TW body, bilingual triggers)
 
 **[繁體中文 (primary)](README.md) | English (this page)**
 
@@ -8,7 +8,7 @@
 
 R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
 
-That's MyR2D2's job description — 5 skills, one set each in Traditional Chinese and English, all covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's MyR2D2's job description — 5 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
@@ -17,6 +17,15 @@ That's MyR2D2's job description — 5 skills, one set each in Traditional Chines
 | **pickup** | New session fetches the cards, reads in full, claims, starts | R2 finds Obi-Wan, plays the hologram |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
+
+## One skill set, two language habits
+
+The skill bodies are written in Traditional Chinese (single source of truth — no parallel translations to maintain). **Trigger phrases come in matched zh/en pairs** in each skill's description:
+
+- 中文習慣:「要重開機了」「交接給 X」「有沒有交接給我的」
+- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
+
+Claude follows the zh-TW instructions and replies in whatever language you speak — English users lose nothing, and there's only ever one copy of each skill to maintain.
 
 ## Why this pack?
 
@@ -30,28 +39,25 @@ All three were iterated out of real daily-driver usage, not theory.
 
 ## Install
 
-**Pick ONE language edition** (identical skill names; installing both causes collisions):
-
 ### Claude Code CLI — Plugin (recommended)
 
 ```
 /plugin marketplace add tingyulu/MyR2D2
-/plugin install myr2d2-en@myr2d2        # English edition
-/plugin install myr2d2-zh-tw@myr2d2     # Traditional Chinese edition
+/plugin install myr2d2@myr2d2
 ```
 
 ### Claude Code CLI — manual copy
 
 ```bash
 git clone https://github.com/tingyulu/MyR2D2.git
-cp -r MyR2D2/plugins/en/skills/* ~/.claude/skills/   # English (swap path for zh-tw)
+cp -r MyR2D2/skills/* ~/.claude/skills/
 ```
 
 ### Cowork / claude.ai
 
-Add the skill folders you want (`plugins/en/skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`). The skill content is environment-agnostic — see the compatibility matrix.
+Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/handoff`, `/pickup`, or natural language ("about to reboot", "anything handed off to me?").
+Then trigger with `/save-all`, `/handoff`, `/pickup`, or natural language in either language.
 
 ## Compatibility matrix
 
@@ -81,15 +87,16 @@ handoff/pickup default to the zero-dependency file-based version; if you run you
 2. **Self-contained context** — handoff cards assume the reader knows nothing.
 3. **Zero-dependency lowest common denominator** — file-based by default, external systems are the upgrade path.
 4. **Quota is a shared resource** — thrift is the default for multi-agent dispatch; full power is an explicit switch.
+5. **Single source of truth** — one copy per skill (zh-TW); language habits are handled by paired bilingual triggers, not parallel translations.
 
 ## Repo layout
 
 ```
 MyR2D2/
-├── .claude-plugin/marketplace.json    ← one marketplace, two plugins (zh-tw / en)
-├── plugins/
-│   ├── zh-tw/skills/…                 ← 5 skills, Traditional Chinese (primary)
-│   └── en/skills/…                    ← 5 skills, English (same names)
+├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
+├── skills/                            ← 5 skills (zh-TW body, bilingual triggers)
+│   ├── save-all/  ├── handoff/  ├── pickup/
+│   ├── token-optimizer/  └── flight-to-calendar/
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page

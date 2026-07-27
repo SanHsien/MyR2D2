@@ -27,7 +27,7 @@ Codex reads `AGENTS.md` (project root or `~/.codex/AGENTS.md`) and has no skill-
 # Append the skill bodies (minus YAML frontmatter) into AGENTS.md
 for s in save-all handoff pickup token-optimizer; do
   echo -e "\n\n<!-- MyR2D2: $s -->" >> AGENTS.md
-  sed '1,/^---$/d' ../../plugins/en/skills/$s/SKILL.md | sed '1,/^---$/d' >> AGENTS.md
+  sed '1,/^---$/d' ../../skills/$s/SKILL.md | sed '1,/^---$/d' >> AGENTS.md
 done
 ```
 

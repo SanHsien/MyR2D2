@@ -1,0 +1,18 @@
+{
+  "name": "myr2d2",
+  "description": "MyR2D2 — 你的隨行 astromech droid：session 收工落地(save-all)、跨 session 交接(handoff/pickup)、多代理節流(token-optimizer)、航班上行事曆(flight-to-calendar)。繁中本體、中英雙語觸發。zh-TW skillset with bilingual triggers.",
+  "version": "0.1.1",
+  "author": {
+    "name": "Eric Lu (tingyulu)",
+    "url": "https://github.com/tingyulu"
+  },
+  "homepage": "https://github.com/tingyulu/MyR2D2",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "zh-TW",
+    "handoff",
+    "session-management",
+    "token-optimization"
+  ]
+}

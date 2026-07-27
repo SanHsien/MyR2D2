@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: 跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手。
+description: 跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手。 English triggers: "hand this off to X", "handoff to <project>", "pass this to the next session".
 ---
 
 # /handoff — 交接·推球

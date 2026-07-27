@@ -1,6 +1,6 @@
 # MyR2D2 🤖
 
-### 你的隨行 astromech droid — Claude 雙語 skillset（繁中為主）
+### 你的隨行 astromech droid — Claude skillset（繁中本體、中英雙語觸發）
 
 **繁體中文（本頁）| [English](README.en.md)**
 
@@ -8,7 +8,7 @@
 
 R2-D2 從來不是主角，但每一集都靠它：把 Death Star 圖紙帶出來、滾過沙漠找到 Obi-Wan、在 X-wing 後座默默修飛船管能源。
 
-MyR2D2 就是這個定位 —— 5 支 skills，中/英文各一套，管的都是「不做不會死、但做了整個工作流才活得下去」的事:
+MyR2D2 就是這個定位 —— 5 支 skills，管的都是「不做不會死、但做了整個工作流才活得下去」的事:
 
 | Skill | 一句話 | R2-D2 對應 |
 |---|---|---|
@@ -17,6 +17,15 @@ MyR2D2 就是這個定位 —— 5 支 skills，中/英文各一套，管的都�
 | **pickup** | 新 session 開場撈交接卡，讀全文、認領、開工 | R2 找到 Obi-Wan，播放訊息 |
 | **token-optimizer** | 多代理派工前的節流鐵則：模型分層、壓縮上報、失敗三次就停 | 能源分配，別讓護盾吃光動力 |
 | **flight-to-calendar** | 航班上 Google Calendar：跨時區不出錯、轉機拆段、夕陽座位 | astromech 本職：導航 |
+
+## 一組 skill、兩種語言習慣
+
+Skill 本體是繁體中文（單一真相，不維護平行翻譯版）;**觸發詞中英各一組對應**，寫在每支 skill 的 description 裡:
+
+- 中文習慣：「要重開機了」「交接給 X」「有沒有交接給我的」
+- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
+
+Claude 讀繁中指令、照樣用你的對話語言回覆 —— 英文使用者的體驗不打折，而 skill 永遠只有一份要維護。
 
 ## 為什麼需要這套？
 
@@ -30,28 +39,25 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 
 ## 安裝
 
-**中/英文版擇一安裝**（skill 同名，裝兩套會打架）:
-
 ### Claude Code CLI — Plugin（推薦）
 
 ```
 /plugin marketplace add tingyulu/MyR2D2
-/plugin install myr2d2-zh-tw@myr2d2     # 繁中版
-/plugin install myr2d2-en@myr2d2        # 英文版
+/plugin install myr2d2@myr2d2
 ```
 
 ### Claude Code CLI — 手動複製
 
 ```bash
 git clone https://github.com/tingyulu/MyR2D2.git
-cp -r MyR2D2/plugins/zh-tw/skills/* ~/.claude/skills/   # 繁中版(en 版換路徑)
+cp -r MyR2D2/skills/* ~/.claude/skills/
 ```
 
 ### Cowork / claude.ai
 
-把要用的 skill 資料夾（`plugins/zh-tw/skills/<名稱>/`）加進你的 Cowork 專案 skills（或專案目錄的 `.claude/skills/`）。skill 內容本身跨環境通用，見下方相容性矩陣。
+把要用的 skill 資料夾（`skills/<名稱>/`）加進你的 Cowork 專案 skills（或專案目錄的 `.claude/skills/`）。
 
-裝完打 `/save-all`、`/handoff`、`/pickup` 即可觸發，或用自然語言（「要重開機了」「有沒有交接給我的」）。
+裝完打 `/save-all`、`/handoff`、`/pickup` 即可觸發，或用上面任一語言的自然語句。
 
 ## 相容性矩陣
 
@@ -81,15 +87,16 @@ handoff/pickup 預設是零依賴的檔案版；如果你有自己的任務系�
 2. **脈絡自包含** — 交接卡假設讀者對前情一無所知。
 3. **零依賴的最小公倍數** — 預設檔案版，進階才接外部系統。
 4. **配額是共享資源** — 多代理派工的預設是省，全力跑是顯式開關。
+5. **單一真相** — skill 只有一份（繁中），語言習慣靠雙語觸發詞對應，不維護平行翻譯版。
 
 ## Repo 結構
 
 ```
 MyR2D2/
-├── .claude-plugin/marketplace.json    ← 一個 marketplace、兩個 plugin(zh-tw / en)
-├── plugins/
-│   ├── zh-tw/skills/…                 ← 繁中版 5 支(主版本)
-│   └── en/skills/…                    ← 英文版 5 支(同名對應)
+├── .claude-plugin/                    ← plugin.json + marketplace.json(單一 plugin)
+├── skills/                            ← 5 支 skill(繁中本體、雙語觸發)
+│   ├── save-all/  ├── handoff/  ├── pickup/
+│   ├── token-optimizer/  └── flight-to-calendar/
 ├── adapters/openai/                   ← ChatGPT / Codex 移植包
 ├── README.md                          ← 本頁(中文為主)
 └── README.en.md                       ← English

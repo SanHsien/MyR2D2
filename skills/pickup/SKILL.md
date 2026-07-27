@@ -1,6 +1,6 @@
 ---
 name: pickup
-description: 跨專案／跨 session 交接「接球」。讓「這個」session 馬上去讀交接給本專案的事項並接手。當使用者說「接手」「pickup」「有沒有交接給我的」「看交接」「接球」時觸發。也適合 session 開場主動跑一次，確認沒漏接。讀本專案 `.claude/handoffs/` 下 status: pending 的交接卡。
+description: 跨專案／跨 session 交接「接球」。讓「這個」session 馬上去讀交接給本專案的事項並接手。當使用者說「接手」「pickup」「有沒有交接給我的」「看交接」「接球」時觸發。也適合 session 開場主動跑一次，確認沒漏接。讀本專案 `.claude/handoffs/` 下 status: pending 的交接卡。 English triggers: "pickup", "take over", "anything handed off to me?", "check handoffs".
 ---
 
 # /pickup — 交接·接球
