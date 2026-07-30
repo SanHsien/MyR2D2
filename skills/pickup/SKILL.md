@@ -36,8 +36,8 @@ description: 跨專案／跨 session 交接「接球」。讓「這個」session
 - **接手 ≠ 做完**：`picked` 只代表已讀已認領；完成才標 `done`。
 - **別偷懶只讀摘要**：卡上的脈絡就是為了讓你不用問使用者「之前做到哪」。全文讀完再動手。
 - **開場跑一次**是好習慣：新 session 開工前先 /pickup，確認沒有前人留球。
-- 配對命令＝`/handoff`（推球）。
+- 配對命令＝`/dropoff`（推球）。
 
 ## 進階：接上你自己的任務系統
 
-若你的 handoff 端改用外部任務系統（CLI todo、Notion、Linear…），本 skill 的第 1、4 步改成對應的查詢與狀態更新命令即可，其餘流程不變。
+若你的 dropoff 端改用外部任務系統（CLI todo、Notion、Linear…），本 skill 的第 1、4 步改成對應的查詢與狀態更新命令即可，其餘流程不變。

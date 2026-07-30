@@ -12,7 +12,7 @@ The SKILL.md files are plain Markdown instructions — any instruction-following
 | Skill | Codex CLI | ChatGPT | 說明 Notes |
 |---|---|---|---|
 | save-all | ✅ | ⚠️ | Codex:git/檔案操作全通,token 統計那步刪掉(那是讀 Claude Code transcript 的)。ChatGPT:無本機檔案系統,只能當「收工檢查清單」用。<br>Codex: git/file ops all work; delete the token-count step (it reads Claude Code transcripts). ChatGPT: no local filesystem — usable only as a wrap-up checklist. |
-| handoff / pickup | ✅ | ❌ | 交接卡=磁碟上的 Markdown 檔,Codex CLI 完全可用。ChatGPT 沒有跨 session 共用磁碟,搬不動。<br>Cards are Markdown files on disk — fully portable to Codex CLI. ChatGPT has no cross-session shared disk. |
+| dropoff / pickup | ✅ | ❌ | 交接卡=磁碟上的 Markdown 檔,Codex CLI 完全可用。ChatGPT 沒有跨 session 共用磁碟,搬不動。<br>Cards are Markdown files on disk — fully portable to Codex CLI. ChatGPT has no cross-session shared disk. |
 | token-optimizer | ⚠️ 原則通用 | ⚠️ 原則通用 | 五鐵則(分層/壓縮上報/角色鎖死/獨立驗證/失敗三停)通用;§1 模型名換成你家的檔位(如 o4-mini vs o3)、§6 的 Workflow API 條目刪掉。有趣的是:本 skill 的原作 kieiken/ultracode-token-optimization 就是 Codex 環境寫的,等於「移植回老家」。<br>The five iron rules are universal; swap §1 model names for your vendor's tiers, drop §6's Workflow-API items. Fun fact: the upstream (kieiken) was written FOR Codex — porting it back is going home. |
 | flight-to-calendar | ❌ | ⚠️ | 硬依賴 Google Calendar 寫入工具。Codex CLI 無;ChatGPT 需自備 Calendar 的 Action/connector 才能用,規則本身(時區換算/一段一事件/夕陽座位)全通用。<br>Hard dependency on a Google Calendar write tool. Codex CLI: none. ChatGPT: needs a Calendar Action/connector; the rules themselves (timezone math, one-leg-one-event, sunset seats) are universal. |
 
@@ -25,7 +25,7 @@ Codex reads `AGENTS.md` (project root or `~/.codex/AGENTS.md`) and has no skill-
 ```bash
 # 把要用的 skill 內文(去掉 YAML frontmatter)接進 AGENTS.md
 # Append the skill bodies (minus YAML frontmatter) into AGENTS.md
-for s in save-all handoff pickup token-optimizer; do
+for s in save-all dropoff pickup token-optimizer; do
   echo -e "\n\n<!-- MyR2D2: $s -->" >> AGENTS.md
   sed '1,/^---$/d' ../../skills/$s/SKILL.md | sed '1,/^---$/d' >> AGENTS.md
 done
@@ -36,7 +36,7 @@ done
 Or the context-cheaper route — AGENTS.md carries one routing line:
 
 ```markdown
-When the user says "save-all" / "handoff" / "pickup", read and follow
+When the user says "save-all" / "dropoff" / "pickup", read and follow
 docs/myr2d2/<name>.md before acting.
 ```
 

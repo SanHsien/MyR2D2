@@ -1,15 +1,15 @@
 ---
-name: handoff
-description: 跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手。 English triggers: "hand this off to X", "handoff to <project>", "pass this to the next session".
+name: dropoff
+description: 跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「推球給 X」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手。 English triggers: "hand this off to X", "drop this off for <project>", "pass this to the next session".
 ---
 
-# /handoff — 交接·推球
+# /dropoff — 交接·推球
 
 把一件事**可靠地**交給另一個 Claude session（別的專案、或同專案的下一個 session）。
 
 核心問題：對面 session 讀不到你這個對話的 context。口頭交代會漏、聊天記錄會斷 —— 所以交接卡必須是**磁碟上的檔案**，寫清楚到「陌生 session 光看這張卡就能接手」。
 
-> 🤖 R2-D2 時刻：Leia 把 Death Star 圖紙和求救訊息存進 R2 的記憶體 —— 這就是 handoff。
+> 🤖 R2-D2 時刻：Leia 把 Death Star 圖紙和求救訊息存進 R2 的記憶體 —— 這就是 dropoff。
 > 訊息不靠 Leia 本人送達，靠的是那台會自己滾去找 Obi-Wan 的機器人。
 
 ## 交接卡格式
@@ -46,7 +46,7 @@ priority: high | normal | low
 
 ## 用法
 
-`/handoff <目標專案路徑或名稱> <事項>`
+`/dropoff <目標專案路徑或名稱> <事項>`
 
 - 沒給目標 → 問使用者。
 - 目標是「同專案的未來 session」→ 寫進本專案自己的 `.claude/handoffs/`。
@@ -67,4 +67,4 @@ priority: high | normal | low
 
 ## 進階：接上你自己的任務系統
 
-如果你有跨專案的任務管理系統（CLI todo、Notion、Linear、GitHub Issues…），可以把「寫卡」替換成「在你的系統建一筆 type=handoff 的任務」，`/pickup` 端同步替換查詢方式。檔案版是零依賴的最小公倍數，不是天花板。
+如果你有跨專案的任務管理系統（CLI todo、Notion、Linear、GitHub Issues…），可以把「寫卡」替換成「在你的系統建一筆 type=dropoff 的任務」，`/pickup` 端同步替換查詢方式。檔案版是零依賴的最小公倍數，不是天花板。

@@ -13,7 +13,7 @@ That's MyR2D2's job description — 5 skills covering things that "won't kill yo
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
 | **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in R2, escape pod away |
-| **handoff** | Write a task + full context into a handoff card for another session | Leia recording "Help me, Obi-Wan" |
+| **dropoff** | Write a task + full context into a handoff card for another session | Leia recording "Help me, Obi-Wan" |
 | **pickup** | New session fetches the cards, reads in full, claims, starts | R2 finds Obi-Wan, plays the hologram |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
@@ -32,7 +32,7 @@ Claude follows the zh-TW instructions and replies in whatever language you speak
 Claude sessions are **amnesiac**: close the conversation and everything not written to disk evaporates. The common theme here is fighting that amnesia:
 
 - `save-all` covers "before closing" — externalize in-flight state, and **verify it actually landed** (silent write failures are real; never trust a literal "success").
-- `handoff` / `pickup` cover "after crossing over" — cards written so a stranger session can take over from the card alone.
+- `dropoff` / `pickup` cover "after crossing over" — cards written so a stranger session can take over from the card alone.
 - `token-optimizer` covers the other scarce resource: **usage quota** on subscription plans. One missing model spec in a fan-out and your quota evaporates.
 
 All three were iterated out of real daily-driver usage, not theory.
@@ -46,25 +46,37 @@ All three were iterated out of real daily-driver usage, not theory.
 /plugin install myr2d2@myr2d2
 ```
 
+### skills.sh (`npx skills`, cross-agent)
+
+<!-- Uncomment once indexed: [![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) -->
+
+```bash
+npx skills add tingyulu/MyR2D2
+```
+
+[`npx skills`](https://github.com/vercel-labs/skills) supports agents beyond Claude Code (Cursor, Copilot, …). It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
+
 ### Claude Code CLI — manual copy
 
 ```bash
 git clone https://github.com/tingyulu/MyR2D2.git
-cp -r MyR2D2/skills/* ~/.claude/skills/
+cp -rn MyR2D2/skills/* ~/.claude/skills/
 ```
+
+⚠️ Note the `-n` (no-clobber): if `~/.claude/skills/` already has folders with these names, plain `cp -r` **overwrites them silently**. Diff first if you're updating an existing install.
 
 ### Cowork / claude.ai
 
 Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/handoff`, `/pickup`, or natural language in either language.
+Then trigger with `/save-all`, `/dropoff`, `/pickup`, or natural language in either language.
 
 ## Compatibility matrix
 
 | Skill | Claude Code CLI | Cowork / claude.ai | Codex / ChatGPT |
 |---|---|---|---|
 | save-all | ✅ | ✅ (token-count step auto-skips) | ✅ Codex / ⚠️ ChatGPT as checklist only |
-| handoff / pickup | ✅ | ✅ | ✅ Codex / ❌ ChatGPT (no shared disk) |
+| dropoff / pickup | ✅ | ✅ | ✅ Codex / ❌ ChatGPT (no shared disk) |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port; swap model names |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ❌ Codex / ⚠️ ChatGPT needs an Action |
 
@@ -75,11 +87,11 @@ Porting guide for ChatGPT / Codex (AGENTS.md merge, routing line, three gotchas)
 | Skill | Dependencies |
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
-| handoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/` |
+| dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/` |
 | token-optimizer | None (rules-only; Workflow-specific items need an environment with the Workflow tool) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
-handoff/pickup default to the zero-dependency file-based version; if you run your own task system (CLI todo, Notion, Linear…), each SKILL.md includes a "plug in your own task system" section.
+dropoff/pickup default to the zero-dependency file-based version; if you run your own task system (CLI todo, Notion, Linear…), each SKILL.md includes a "plug in your own task system" section.
 
 ## Design principles
 
@@ -95,7 +107,7 @@ handoff/pickup default to the zero-dependency file-based version; if you run you
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
 ├── skills/                            ← 5 skills (zh-TW body, bilingual triggers)
-│   ├── save-all/  ├── handoff/  ├── pickup/
+│   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── token-optimizer/  └── flight-to-calendar/
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
