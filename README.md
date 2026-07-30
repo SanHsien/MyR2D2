@@ -41,7 +41,7 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 
 ### skills.sh（`npx skills`）——推薦，一行裝完
 
-<!-- 收錄後取消註解：[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) -->
+[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2)
 
 ```bash
 npx skills add tingyulu/MyR2D2

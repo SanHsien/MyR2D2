@@ -41,7 +41,7 @@ All three were iterated out of real daily-driver usage, not theory.
 
 ### skills.sh (`npx skills`) — recommended, one command
 
-<!-- Uncomment once indexed: [![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) -->
+[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2)
 
 ```bash
 npx skills add tingyulu/MyR2D2
