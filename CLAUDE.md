@@ -55,6 +55,31 @@ git grep --untracked -inE "/Users/|~/(Documents|ClaudeProjects)/|Notion|telegram
 只有兩個欄位：`name`、`description`。**不加 `version`**（版號是整包的，見鐵則 4）。
 唯一例外：衍生自第三方 MIT 專案的 skill 加 `license: MIT`（目前只有 `token-optimizer`）。
 
+🔴 **`description` 的值一律用單引號包住** —— 這不是風格偏好，是 YAML 語法硬需求：
+
+```yaml
+description: '……時觸發。 English triggers: "a", "b".'
+```
+
+本 repo 的 description 必然含有 `English triggers: `（冒號＋空白）。在**未加引號的 plain scalar** 裡，`: ` 會被 YAML 當成 mapping 分隔符 → `mapping values are not allowed here` / `Psych::SyntaxError`，整支 skill 解析失敗。`pickup` 的 `status: pending` 也是同一個雷。
+
+- 用**單引號**（值內部的 `"` 可原樣保留）；值裡若有 `'`（如 `don't`）改寫成 `''`。
+- 別為了規避而把 `English triggers: ` 的冒號拿掉 —— 那個格式是鐵則 2 的一部分，該加引號的是整個值。
+
+**改完必驗**（兩個獨立 parser，並且要有陽性對照確認 parser 真的在檢查）：
+
+```bash
+/usr/bin/python3 -c "
+import yaml,glob,re
+for f in sorted(glob.glob('skills/*/SKILL.md')):
+    m=re.match(r'^---\n(.*?)\n---\n',open(f).read(),re.S)
+    try: print('OK  ',f,list(yaml.safe_load(m.group(1)).keys()))
+    except Exception as e: print('FAIL',f,type(e).__name__)
+"
+```
+
+> 📌 **事故紀錄**：`v0.1.1`（2026-07-27 發布）的 5 支 SKILL.md **全部**是無效 YAML，`npx skills add` 0/5 成功——而且從發布日起公開 repo 一直是壞的，直到 2026-07-30 沙盒實測才發現。禍首正是 v0.1.1 引入的雙語觸發詞。肉眼看檔案、或確認「檔案存在、內容看起來對」都抓不到這種錯：**唯一有效的驗證是拿真的 YAML parser 去解**。
+
 ### description 的結構（順序固定）
 
 ```
@@ -105,14 +130,15 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | `README.md` skill 總表 | L15–19 | 一句話＋R2-D2 對應 |
 | `README.md` `## 一組 skill、兩種語言習慣` | L21–28 | **逐字引用各 skill description 的中英觸發詞例句**（L25 中文／L26 English），改觸發詞必同步 |
 | `README.md` `## 安裝` 末句「裝完打…」 | L72 | 逐一點名可觸發的斜線命令 |
-| `README.md` `## 相容性矩陣` | L78–81 | CLI／Cowork／Codex·ChatGPT |
-| `README.md` `## 各 skill 的依賴` | L89–92 | 依賴表 |
-| `README.md` `## Repo 結構` tree | L109–110 | skill 目錄名＋「5 支 skill」計數 |
-| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 125 行**，改完要複驗仍對齊） |
+| `README.md` `## 相容性矩陣` | L78–81＋註記 L83–87 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder 與未實測範圍註記 |
+| `README.md` `## 各 skill 的依賴` | L95–98 | 依賴表 |
+| `README.md` `## Repo 結構` tree | L115–116 | skill 目錄名＋「5 支 skill」計數 |
+| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 131 行**，改完要複驗仍對齊） |
+| `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |
 | `adapters/openai/README.md` 可移植性總表 | L12–17 | 四列對應四組 skill |
-| `adapters/openai/README.md` Codex 安裝腳本 | L28 | `for s in ...` 的 skill 清單 |
+| `adapters/openai/README.md` Codex 安裝腳本 | L40 | 備援法 `for s in ...` 的 skill 清單 |
 
 ⚠️ `adapters/openai/README.md` 的矩陣是**獨立撰寫、非複製貼上**（用字與判斷邏輯都跟 README 不同）—— 要人工比對邏輯是否仍成立，不能只靠 diff 對照。
 
@@ -127,6 +153,7 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 - **版號單一權威來源＝`.claude-plugin/plugin.json` 的 `version`。** `marketplace.json` 不重複記版號、SKILL.md 不加 per-skill version。
 - **無 CHANGELOG.md** —— release note 只活在 tag 訊息與 commit body 裡。要新增 changelog 是新慣例，不是延續現狀，先問過作者。
 - 發布流程：
+  0. **先跑 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) A 段回歸**（至少 REG-01 雙 parser 驗證＋REG-03 安裝煙霧測試），全綠才進下一步。這道關卡防的缺陷影響**所有** npx-skills 下游 agent（v0.1.1 事故對 gemini-cli／codex 同樣 0/5 全滅），不只 Claude Code——別再把影響半徑寫窄。
   1. bump `plugin.json` 的 `version`，**與該版所有內容改動放同一個 commit**（不要「先改內容、後補版號」）
   2. commit message＝`vX.Y.Z: <繁中一句話摘要>`，內文條列改了什麼
   3. 手動建 annotated tag：`git tag -a vX.Y.Z -m "<發布公告文字>"` —— tag 訊息是**獨立撰寫的公告，不抄 commit message**

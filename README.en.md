@@ -54,7 +54,7 @@ All three were iterated out of real daily-driver usage, not theory.
 npx skills add tingyulu/MyR2D2
 ```
 
-[`npx skills`](https://github.com/vercel-labs/skills) supports agents beyond Claude Code (Cursor, Copilot, …). It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
+[`npx skills`](https://github.com/vercel-labs/skills) supports agents beyond Claude Code (`gemini-cli`, `codex`, `cursor`, … — full list in the upstream README). This repo has verified the install layer for gemini-cli / codex (method & evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md)); other targets are untested. It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
 
 ### Claude Code CLI — manual copy
 
@@ -73,14 +73,20 @@ Then trigger with `/save-all`, `/dropoff`, `/pickup`, or natural language in eit
 
 ## Compatibility matrix
 
-| Skill | Claude Code CLI | Cowork / claude.ai | Codex / ChatGPT |
-|---|---|---|---|
-| save-all | ✅ | ✅ (token-count step auto-skips) | ✅ Codex / ⚠️ ChatGPT as checklist only |
-| dropoff / pickup | ✅ | ✅ | ✅ Codex / ❌ ChatGPT (no shared disk) |
-| token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port; swap model names |
-| flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ❌ Codex / ⚠️ ChatGPT needs an Action |
+| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT (manual paste only) |
+|---|---|---|---|---|---|
+| save-all | ✅ | ✅ (token-count step auto-skips) | ✅ (same) | ✅ (drop the token-count step) | ⚠️ checklist only |
+| dropoff / pickup | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
+| token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
+| flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
 
-Porting guide for ChatGPT / Codex (AGENTS.md merge, routing line, three gotchas): **[adapters/openai/](adapters/openai/README.md)**.
+¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
+
+- **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
+- **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
+- Other `npx skills` targets (Cursor, Copilot, …): untested.
+
+Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallback, three gotchas): **[adapters/openai/](adapters/openai/README.md)**.
 
 ## Per-skill dependencies
 
@@ -88,7 +94,7 @@ Porting guide for ChatGPT / Codex (AGENTS.md merge, routing line, three gotchas)
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
 | dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/` |
-| token-optimizer | None (rules-only; Workflow-specific items need an environment with the Workflow tool) |
+| token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
 dropoff/pickup default to the zero-dependency file-based version; if you run your own task system (CLI todo, Notion, Linear…), each SKILL.md includes a "plug in your own task system" section.

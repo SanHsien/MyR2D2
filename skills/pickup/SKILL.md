@@ -1,6 +1,6 @@
 ---
 name: pickup
-description: 跨專案／跨 session 交接「接球」。讓「這個」session 馬上去讀交接給本專案的事項並接手。當使用者說「接手」「pickup」「有沒有交接給我的」「看交接」「接球」時觸發。也適合 session 開場主動跑一次，確認沒漏接。讀本專案 `.claude/handoffs/` 下 status: pending 的交接卡。 English triggers: "pickup", "take over", "anything handed off to me?", "check handoffs".
+description: '跨專案／跨 session 交接「接球」。讓「這個」session 馬上去讀交接給本專案的事項並接手。當使用者說「接手」「pickup」「有沒有交接給我的」「看交接」「接球」時觸發。也適合 session 開場主動跑一次，確認沒漏接。讀本專案 `.claude/handoffs/` 下 status: pending 的交接卡。 English triggers: "pickup", "take over", "anything handed off to me?", "check handoffs".'
 ---
 
 # /pickup — 交接·接球
@@ -25,7 +25,7 @@ description: 跨專案／跨 session 交接「接球」。讓「這個」session
 
 3. **列給使用者**：每張一行 —— 檔名＋一句摘要＋priority。多張卡時按 priority 排序。
 
-4. **標已接手**：對認領的卡，把 frontmatter 的 `status: pending` 改成 `status: picked`（用 Edit 精準改那一行）。這樣下次 /pickup 不會重複撈。
+4. **標已接手**：對認領的卡，把 frontmatter 的 `status: pending` 改成 `status: picked`（用你的檔案編輯工具精準改那一行）。這樣下次 /pickup 不會重複撈。
 
 5. **開始做**：交接卡的內容現在就是這個 session 的工作依據。
 

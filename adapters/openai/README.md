@@ -13,14 +13,26 @@ The SKILL.md files are plain Markdown instructions — any instruction-following
 |---|---|---|---|
 | save-all | ✅ | ⚠️ | Codex:git/檔案操作全通,token 統計那步刪掉(那是讀 Claude Code transcript 的)。ChatGPT:無本機檔案系統,只能當「收工檢查清單」用。<br>Codex: git/file ops all work; delete the token-count step (it reads Claude Code transcripts). ChatGPT: no local filesystem — usable only as a wrap-up checklist. |
 | dropoff / pickup | ✅ | ❌ | 交接卡=磁碟上的 Markdown 檔,Codex CLI 完全可用。ChatGPT 沒有跨 session 共用磁碟,搬不動。<br>Cards are Markdown files on disk — fully portable to Codex CLI. ChatGPT has no cross-session shared disk. |
-| token-optimizer | ⚠️ 原則通用 | ⚠️ 原則通用 | 五鐵則(分層/壓縮上報/角色鎖死/獨立驗證/失敗三停)通用;§1 模型名換成你家的檔位(如 o4-mini vs o3)、§6 的 Workflow API 條目刪掉。有趣的是:本 skill 的原作 kieiken/ultracode-token-optimization 就是 Codex 環境寫的,等於「移植回老家」。<br>The five iron rules are universal; swap §1 model names for your vendor's tiers, drop §6's Workflow-API items. Fun fact: the upstream (kieiken) was written FOR Codex — porting it back is going home. |
+| token-optimizer | ⚠️ 原則通用 | ⚠️ 原則通用 | 五鐵則(分層/壓縮上報/角色鎖死/獨立驗證/失敗三停)通用;§1 模型名換成你家的檔位(如 o4-mini vs o3)。⚠️ Workflow 專屬語彙**不只 §6**——`agent()`/`schema`/`budget.remaining()`/`label` 散布在 §1 絕對規則、§2、§5、§6、§7 自檢、§8:移植時把這些讀成「你的多代理派工機制」的代稱、規則要意譯(例:「每次派工都明確指定模型」),別照抄語法。§1「進階兜底」段(settings.json/env)是 Claude Code 專屬,跳過。原作 kieiken/ultracode-token-optimization 就是 Codex 環境寫的,等於「移植回老家」。<br>The five iron rules are universal; swap §1 model names for your vendor's tiers. ⚠️ Workflow-specific syntax is **not limited to §6** — `agent()`/`schema`/`budget.remaining()`/`label` appear in §1's red rule, §2, §5, §6, the §7 checklist, and §8: read them as stand-ins for *your* multi-agent dispatch mechanism and port the rules by meaning ("always pin the model when dispatching"), not by syntax. Skip §1's advanced-backstop paragraph (settings.json/env — Claude Code only). Fun fact: the upstream (kieiken) was written FOR Codex — porting it back is going home. |
 | flight-to-calendar | ❌ | ⚠️ | 硬依賴 Google Calendar 寫入工具。Codex CLI 無;ChatGPT 需自備 Calendar 的 Action/connector 才能用,規則本身(時區換算/一段一事件/夕陽座位)全通用。<br>Hard dependency on a Google Calendar write tool. Codex CLI: none. ChatGPT: needs a Calendar Action/connector; the rules themselves (timezone math, one-leg-one-event, sunset seats) are universal. |
 
 ## Codex CLI 安裝法 | Codex CLI setup
 
-Codex 讀 `AGENTS.md`(專案根目錄或 `~/.codex/AGENTS.md`),沒有 skill 觸發機制 —— 把規則直接併進去:
+**首選:新版 Codex CLI 已有原生 skill 機制**(0.145 實測,2026-07;內建 `~/.codex/skills/.system/`),直接裝:
 
-Codex reads `AGENTS.md` (project root or `~/.codex/AGENTS.md`) and has no skill-trigger mechanism — merge the rules in directly:
+**Preferred: recent Codex CLI has native skill support** (verified on 0.145, 2026-07; ships `~/.codex/skills/.system/`) — just install:
+
+```bash
+npx skills add tingyulu/MyR2D2 --agent codex
+```
+
+裝進 `.agents/skills/` 後,skill 的 name+description 會注入 Codex 的 model prompt(用 `codex debug prompt-input "test"` 可驗證),觸發詞自動路由,毋須手動搬運。
+
+Installed into `.agents/skills/`, each skill's name+description is injected into Codex's model-visible prompt (verify with `codex debug prompt-input "test"`) — triggers auto-route, no manual copying.
+
+**備援**(舊版 Codex、或無原生 skill 機制的環境):Codex 讀 `AGENTS.md`(專案根目錄或 `~/.codex/AGENTS.md`),把規則直接併進去:
+
+**Fallback** (older Codex, or environments without native skills): Codex reads `AGENTS.md` (project root or `~/.codex/AGENTS.md`) — merge the rules in directly:
 
 ```bash
 # 把要用的 skill 內文(去掉 YAML frontmatter)接進 AGENTS.md
@@ -44,6 +56,6 @@ docs/myr2d2/<name>.md before acting.
 
 ## 移植時的三個坑 | Three porting gotchas
 
-1. **觸發詞不會自己生效** — Claude Code 靠 description 自動路由;Codex/ChatGPT 要嘛使用者手動說「照 save-all 流程走」,要嘛靠上面那句路由指令。<br>*Triggers don't fire by themselves — Claude Code auto-routes on descriptions; elsewhere the user invokes by name or you add the routing line.*
+1. **觸發詞不會自己生效(備援法/ChatGPT 適用)** — Claude Code 與新版 Codex 靠 description 自動路由;ChatGPT 或走 AGENTS.md 備援法時,要嘛使用者手動說「照 save-all 流程走」,要嘛靠上面那句路由指令。<br>*Triggers don't fire by themselves (fallback path / ChatGPT) — Claude Code and recent Codex auto-route on descriptions; on ChatGPT or the AGENTS.md fallback, the user invokes by name or you add the routing line.*
 2. **「驗證落地」規則照搬** — 寫入靜默失敗不是 Claude 特有的,任何 agent 環境都該回讀驗證。這是全包最值得帶走的一條。<br>*Keep the "verify the write" rule — silent write failures aren't Claude-specific. It's the single most portable rule in this pack.*
 3. **R2-D2 註解可刪** — 那是給人看的調味,不影響行為。<br>*The R2-D2 asides are seasoning for humans; deleting them changes nothing.*

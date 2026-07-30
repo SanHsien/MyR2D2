@@ -1,6 +1,6 @@
 ---
 name: token-optimizer
-description: 多代理編排的 token／配額節流規則。任何要呼叫 Agent tool 或 Workflow 派工之前——不論使用者有沒有提到省 token、單一 subagent 也算——先讀本 skill 再動手。使用者說「省 token」「配額」「別燒爆額度」時也觸發。觸發詞：workflow、多代理、fan-out、subagent、派工、編排、省 token、配額、token optimizer。 English triggers: "save tokens", "quota", "don't burn my limit", "token optimizer".
+description: '多代理編排的 token／配額節流規則。任何要呼叫 Agent tool 或 Workflow 派工之前——不論使用者有沒有提到省 token、單一 subagent 也算——先讀本 skill 再動手。使用者說「省 token」「配額」「別燒爆額度」時也觸發。觸發詞：workflow、多代理、fan-out、subagent、派工、編排、省 token、配額、token optimizer。 English triggers: "save tokens", "quota", "don''t burn my limit", "token optimizer".'
 license: MIT
 ---
 
@@ -31,7 +31,7 @@ license: MIT
 **🔴 絕對規則：session 模型是旗艦檔時，每一個 `agent()` 呼叫都必須明確指定 `model`**（仲裁 lane 除外，且要註解）。漏指定＝整包 fan-out 全繼承貴檔，配額瞬間蒸發。這是本 skill 存在的第一理由。
 > 判準是「**session 跑的比中檔貴就適用**」，不是特定型號名——新模型上市不用改這條。
 
-**⚙️ 進階兜底**：在 `settings.json` 設 `env.CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 可以把所有 subagent 硬鎖在中檔（實測是硬上限——呼叫時指定別的檔也會被蓋掉），漏指定不再燒旗艦。要臨時全力跑：在**該專案**寫 `.claude/settings.local.json` 的 env 蓋掉它（只影響該專案、即時生效），任務完刪掉回落。優先序：專案 local > user 全局 > process env > 呼叫參數。
+**⚙️ 進階兜底（Claude Code CLI 專屬——其他工具沒有 `settings.json`／這個環境變數，直接跳過本段）**：在 `settings.json` 設 `env.CLAUDE_CODE_SUBAGENT_MODEL=sonnet` 可以把所有 subagent 硬鎖在中檔（實測是硬上限——呼叫時指定別的檔也會被蓋掉），漏指定不再燒旗艦。要臨時全力跑：在**該專案**寫 `.claude/settings.local.json` 的 env 蓋掉它（只影響該專案、即時生效），任務完刪掉回落。優先序：專案 local > user 全局 > process env > 呼叫參數。
 
 ## 2. 執行結果壓縮再上報（鐵則）
 

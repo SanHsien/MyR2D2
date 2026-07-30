@@ -54,7 +54,7 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 npx skills add tingyulu/MyR2D2
 ```
 
-[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 以外的多種 agent（Cursor、Copilot…）。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
+[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 以外的多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 gemini-cli／codex 的安裝層（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)），其餘目標未實測。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
 
 ### Claude Code CLI — 手動複製
 
@@ -73,14 +73,20 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ## 相容性矩陣
 
-| Skill | Claude Code CLI | Cowork / claude.ai | Codex / ChatGPT |
-|---|---|---|---|
-| save-all | ✅ | ✅（token 統計步自動跳過） | ✅ Codex / ⚠️ ChatGPT 僅檢查清單 |
-| dropoff / pickup | ✅ | ✅ | ✅ Codex / ❌ ChatGPT（無共用磁碟） |
-| token-optimizer | ✅ | ✅（規則類，無工具依賴） | ⚠️ 原則通用，模型名自行對換 |
-| flight-to-calendar | ✅（需 Calendar connector） | ✅（需 Calendar connector） | ❌ Codex / ⚠️ ChatGPT 需自備 Action |
+| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT（僅手動貼入） |
+|---|---|---|---|---|---|
+| save-all | ✅ | ✅（token 統計步自動跳過） | ✅（同左） | ✅（token 統計步刪掉） | ⚠️ 僅檢查清單 |
+| dropoff / pickup | ✅ | ✅ | ✅ | ✅ | ❌（無共用磁碟） |
+| token-optimizer | ✅ | ✅（規則類，無工具依賴） | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ |
+| flight-to-calendar | ✅（需 Calendar connector） | ✅（需 Calendar connector） | ⚠️ 需自備 Calendar MCP（未實測） | ❌ 無 Calendar 工具 | ⚠️ 需自備 Action |
 
-ChatGPT / Codex 的移植方法（AGENTS.md 併入法、路由法、三個坑）見 **[adapters/openai/](adapters/openai/README.md)**。
+¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
+
+- **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
+- **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
+- Cursor／Copilot 等其他 `npx skills` 目標：未實測。
+
+ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入、三個坑）見 **[adapters/openai/](adapters/openai/README.md)**。
 
 ## 各 skill 的依賴
 
@@ -88,7 +94,7 @@ ChatGPT / Codex 的移植方法（AGENTS.md 併入法、路由法、三個坑）
 |---|---|
 | save-all | 無（token 統計那步限 Claude Code CLI，選跑） |
 | dropoff / pickup | 無 — 交接卡就是專案目錄下的 Markdown 檔(`.claude/handoffs/`) |
-| token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境） |
+| token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境;§1「進階兜底」僅 Claude Code CLI 生效） |
 | flight-to-calendar | **Google Calendar MCP connector**（硬依賴） |
 
 dropoff/pickup 預設是零依賴的檔案版；如果你有自己的任務系統(CLI todo、Notion、Linear…),SKILL.md 內附「接上你自己的任務系統」的替換說明。
