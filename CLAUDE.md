@@ -129,11 +129,11 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | `README.md` 開頭定位句 | L11 | 「**5 支** skills」計數字串 |
 | `README.md` skill 總表 | L15–19 | 一句話＋R2-D2 對應 |
 | `README.md` `## 一組 skill、兩種語言習慣` | L21–28 | **逐字引用各 skill description 的中英觸發詞例句**（L25 中文／L26 English），改觸發詞必同步 |
-| `README.md` `## 安裝` 末句「裝完打…」 | L72 | 逐一點名可觸發的斜線命令 |
-| `README.md` `## 相容性矩陣` | L78–81＋註記 L83–87 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder 與未實測範圍註記 |
-| `README.md` `## 各 skill 的依賴` | L95–98 | 依賴表 |
-| `README.md` `## Repo 結構` tree | L115–116 | skill 目錄名＋「5 支 skill」計數 |
-| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 131 行**，改完要複驗仍對齊） |
+| `README.md` `## 安裝` 末句「裝完打…」 | L74 | 逐一點名可觸發的斜線命令 |
+| `README.md` `## 相容性矩陣` | L80–83＋註記 L85–89 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder 與未實測範圍註記 |
+| `README.md` `## 各 skill 的依賴` | L97–100 | 依賴表 |
+| `README.md` `## Repo 結構` tree | L117–118 | skill 目錄名＋「5 支 skill」計數 |
+| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 133 行**，改完要複驗仍對齊） |
 | `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |

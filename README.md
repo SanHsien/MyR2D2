@@ -39,14 +39,7 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 
 ## 安裝
 
-### Claude Code CLI — Plugin（推薦）
-
-```
-/plugin marketplace add tingyulu/MyR2D2
-/plugin install myr2d2@myr2d2
-```
-
-### skills.sh（`npx skills`，跨 agent）
+### skills.sh（`npx skills`）——推薦，一行裝完
 
 <!-- 收錄後取消註解：[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) -->
 
@@ -54,7 +47,16 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 npx skills add tingyulu/MyR2D2
 ```
 
-[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 以外的多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 gemini-cli／codex 的安裝層（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)），其餘目標未實測。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
+[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 與其他多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 gemini-cli／codex 的安裝層（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)），其餘目標未實測。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
+
+### Claude Code CLI — Plugin（深度整合）
+
+```
+/plugin marketplace add tingyulu/MyR2D2
+/plugin install myr2d2@myr2d2
+```
+
+skill 掛在 `myr2d2:` 命名空間下（`/myr2d2:dropoff`…）——與你機器上既有的同名 skill 結構上不衝突，且可經 marketplace 集中更新。
 
 ### Claude Code CLI — 手動複製
 

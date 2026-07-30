@@ -39,14 +39,7 @@ All three were iterated out of real daily-driver usage, not theory.
 
 ## Install
 
-### Claude Code CLI — Plugin (recommended)
-
-```
-/plugin marketplace add tingyulu/MyR2D2
-/plugin install myr2d2@myr2d2
-```
-
-### skills.sh (`npx skills`, cross-agent)
+### skills.sh (`npx skills`) — recommended, one command
 
 <!-- Uncomment once indexed: [![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) -->
 
@@ -54,7 +47,16 @@ All three were iterated out of real daily-driver usage, not theory.
 npx skills add tingyulu/MyR2D2
 ```
 
-[`npx skills`](https://github.com/vercel-labs/skills) supports agents beyond Claude Code (`gemini-cli`, `codex`, `cursor`, … — full list in the upstream README). This repo has verified the install layer for gemini-cli / codex (method & evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md)); other targets are untested. It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
+[`npx skills`](https://github.com/vercel-labs/skills) supports Claude Code and many other agents (`gemini-cli`, `codex`, `cursor`, … — full list in the upstream README). This repo has verified the install layer for gemini-cli / codex (method & evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md)); other targets are untested. It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
+
+### Claude Code CLI — Plugin (deep integration)
+
+```
+/plugin marketplace add tingyulu/MyR2D2
+/plugin install myr2d2@myr2d2
+```
+
+Skills land under the `myr2d2:` namespace (`/myr2d2:dropoff`, …) — structurally conflict-free with any same-name skills you already have, and centrally updatable via the marketplace.
 
 ### Claude Code CLI — manual copy
 
