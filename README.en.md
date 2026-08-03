@@ -8,13 +8,17 @@
 
 R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
 
-That's MyR2D2's job description — 5 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's MyR2D2's job description — 9 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
 | **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in R2, escape pod away |
 | **dropoff** | Write a task + full context into a handoff card for another session | Leia recording "Help me, Obi-Wan" |
 | **pickup** | New session fetches the cards, reads in full, claims, starts | R2 finds Obi-Wan, plays the hologram |
+| **mission-log** | Zero-token harvest of any day's session activity (the transcripts were always recording — you just need a reader) | The flight recorder never sleeps |
+| **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
+| **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
+| **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, R2 runs its own diagnostics and beeps the damage report — without waiting for Luke to ask |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
 
@@ -33,9 +37,11 @@ Claude sessions are **amnesiac**: close the conversation and everything not writ
 
 - `save-all` covers "before closing" — externalize in-flight state, and **verify it actually landed** (silent write failures are real; never trust a literal "success").
 - `dropoff` / `pickup` cover "after crossing over" — cards written so a stranger session can take over from the card alone.
+- `mission-log` / `daily-debrief` / `weekly-debrief` cover "the longer timeline" — transcripts auto-delete after 30 days; dailies/weeklies condense the value into durable records before it evaporates.
+- `damage-report` covers "the moment you wrap up" — "it runs" is not "it's done"; five questions catch fake-done, fake-verified, and silent failures.
 - `token-optimizer` covers the other scarce resource: **usage quota** on subscription plans. One missing model spec in a fan-out and your quota evaporates.
 
-All three were iterated out of real daily-driver usage, not theory.
+All of these were iterated out of real daily-driver usage, not theory.
 
 ## Install
 
@@ -71,7 +77,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/dropoff`, `/pickup`, or natural language in either language.
+Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, etc., or natural language in either language.
 
 ## Compatibility matrix
 
@@ -79,10 +85,13 @@ Then trigger with `/save-all`, `/dropoff`, `/pickup`, or natural language in eit
 |---|---|---|---|---|---|
 | save-all | ✅ | ✅ (token-count step auto-skips) | ✅ (same) | ✅ (drop the token-count step) | ⚠️ checklist only |
 | dropoff / pickup | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
+| mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
+| damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
 
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
+² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -96,6 +105,10 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
 | dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/` |
+| mission-log | None — the harvester is a stdlib-only python3 script, zero tokens |
+| daily-debrief | **Requires mission-log** (the harvester lives there) |
+| weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
+| damage-report | None (pure rules; the `/dropoff` mention in Q5 is an optional cross-reference) |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
@@ -114,9 +127,10 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 ```
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
-├── skills/                            ← 5 skills (zh-TW body, bilingual triggers)
+├── skills/                            ← 9 skills (zh-TW body, bilingual triggers)
 │   ├── save-all/  ├── dropoff/  ├── pickup/
-│   ├── token-optimizer/  └── flight-to-calendar/
+│   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
+│   ├── damage-report/  ├── token-optimizer/  └── flight-to-calendar/
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page

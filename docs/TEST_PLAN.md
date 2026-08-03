@@ -26,7 +26,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 "
 ```
 
-**通過**：5 支全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
+**通過**：全部 skill（v0.3.0 起為 9 支）全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
 
 ### REG-02 🟢 agentskills.io 官方 validator
 
@@ -34,7 +34,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 for d in skills/*/; do npx --yes skills-ref validate "$d"; done
 ```
 
-**通過**：5 支全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
+**通過**：全數（現為 9 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
 
 ### REG-03 🟢 本地安裝煙霧測試
 
@@ -42,7 +42,7 @@ for d in skills/*/; do npx --yes skills-ref validate "$d"; done
 cd "$(mktemp -d)" && git init -q . && npx --yes skills@latest add <repo根目錄> -y
 ```
 
-**通過**：回報 `Installed 5 skills`、0 個 Skipped。
+**通過**：回報 `Installed 9 skills`（與 repo 現有支數一致）、0 個 Skipped。
 
 ### REG-04 🟢 公開內容守門
 
@@ -64,7 +64,7 @@ for a in gemini-cli codex cursor github-copilot; do
 done
 ```
 
-**通過**：每個 agent 都 `Installed 5 skills`、0 Skipped。
+**通過**：每個 agent 都回報 Installed 支數=repo 現有支數、0 Skipped。
 狀態（2026-07-30）：gemini-cli／codex 已實測通過；cursor／github-copilot 未實測。
 
 ### CROSS-02 🟡 Gemini CLI 發現層（trusted-folder 關卡）
@@ -73,7 +73,7 @@ done
 gemini skills list --all   # 分別在「未信任」與「已信任」的專案目錄各跑一次
 ```
 
-**通過**：未信任時輸出含 `Skipping project agents due to untrusted folder`（skill 不出現＝**預期行為**，不是 bug）；信任該資料夾後 5 支全部列出並標 `[Enabled]`。
+**通過**：未信任時輸出含 `Skipping project agents due to untrusted folder`（skill 不出現＝**預期行為**，不是 bug）；信任該資料夾後全數 skill 列出並標 `[Enabled]`。
 ⚠️ 這道關卡是無聲的（不報錯），文件必須揭露，否則使用者會以為安裝失敗。建議用隔離 `HOME` 測「已信任」情境，避免動到真實 `~/.gemini/trustedFolders.json`。
 狀態（2026-07-30，gemini 0.40.0）：未信任情境已實測吻合；已信任情境未實測。
 
@@ -84,7 +84,7 @@ gemini skills list --all   # 分別在「未信任」與「已信任」的專案
 codex debug prompt-input "test" | grep -E "dropoff|pickup|save-all|token-optimizer|flight-to-calendar"
 ```
 
-**通過**：5 支 name＋description 均出現在 model-visible prompt 的 skills 區塊。
+**通過**:全數 skill 的 name＋description 均出現在 model-visible prompt 的 skills 區塊。
 狀態（2026-07-30，codex-cli 0.145.0）：已實測通過——Codex 有原生 skill 機制（`~/.codex/skills/.system/`），**不需**手動併入 AGENTS.md。
 
 ### CROSS-04 🟢 ChatGPT 消費版陰性對照
@@ -113,6 +113,42 @@ REG-01 ＋ REG-03 合跑。此缺陷影響**所有** npx-skills 下游 agent，�
 ### CROSS-07 ✋ 矩陣宣稱 × 實測交叉稽核
 
 README 相容性矩陣與 adapters 上的每個 ✅／⚠️／❌，都要能對應到一次實際指令輸出佐證（本項曾抓到 adapters 對 Codex 的描述整段過時）。有落差→下個 release tag 前修文件或重測。
+
+---
+
+## J. 日誌三支（mission-log／daily-debrief／weekly-debrief，v0.3.0 起）
+
+### J-01 🟢 收割器零 token 實跑
+
+```bash
+python3 skills/mission-log/scripts/harvest.py --date <近 7 天內某日>
+```
+
+**通過**：列出該日活躍 session（時間段／專案名／turns／tokens／工具／原話），全程無模型呼叫；中文專案名正確顯示（cwd 欄位路徑，非目錄編碼的 `-----`）。
+
+### J-02 🟢 跨機收割（ssh 餵單檔）
+
+```bash
+ssh <主機> "python3 - --date <日期>" < skills/mission-log/scripts/harvest.py
+```
+
+**通過**：遠端輸出自帶主機名；⚠️ 別加 `ssh -n`（stdin 會被接到 /dev/null，腳本餵不進去——實測踩過）。
+
+### J-03 ✋ 日期參數解析
+
+`/daily-debrief`（今天）／`yesterday`／`YYYY-MM-DD`；`/weekly-debrief`／`last`／`YYYY-Www`／任一日期落到該週。**通過**：各形式都收割到正確日期範圍。
+
+### J-04 ✋ daily 冪等與誠實
+
+同一天重跑 → 覆蓋更新不疊加；該日無記錄 → 檔案照寫、內容明講原因；summary 只含骨架撐得起的敘述（抽查比對原話）。
+
+### J-05 ✋ weekly 缺口自癒
+
+刪掉該週某天的日報 md 再跑 weekly → 自動補生成；把日期設到保留期外 → 週報標「無記錄」而非報錯。
+
+### J-06 🟢 歸檔搬移
+
+放一個假日期（>30 天前）的日報檔再跑 daily → 檔案被移入 `journal/archive/YYYY-MM/`，且 weekly 不讀 archive。
 
 ---
 
