@@ -158,7 +158,7 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
   2. commit message＝`vX.Y.Z: <繁中一句話摘要>`，內文條列改了什麼
   3. 手動建 annotated tag：`git tag -a vX.Y.Z -m "<發布公告文字>"` —— tag 訊息是**獨立撰寫的公告，不抄 commit message**
   4. `git push origin main --tags`
-- 無 CI／GitHub Actions；是否有 GitHub Release 物件**未查證**。
+- 無 CI／GitHub Actions。**每版建 GitHub Release**（`gh release create vX.Y.Z`，內文＝雙語更新留言；v0.1.1 起三版皆有，2026-08-07 定為慣例）。
 
 🔴 **commit message 與 tag 訊息也要過鐵則 1** —— 它們是本 repo 唯一的 release note 載體，會原樣推上公開 GitHub，但**不在守門 grep 的掃描範圍內**（那條指令掃的是檔案樹，讀不到還沒執行的 `git commit -m`／`git tag -a -m` 參數）。動筆寫這兩處前，自己照去識別化表過一遍，別指望指令幫你擋。
 
