@@ -79,6 +79,16 @@ Add the skill folders you want (`skills/<name>/`) to your Cowork project skills 
 
 Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, etc., or natural language in either language.
 
+## Updating
+
+Installed skills are point-in-time snapshots — **new releases won't notify you**. To update:
+
+```bash
+npx skills update
+```
+
+One command updates every installed skill (sources are recorded in the install-time lock file; `-g`/`-p` scopes to global/project). For plugin installs, update the marketplace via the `/plugin` UI. To get notified on new releases: **Watch → Custom → Releases** on this repo.
+
 ## Compatibility matrix
 
 | Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT (manual paste only) |

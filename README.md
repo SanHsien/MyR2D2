@@ -79,6 +79,16 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 裝完打 `/save-all`、`/dropoff`、`/pickup`、`/daily-debrief` 等即可觸發，或用上面任一語言的自然語句。
 
+## 更新
+
+skill 裝進去的是當下快照，**有新版不會自動通知**。更新方式：
+
+```bash
+npx skills update
+```
+
+一行更新所有已裝 skill（來源記在安裝時的 lock 檔；`-g`／`-p` 限定全域／專案層）。Plugin 路徑裝的改用 `/plugin` 介面更新 marketplace。想在新版發布時收到通知：GitHub 上對本 repo **Watch → Custom → Releases**。
+
 ## 相容性矩陣
 
 | Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT（僅手動貼入） |

@@ -130,10 +130,11 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | `README.md` skill 總表 | L15–23 | 一句話＋R2-D2 對應 |
 | `README.md` `## 一組 skill、兩種語言習慣` | L25–32 | **逐字引用各 skill description 的中英觸發詞例句**，改觸發詞必同步 |
 | `README.md` `## 安裝` 末句「裝完打…」 | L80 | 逐一點名可觸發的斜線命令 |
-| `README.md` `## 相容性矩陣` | L86–91＋註記 L93–97 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder、日誌三支資料來源、未實測範圍註記 |
-| `README.md` `## 各 skill 的依賴` | L106–113 | 依賴表（日誌三支的相依關係在此宣告） |
-| `README.md` `## Repo 結構` tree | L130–133 | skill 目錄名＋「9 支 skill」計數 |
-| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 147 行**，改完要複驗仍對齊） |
+| `README.md` `## 更新` | L82–90 | `npx skills update`／plugin 更新法／Watch Releases 通知 |
+| `README.md` `## 相容性矩陣` | L96–101＋註記 L103–107 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder、日誌三支資料來源、未實測範圍註記 |
+| `README.md` `## 各 skill 的依賴` | L116–123 | 依賴表（日誌三支的相依關係在此宣告） |
+| `README.md` `## Repo 結構` tree | L140–143 | skill 目錄名＋「9 支 skill」計數 |
+| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 157 行**，改完要複驗仍對齊） |
 | `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |
