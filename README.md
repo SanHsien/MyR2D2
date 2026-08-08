@@ -73,6 +73,10 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ⚠️ 用 `-n`（不覆蓋既有檔）：若你 `~/.claude/skills/` 底下已有同名資料夾，`cp -r` 會**直接覆蓋且不提示**。想更新既有的，先自己 diff 過再決定。
 
+### 只用網頁版 Chat？免安裝簡版
+
+不用 CLI、不裝任何東西：[prompts/](prompts/) 有可直接貼進對話（或 custom instructions）的簡版 prompt，規則類 skill 適用——首發 `damage-report`（[繁中](prompts/damage-report.md)｜[EN](prompts/damage-report.en.md)）。
+
 ### Cowork / claude.ai
 
 把要用的 skill 資料夾（`skills/<名稱>/`）加進你的 Cowork 專案 skills（或專案目錄的 `.claude/skills/`）。
@@ -141,6 +145,7 @@ MyR2D2/
 │   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
 │   ├── damage-report/  ├── token-optimizer/  └── flight-to-calendar/
+├── prompts/                           ← 免安裝簡版(貼進 Chat 就能用)
 ├── adapters/openai/                   ← ChatGPT / Codex 移植包
 ├── README.md                          ← 本頁(中文為主)
 └── README.en.md                       ← English

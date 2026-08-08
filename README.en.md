@@ -73,6 +73,10 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ⚠️ Note the `-n` (no-clobber): if `~/.claude/skills/` already has folders with these names, plain `cp -r` **overwrites them silently**. Diff first if you're updating an existing install.
 
+### Chat-only? No-install lite prompts
+
+No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — starting with `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md)).
+
 ### Cowork / claude.ai
 
 Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
@@ -141,6 +145,7 @@ MyR2D2/
 │   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
 │   ├── damage-report/  ├── token-optimizer/  └── flight-to-calendar/
+├── prompts/                           ← no-install lite prompts (paste into any chat)
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page
