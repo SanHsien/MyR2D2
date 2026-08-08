@@ -1,6 +1,18 @@
 # damage-report — lite prompt (no install, just paste)
 
-> For chat-only users (ChatGPT / Gemini / Claude.ai web): paste the block below at the **start of a conversation**, or into your custom instructions / project instructions — it will then run at every task wrap-up. Full version (with design notes): [skills/damage-report/](../skills/damage-report/SKILL.md).
+> For chat-only users: paste everything below the `---` (2,044 chars) at the **start of a conversation**, or into your platform's persistent-instructions field — it will then run at every task wrap-up. Full version (with design notes): [skills/damage-report/](../skills/damage-report/SKILL.md); for narrow fields use the [minimal version](damage-report.lite.en.md) (1,112 chars).
+>
+> **Where to paste, per platform** (verified 2026-08-08; treat limits as test-in-interface — most are not officially documented):
+>
+> | Platform | Persistent home | Does it fit? |
+> |---|---|---|
+> | Claude.ai | Settings → Instructions for Claude; or Project instructions (that project only) | No official limit documented — test |
+> | ChatGPT | Settings → Personalization → Custom Instructions | **Paid 5,000 ✅ / Free 1,500 ❌ → use minimal version or Projects** (official numbers) |
+> | Gemini | Settings → Saved Info (⚠️ **Gems don't read Saved Info** — paste into the Gem's own instructions too) | No official limit — test |
+> | Perplexity | Space/Project → Instructions | ~8,000 (not officially guaranteed) ✅ |
+> | Grok | Settings → Personalization → Custom Instructions | No official number — test |
+>
+> After pasting, **verify with one real task that the five questions actually run** — adherence varies by platform (Perplexity officially admits technical limits); pasted ≠ 100% enforced.
 
 ---
 

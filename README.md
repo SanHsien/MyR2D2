@@ -75,7 +75,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### 只用網頁版 Chat？免安裝簡版
 
-不用 CLI、不裝任何東西：[prompts/](prompts/) 有可直接貼進對話（或 custom instructions）的簡版 prompt，規則類 skill 適用——首發 `damage-report`（[繁中](prompts/damage-report.md)｜[EN](prompts/damage-report.en.md)）。
+不用 CLI、不裝任何東西：[prompts/](prompts/) 有可直接貼進對話（或 custom instructions）的簡版 prompt，規則類 skill 適用——首發 `damage-report`（[繁中](prompts/damage-report.md)｜[EN](prompts/damage-report.en.md)；另有 ≤1,500 字元[極簡版](prompts/damage-report.lite.md)供 ChatGPT Free 等窄欄位）。
 
 ### Cowork / claude.ai
 

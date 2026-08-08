@@ -1,6 +1,18 @@
 # damage-report 簡版 prompt（免安裝，貼上就能用）
 
-> 給只用網頁版 Chat（ChatGPT／Gemini／Claude.ai…）的人：把下面整段貼進**對話開頭**或你的 custom instructions／專案指令，之後每次任務收尾它就會自動跑。完整版（含設計說明）見 [skills/damage-report/](../skills/damage-report/SKILL.md)。
+> 給只用網頁版 Chat 的人：把 `---` 以下整段（1,752 字元）貼進**對話開頭**或平台的常駐指令欄，之後每次任務收尾它就會自動跑。完整版（含設計說明）見 [skills/damage-report/](../skills/damage-report/SKILL.md)；窄欄位用 [極簡版](damage-report.lite.md)（1,051 字元）。
+>
+> **各平台貼哪裡**（2026-08-08 查證；上限以貼入當下介面實測為準，多數平台官方未載明數字）：
+>
+> | 平台 | 常駐位置 | 放得下嗎 |
+> |---|---|---|
+> | Claude.ai | Settings → Instructions for Claude；或 Project instructions（僅該專案） | 官方未載明上限，實測為準 |
+> | ChatGPT | Settings → Personalization → Custom Instructions | **付費 5,000 ✅／Free 1,500 ❌ → 用極簡版或 Projects**（官方數字） |
+> | Gemini | Settings → Saved Info（⚠️ **Gems 不吃 Saved Info**，Gem 要另貼進它自己的 instructions 欄） | 官方未載明，實測為準 |
+> | Perplexity | Space／Project 的 Instructions 欄 | 約 8,000（非官方保證）✅ |
+> | Grok | Settings → Personalization → Custom Instructions | 無官方數字，實測為準 |
+>
+> 貼入後**拿一次真實任務驗證五問真的有跑**——常駐指令的遵循度各平台不一（Perplexity 官方自承有技術限制），別假設貼進去＝100% 生效。
 
 ---
 
