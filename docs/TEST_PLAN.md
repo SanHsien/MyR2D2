@@ -172,7 +172,7 @@ ssh <主機> "python3 - --date <日期>" < skills/mission-log/scripts/harvest.py
 
 兩個 terminal `claude` session 間以 `ListAgents`＋`SendMessage` 完成 D-01/D-02 同款流程。
 **通過**：同 D-01/D-02。
-狀態（2026-08-09）：✅ 已實測（首次真實交接即驗證）——發送端為 headless `-p` session，`ListAgents` 以名稱定址找到 tmux 內的互動 session、`SendMessage` 送達（回執含 msg_id）；接收端互動 session 無人工介入即開工跑 pickup 流程。附帶發現：headless `-p` **能發不能收**（官方文件僅載明不能收）。互動→互動的發送端未另測（工具鏈與 headless 發送相同）。
+狀態（2026-08-09）：✅ 已實測（首次真實交接即驗證）——發送端為 headless `-p` session，`ListAgents` 以名稱定址找到 tmux 內的互動 session、`SendMessage` 送達（回執含 msg_id）；接收端互動 session 無人工介入即開工跑 pickup 流程。附帶發現：headless `-p` **能發不能收**（官方文件僅載明不能收）；名稱定址有時要求帶短識別碼（裸名被拒、`名稱 [ref]` 成功）。後續同日：互動 terminal 當發送端亦經真實回訊驗證，且該回訊**跨機**送達另一台機器的桌面 session（經雲端 bridge 定址；單次觀察、機制歸因未確認，勿當保證）。
 
 ### D-04 ✋ 靜默檔（「不用即時通知」）
 
