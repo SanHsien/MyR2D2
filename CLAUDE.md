@@ -131,12 +131,13 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | `README.md` `## 一組 skill、兩種語言習慣` | L25–32 | **逐字引用各 skill description 的中英觸發詞例句**，改觸發詞必同步 |
 | `README.md` `## 安裝` 末句「裝完打…」 | L84 | 逐一點名可觸發的斜線命令 |
 | `README.md` `## 更新` | L86–94 | `npx skills update`／plugin 更新法／Watch Releases 通知 |
-| `README.md` `## 相容性矩陣` | L100–105＋註記 L107–111 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder、日誌三支資料來源、未實測範圍註記 |
-| `README.md` `## 各 skill 的依賴` | L120–127 | 依賴表（日誌三支的相依關係在此宣告） |
-| `README.md` `## Repo 結構` tree | L144–148 | skill 目錄名＋「9 支 skill」計數＋`prompts/` 列 |
-| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 162 行**，改完要複驗仍對齊） |
+| `README.md` `## 相容性矩陣` | L100–105＋註記 L107–113 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder、日誌三支資料來源、門鈴註³、未實測範圍註記 |
+| `README.md` `## 各 skill 的依賴` | L121–128 | 依賴表（日誌三支的相依關係、門鈴選用增強在此宣告） |
+| `README.md` `## Repo 結構` tree | L145–149 | skill 目錄名＋「9 支 skill」計數＋`prompts/` 列 |
+| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 163 行**，改完要複驗仍對齊） |
 | `prompts/<skill>.md`＋`.en.md` | — | **免安裝簡版**（規則類 skill 適用，damage-report 首例）：skill 的五問／規則本體一改，簡版兩檔要同步改寫，別讓簡版變舊版 |
 | `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
+| `docs/TEST_PLAN.md` D 段 | C 段之前 | 交接門鈴測項 D-01～05——dropoff/pickup 的門鈴行為一改要同步 |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |
 | `adapters/openai/README.md` 可移植性總表 | L12–17 | 四列對應四組 skill |

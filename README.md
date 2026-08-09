@@ -13,8 +13,8 @@ MyR2D2 就是這個定位 —— 9 支 skills，管的都是「不做不會死�
 | Skill | 一句話 | R2-D2 對應 |
 |---|---|---|
 | **save-all** | 收工/重開機前，把只活在對話裡的東西全部落地並**驗證**寫進磁碟 | 圖紙存進 R2、彈射逃生艙 |
-| **dropoff** | 把一件事連同完整脈絡寫成交接卡，推給另一個 session | Leia 錄下「Help me, Obi-Wan」 |
-| **pickup** | 新 session 開場撈交接卡，讀全文、認領、開工 | R2 找到 Obi-Wan，播放訊息 |
+| **dropoff** | 把一件事連同完整脈絡寫成交接卡推給另一個 session；對面在線就即時按門鈴 | Leia 錄下「Help me, Obi-Wan」 |
+| **pickup** | 新 session 開場撈交接卡（或被門鈴叫醒），讀全文、認領、開工，做完回訊收尾 | R2 找到 Obi-Wan，播放訊息 |
 | **mission-log** | 零 token 收割任一天的 session 活動骨架（transcript 本來就在記，只差讀取器） | 飛行記錄器從不休息 |
 | **daily-debrief** | 日結：做了什麼＋reflection，趕在 transcript 30 天蒸發前把價值撈上岸 | 任務歸來的 debrief |
 | **weekly-debrief** | 週結：7 份日結收斂成主線與趨勢 | 看得出補給線問題的是戰役，不是單次任務 |
@@ -98,7 +98,7 @@ npx skills update
 | Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT（僅手動貼入） |
 |---|---|---|---|---|---|
 | save-all | ✅ | ✅（token 統計步自動跳過） | ✅（同左） | ✅（token 統計步刪掉） | ⚠️ 僅檢查清單 |
-| dropoff / pickup | ✅ | ✅ | ✅ | ✅ | ❌（無共用磁碟） |
+| dropoff / pickup³ | ✅ | ✅ | ✅ | ✅ | ❌（無共用磁碟） |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌（無本機 transcript） | ❌² | ❌² | ❌² |
 | damage-report | ✅ | ✅（規則類，零工具依賴） | ✅（規則類） | ✅（規則類） | ⚠️ 貼入當收尾檢查清單 |
 | token-optimizer | ✅ | ✅（規則類，無工具依賴） | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ |
@@ -106,6 +106,7 @@ npx skills update
 
 ¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
 ² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
+³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
 
 - **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
 - **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
@@ -118,7 +119,7 @@ ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入�
 | Skill | 依賴 |
 |---|---|
 | save-all | 無（token 統計那步限 Claude Code CLI，選跑） |
-| dropoff / pickup | 無 — 交接卡就是專案目錄下的 Markdown 檔(`.claude/handoffs/`) |
+| dropoff / pickup | 無 — 交接卡就是專案目錄下的 Markdown 檔(`.claude/handoffs/`)；即時門鈴為選用增強（Claude Code v2.1.224+），偵測不到自動跳過 |
 | mission-log | 無 — 收割器為純標準庫 python3 腳本，零 token |
 | daily-debrief | **需一併安裝 mission-log**（收割器在那支裡） |
 | weekly-debrief | **需一併安裝 daily-debrief 與 mission-log**（缺日結會自動補生成） |

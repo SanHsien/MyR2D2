@@ -13,8 +13,8 @@ That's MyR2D2's job description — 9 skills covering things that "won't kill yo
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
 | **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in R2, escape pod away |
-| **dropoff** | Write a task + full context into a handoff card for another session | Leia recording "Help me, Obi-Wan" |
-| **pickup** | New session fetches the cards, reads in full, claims, starts | R2 finds Obi-Wan, plays the hologram |
+| **dropoff** | Write a task + full context into a handoff card for another session; rings the doorbell if the target session is live | Leia recording "Help me, Obi-Wan" |
+| **pickup** | New session fetches the cards (or gets doorbell-woken), reads in full, claims, starts, reports back when done | R2 finds Obi-Wan, plays the hologram |
 | **mission-log** | Zero-token harvest of any day's session activity (the transcripts were always recording — you just need a reader) | The flight recorder never sleeps |
 | **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
 | **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
@@ -98,7 +98,7 @@ One command updates every installed skill (sources are recorded in the install-t
 | Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT (manual paste only) |
 |---|---|---|---|---|---|
 | save-all | ✅ | ✅ (token-count step auto-skips) | ✅ (same) | ✅ (drop the token-count step) | ⚠️ checklist only |
-| dropoff / pickup | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
+| dropoff / pickup³ | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
 | damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
@@ -106,6 +106,7 @@ One command updates every installed skill (sources are recorded in the install-t
 
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
+³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -118,7 +119,7 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 | Skill | Dependencies |
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
-| dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/` |
+| dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/`; the instant doorbell is an optional enhancement (Claude Code v2.1.224+), auto-skipped where unavailable |
 | mission-log | None — the harvester is a stdlib-only python3 script, zero tokens |
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |

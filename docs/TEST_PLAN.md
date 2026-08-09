@@ -152,6 +152,42 @@ ssh <主機> "python3 - --date <日期>" < skills/mission-log/scripts/harvest.py
 
 ---
 
+## D. 交接門鈴（dropoff/pickup 的跨 session 即時通知，v0.4.0 起）
+
+> 底層＝Claude Code v2.1.224+ 的 cross-session messaging（`ListAgents`＋`SendMessage`；桌面 app 為 session 管理工具變體，以 sessionId 定址）。官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會被暫留待人工核准（`crossSessionInbound`）。版本與行為敘述已對照官方 changelog 與 docs 查證（2026-08-09）。設計原則：門鈴只是通知，卡片檔案才是真相——以下任何一項失敗都不得影響交接成立。
+
+### D-01 ✋ 去程：閒置 session 被門鈴喚醒並開工
+
+發訊給一個閒置（非執行中）的 session，內含卡片路徑與接手指示。
+**通過**：對面無需人工介入即開始處理（讀卡、認領）。
+狀態（2026-08-09）：✅ 已實測（桌面變體）——閒置 session 39 秒內完成「收訊→執行指令→落檔」。
+
+### D-02 ✋ 回程：完成回訊送達來源 session
+
+接手方完成後回訊來源 session（from 位址）。
+**通過**：來源 session 收到完成訊息並被觸發。
+狀態（2026-08-09）：✅ 已實測（桌面變體，雙向閉環成立）。
+
+### D-03 ✋ CLI 原生變體（terminal 間、名稱定址）
+
+兩個 terminal `claude` session 間以 `ListAgents`＋`SendMessage` 完成 D-01/D-02 同款流程。
+**通過**：同 D-01/D-02。
+狀態（2026-08-09）：❓ 未實測（僅官方文件背書；桌面變體的實測結果不可外推）。
+
+### D-04 ✋ 靜默檔（「不用即時通知」）
+
+dropoff 時使用者說「不用即時通知」→ 不發訊、卡上 `notify: silent`；後續 /pickup 掃卡仍撈得到。
+**通過**：無訊息送出且卡片欄位正確。
+狀態（2026-08-09）：❓ 未實測（規則層，首次真實使用即為驗證）。
+
+### D-05 ✋ 無能力環境降級
+
+在無跨 session 傳訊工具的環境（Gemini CLI／Codex／Cowork）跑 dropoff。
+**通過**：門鈴步驟被跳過、無報錯、交接卡照常成立。
+狀態（2026-08-09）：❓ 未實測。
+
+---
+
 ## C. 相容性結論快照（2026-07-30，過期重驗）
 
 | 工具 | 安裝層 | 發現層 | 執行層 |
@@ -161,3 +197,5 @@ ssh <主機> "python3 - --date <日期>" < skills/mission-log/scripts/harvest.py
 | Codex CLI 0.145.0 | ✅ 實測 5/5 | ✅ 實測（原生注入 prompt） | ❓ 未測 |
 | ChatGPT 消費版 | ❌ 無安裝路徑（產品限制） | ❌ 無 skill 概念 | 僅手動貼入，網頁端人工驗 |
 | Cursor／Copilot 等 | ❓ `npx skills` 支援但未實測 | ❓ | ❓ |
+
+註（2026-08-09）：v0.4.0 的交接門鈴（D 段）為 Claude Code 限定的選用增強，各工具評級不因此變動——非 Claude Code 環境自動降級純檔案交接（見 README 矩陣註³）。

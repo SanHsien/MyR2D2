@@ -1,6 +1,6 @@
 ---
 name: dropoff
-description: '跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「推球給 X」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手。 English triggers: "hand this off to X", "drop this off for <project>", "pass this to the next session".'
+description: '跨專案／跨 session 交接「推球」。把一件事連同完整脈絡交給另一個專案（或同專案的未來 session）的 Claude。當使用者說「交接給 X」「handoff 給某專案」「推球給 X」「把這件事丟給下個 session」時觸發。產出＝目標專案 `.claude/handoffs/` 下的一張交接卡（Markdown 檔），對面 session 用 /pickup 接手；偵測到目標的活躍 session 時加發即時門鈴（使用者說「不用即時通知」則靜默排隊）。 English triggers: "hand this off to X", "drop this off for <project>", "pass this to the next session".'
 ---
 
 # /dropoff — 交接·推球
@@ -24,9 +24,11 @@ description: '跨專案／跨 session 交接「推球」。把一件事連同完
 ---
 status: pending          # pending → picked → done
 from: <來源專案或 session 描述>
+from-session: <來源 session 名稱或 ID，選填 — 有跨 session 傳訊能力時填，供對面完成後回訊>
 to: <目標專案>
 created: YYYY-MM-DD HH:MM
 priority: high | normal | low
+notify: rung | silent    # 選填 — 已按門鈴／使用者要求靜默排隊
 ---
 
 # <事項一句話>
@@ -56,13 +58,20 @@ priority: high | normal | low
 1. **建目錄**（若不存在）：`mkdir -p <目標專案>/.claude/handoffs`
 2. **寫卡**：依上述格式。「脈絡」與「完成的定義」是卡的靈魂 —— 只寫標題的交接卡等於沒交接。
 3. **驗證落地**：寫完 `cat` 回讀確認內容完整（寫入可能靜默失敗，別信工具回的成功訊息字面）。
-4. **回報**：卡片路徑＋一句摘要＋提醒「對面 session 跑 `/pickup` 即可接手」。
+4. **即時門鈴**（選用 — 環境有跨 session 傳訊能力才跑；Claude Code v2.1.224+ 的 cross-session messaging，其他工具自動跳過）：
+   - ① 使用者說過「不用即時通知」「先不通知」「排著就好」之類 → **跳過本步**，卡上補 `notify: silent`。門鈴會讓閒置的對面立刻開工——大任務要挑時間處理的，開工時機留給使用者。
+   - ② 否則列出可達的 session（`ListAgents`／`/list-agents`；桌面版用 session 管理工具的 list），找工作目錄或名稱對得上目標專案的那個。
+   - ③ 找到 → 傳訊：「有交接卡：<卡片路徑>。手上沒事請跑 /pickup 接手；完成後請回訊本 session。」並在卡上補 `from-session:` 與 `notify: rung`。⚠️ 送達 ≠ 必動工：對面忙碌時會先做完手上的事；對面以 bypass-permissions 模式跑時，訊息會被押著等人工核准。
+   - ④ 找不到活躍 session → 明講「卡已落地，無活躍 session 可即時通知」，照舊等對面 /pickup。
+5. **回報**：卡片路徑＋一句摘要＋門鈴結果（發給誰／靜默／無人可通知）＋提醒「對面 session 跑 `/pickup` 即可接手」。
 
 ## 鐵律
 
 - **一卡一事**。兩件事就寫兩張卡，別打包。
 - **脈絡自包含**：假設讀卡的 session 對你的對話一無所知。需要的背景、連結、路徑全放卡上。
-- **時效性高的事**，除了寫卡，再用你手上現有的即時通道（通知、訊息）提醒使用者一聲 —— 卡是 pull 模型，對面不開工就不會讀。
+- **門鈴只是通知，卡片檔案才是真相**：門鈴發失敗、環境沒有跨 session 傳訊、對面不在線 —— 交接照樣成立，一切以卡為準。門鈴訊息裡也別塞卡上沒有的任務內容。
+- **「不用即時通知」是使用者的節流閥**：說了就靜默排隊，別自作主張補發。
+- **時效性高的事**，除了寫卡＋門鈴，再用你手上現有的即時通道（通知、訊息）提醒使用者一聲 —— 門鈴只到得了活躍的 session，到不了人。
 - 配對命令＝`/pickup`（對面接手）。
 
 ## 進階：接上你自己的任務系統
