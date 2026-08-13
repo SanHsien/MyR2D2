@@ -156,6 +156,14 @@ MyR2D2/
 
 - `token-optimizer` 改寫自 [kieiken/ultracode-token-optimization](https://github.com/kieiken/ultracode-token-optimization)(MIT)，泛化為全 Claude 環境版本。
 
+## 作者
+
+大叔（Eric Lu）——30 年產品人，現在是產品顧問、獵頭、職涯教練。這套 skills 是我自己每天在用的工作流，痛點解掉了就順手開源。
+
+- 長文正本：[uncleric.com](https://www.uncleric.com)（寫職涯，寫產品，也寫生活）
+- 日常出沒：[Threads @tingyulu](https://www.threads.com/@tingyulu)｜[LinkedIn](https://www.linkedin.com/in/uncleeric/)
+- 每週職缺快報電子報：[大叔的人生相談室](https://www.linkedin.com/newsletters/7484182774178803713/)
+
 ## License
 
 MIT — 詳見 [LICENSE](LICENSE)。

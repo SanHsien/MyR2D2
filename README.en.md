@@ -156,6 +156,13 @@ MyR2D2/
 
 - `token-optimizer` is adapted from [kieiken/ultracode-token-optimization](https://github.com/kieiken/ultracode-token-optimization) (MIT), generalized for all-Claude environments.
 
+## Author
+
+Eric Lu ("Uncle Eric") — 30 years in product, now a product consultant, headhunter, and career coach. These skills are my actual daily workflow; once a pain point got solved, open-sourcing it was the easy part.
+
+- Long-form writing: [uncleric.com](https://www.uncleric.com) (zh-TW)
+- Find me: [Threads @tingyulu](https://www.threads.com/@tingyulu) | [LinkedIn](https://www.linkedin.com/in/uncleeric/)
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
