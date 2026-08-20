@@ -60,13 +60,15 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
 | `failed_version` | 後端 CLI 版本不相容 | 2 |
 | `failed_empty` | 後端回空內容 | 2 |
 | `failed_unknown` | 無法歸類 | 2 |
-| （不印狀態） | **用法錯誤**：沒給來源／缺 `--rubric`／`--effort` 值不合法／一次給兩份來源 | 1 |
+| （不印狀態） | **用法錯誤**：沒給來源／缺 `--rubric`／`--effort` 值不合法／一次給兩份來源／`--strict` 與 `--soft-fail` 併用 | 1 |
 
 兩個退出碼開關，方向相反、都是**你主動要求**才生效：
 
 - `--strict`：把 `skipped_*` 變成 3，讓 CI 能把「沒有二審」當成失敗擋下來。
-- `--soft-fail`：把 `failed_*` 也變成 0。當二審是加分項、**絕不能擋住主流程**時用
-  （狀態字串仍照印在 stdout，資訊不會被抹掉）。
+- `--soft-fail`：把 `failed_*` 也變成 0。當二審是加分項、**絕不能擋住主流程**時用。
+  ⚠️ 用了它就等於放棄「靠退出碼判斷」——呼叫端**必須自己解析 stdout 最後一行的狀態**，
+  否則你會得到一個「看起來成功、其實沒審到」的靜默結果。
+  （兩個開關方向相反，**不能同時用**，同時給會直接報錯。）
 
 預設值（skipped=0、failed=2）的取捨：「沒有後端」是預期中的降級，不該吵；
 「後端拒絕了你」是真的有事發生，預設吵一下比較誠實。哪種對你比較好，你自己決定。
@@ -80,7 +82,7 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
 不保證開箱即用。
 
 ⚠️ **狀態分類是比對後端 stderr 文字的啟發式，不是後端官方保證的介面** ——
-CLI 升版就可能失準。所以失敗時原始 stderr 一律照印，別只信標籤。
+CLI 升版就可能失準。所以失敗時後端的 **stderr 與 stdout 都照印**，別只信標籤。
 「沒裝」與「沒登入」刻意分成兩種：新手最常卡在第二種，而若訊息說「找不到 codex」，
 他會再裝一次然後更困惑。
 
@@ -123,8 +125,11 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 別讓不可信的來源（外部 `.env`、CI 變數）決定它的值；
 ③ 若你的後端把錯誤訊息印到 **stdout** 而且回 exit 0，本工具分不出那是意見還是錯誤頁，
 只會用長度給你一個「偏短」的警告 —— 自訂後端時自己看一眼輸出。
-另外三個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`，建議進 `.gitignore`）、
+（後端回**非零**時不受此限：stderr 與 stdout 都會納入分類並照印。）
+另外兩個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`）、
 `AI_REVIEW_RUBRICS`（自訂 rubric 目錄）。
+⚠️ 落檔會把**送審內容的審閱結果**留在磁碟上，權限跟著你的 `umask` 走 ——
+`.gitignore` 只擋 git，不擋本機其他工具讀它。不想留就加 `--no-save`。
 
 ## 進階：自己的 rubric
 
@@ -134,7 +139,12 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 
 ## 實測範圍（過期請重驗）
 
+⚠️ 「POSIX shell」是寫法上的目標，不是可移植性的保證：腳本仍用到 `trap … EXIT`、
+`dirname --`／`basename --`／`cp --` 這類**規格沒有硬性保證**的行為。
+真正的依據是下面實測過的組合，不是規格推論。
+
 腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過完整驗收矩陣
-（狀態分類、`--strict`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
-路徑含空白、落檔目錄不可寫、stdin 來源、用法錯誤），並以真實 Codex CLI 驗過 `ok` 路徑。
-**Linux 與 Windows 未實測** —— 腳本寫的是 POSIX shell，理應可跑，但沒驗過的別當保證。
+（狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
+路徑含空白、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
+並以真實 Codex CLI 驗過 `ok` 路徑。
+**Linux 與 Windows 未實測**，**免費方案帳號也未實測** —— 沒驗過的一律別當保證。

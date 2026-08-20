@@ -75,14 +75,23 @@ while [ $# -gt 0 ]; do
 	--soft-fail) SOFT=1; shift ;;
 	--no-save) SAVE=0; shift ;;
 	-h | --help) usage; exit 0 ;;
-	--) shift; [ $# -gt 0 ] && { set_src "$1"; shift; } ;;
+	--)
+		# `--` 之後一律當成來源檔名，不再解析選項（標準語意；否則 `-- -draft` 之後
+		# 的 `--rubric` 又會被當選項吃掉，日後加位置參數必出解析漏洞）。
+		shift
+		while [ $# -gt 0 ]; do set_src "$1"; shift; done
+		;;
 	-) set_src "-"; shift ;;
 	-*) echo "❌ 不認得的選項：$1（用法見 $SELF_NAME --help）" >&2; exit 1 ;;
 	*) set_src "$1"; shift ;;
 	esac
 done
 
-# 一次只審一份：多給的來源檔以前會被靜默覆蓋，使用者以為兩份都送審了（假成功）。
+if [ "$STRICT" -eq 1 ] && [ "$SOFT" -eq 1 ]; then
+	echo "❌ --strict 與 --soft-fail 不能同時用：一個要把「沒審到」變成失敗，另一個要把失敗變成沒事。" >&2
+	exit 1
+fi
+
 case "$EFFORT" in
 "" | low | medium | high) ;;
 *)
@@ -110,6 +119,7 @@ esac
 # ── 暫存區（含清理）──────────────────────────────────────────────────
 TMPD=$(mktemp -d 2>/dev/null) || { echo "❌ 建不出暫存目錄（mktemp 失敗）" >&2; exit 1; }
 trap 'rm -rf "$TMPD"' EXIT
+trap 'rm -rf "$TMPD"; exit 129' HUP
 trap 'rm -rf "$TMPD"; exit 130' INT
 trap 'rm -rf "$TMPD"; exit 143' TERM
 
@@ -122,7 +132,7 @@ ERR_FILE="$TMPD/stderr.txt"
 # 沒有 set -e 的情況下 `cat` 只會印個錯就繼續，結果是**送出殘缺的 prompt 卻照樣宣告成功**。
 SRC_FILE="$TMPD/input.txt"
 if [ "$SRC" = "-" ]; then
-	cat >"$SRC_FILE"
+	cat >"$SRC_FILE" || { echo "❌ 讀 stdin 失敗（內容可能不完整，不送出）" >&2; exit 1; }
 	NAME="stdin"
 else
 	[ -f "$SRC" ] || { echo "❌ 找不到檔案：$SRC" >&2; exit 1; }
@@ -190,8 +200,8 @@ guide() {
   3) 驗證
        codex login status
 
-ℹ️ Codex 列在 ChatGPT 各方案內（含免費方案，額度較少）—— 但能不能跑起來還要看你的
-   地區、帳號狀態與組織政策，不保證人人可用。
+ℹ️ 官方方案表把 Codex 列在各方案內（含免費方案），但官方的用量限制表沒有列免費方案的
+   可用模型與額度；能不能跑起來還要看地區、帳號狀態與組織政策，不保證人人可用。
 ℹ️ 不想用 codex？設 AI_REVIEW_CMD 換成你自己的 reviewer（讀 stdin、吐 stdout）。
 EOF
 		;;
@@ -200,6 +210,7 @@ EOF
 ℹ️ AI_REVIEW_CMD 指到的命令跑不起來（找不到或不可執行）—— 本次略過二審，不影響其他步驟。
 
    檢查一下：命令名稱拼對了嗎？在 PATH 裡嗎？有執行權限嗎？
+   （也可能是命令本身啟動失敗，例如它自己缺了相依套件 —— 直接手動跑一次最快。）
    （AI_REVIEW_CMD 收 stdin 的 prompt、吐 stdout 的意見；例：AI_REVIEW_CMD='ollama run llama3'）
    把 AI_REVIEW_CMD 取消設定就會回到預設後端（Codex CLI）。
 EOF
@@ -269,6 +280,18 @@ EOF
 	esac
 }
 
+dump_backend_output() {
+	# 失敗時把後端**兩條**輸出都照印：分類是啟發式，人得看得到原文才能自己判斷。
+	if [ -s "$ERR_FILE" ]; then
+		printf -- '── 後端 stderr（尾 20 行）──\n' >&2
+		tail -20 "$ERR_FILE" >&2
+	fi
+	if [ -s "$ANSWER_FILE" ]; then
+		printf -- '── 後端 stdout（尾 20 行）──\n' >&2
+		tail -20 "$ANSWER_FILE" >&2
+	fi
+}
+
 emit_status_and_exit() {
 	# $1=status。狀態一律走 stdout（機器可讀），退出碼只分「真失敗」。
 	printf 'AI_REVIEW_STATUS: %s\n' "$1"
@@ -295,12 +318,14 @@ if [ -n "${AI_REVIEW_CMD:-}" ]; then
 		case "$RC" in
 		126 | 127)
 			guide skipped_not_installed_custom
-			printf '── 後端原始錯誤（尾 20 行）──\n' >&2
-			tail -20 "$ERR_FILE" >&2
+			dump_backend_output
 			emit_status_and_exit skipped_not_installed
 			;;
 		esac
-		STATUS=$(classify_error "$ERR_FILE")
+		# ⚠️ 有些 CLI 把錯誤訊息（登入網址、HTTP body）寫到 **stdout** 再回非零。
+		#    只看 stderr 會拿到空的、分類成 failed_unknown，畫面上還印「原始錯誤」卻沒東西。
+		cat "$ERR_FILE" "$ANSWER_FILE" >"$TMPD/combined.txt" 2>/dev/null
+		STATUS=$(classify_error "$TMPD/combined.txt")
 		case "$STATUS" in
 		# 自訂後端也可能只是沒登入 —— 那同樣是「本次沒有二審」，不是硬失敗。
 		skipped_not_logged_in) guide skipped_not_logged_in_custom ;;
@@ -308,8 +333,7 @@ if [ -n "${AI_REVIEW_CMD:-}" ]; then
 		failed_version) STATUS=failed_unknown; guide "$STATUS" ;;
 		*) guide "$STATUS" ;;
 		esac
-		printf '── 後端原始錯誤（尾 20 行）──\n' >&2
-		tail -20 "$ERR_FILE" >&2
+		dump_backend_output
 		emit_status_and_exit "$STATUS"
 	fi
 else
@@ -326,11 +350,13 @@ else
 	# 一律不下結論、照常往下跑 —— 寧可讓真正的呼叫去報錯，也不要誤指使用者沒登入。
 	# ⚠️ 退出碼不可盡信：有的版本未登入／token 過期時仍回 0，只在訊息裡講。
 	#    所以**不論退出碼**都掃一次輸出內容。
+	# ⚠️ 比對詞要窄：曾經放過裸的 `*expired*`／`*sign in*`，但「已登入」的訊息裡也可能出現
+	#    "sign-in method" 或 "session expires" —— 那會把好好的登入誤判成沒登入而白白略過二審。
 	LOGIN_OUT="$TMPD/login.txt"
 	"$CODEX" login status >"$LOGIN_OUT" 2>&1 || true
 	LOGIN_TXT=$(tr '[:upper:]' '[:lower:]' <"$LOGIN_OUT" | tr '\n' ' ')
 	case "$LOGIN_TXT" in
-	*"not logged in"* | *"logged out"* | *"no credentials"* | *"not authenticated"* | *expired* | *"sign in"* | *unauthorized* | *401*)
+	*"not logged in"* | *"logged out"* | *"no credentials"* | *"not authenticated"* | *"token expired"* | *"credentials expired"* | *"please sign in"* | *"please log in"* | *unauthorized* | *401*)
 		guide skipped_not_logged_in
 		printf '── codex login status ──\n' >&2
 		cat "$LOGIN_OUT" >&2
@@ -346,10 +372,10 @@ else
 	set -- "$@" -
 	"$CODEX" "$@" <"$PROMPT_FILE" >/dev/null 2>"$ERR_FILE" || RC=$?
 	if [ "$RC" -ne 0 ]; then
-		STATUS=$(classify_error "$ERR_FILE")
+		cat "$ERR_FILE" "$ANSWER_FILE" >"$TMPD/combined.txt" 2>/dev/null
+		STATUS=$(classify_error "$TMPD/combined.txt")
 		guide "$STATUS"
-		printf '── 後端原始錯誤（尾 20 行）──\n' >&2
-		tail -20 "$ERR_FILE" >&2
+		dump_backend_output
 		emit_status_and_exit "$STATUS"
 	fi
 fi
@@ -358,10 +384,7 @@ fi
 	guide failed_empty
 	# 「失敗時原始 stderr 一律照印」對空回覆同樣適用 —— 後端常常是 exit 0
 	# 但把真正的原因寫在 stderr（例如登入提示、錯誤頁）。
-	if [ -s "$ERR_FILE" ]; then
-		printf '── 後端原始輸出（尾 20 行）──\n' >&2
-		tail -20 "$ERR_FILE" >&2
-	fi
+	dump_backend_output
 	emit_status_and_exit failed_empty
 }
 
@@ -378,13 +401,27 @@ SAVED=""
 if [ "$SAVE" -eq 1 ]; then
 	if mkdir -p "$OUT_DIR" 2>/dev/null && [ -w "$OUT_DIR" ]; then
 		# 檔名：去掉換行與路徑敵意字元，並截短；加上 PID 避免「同一秒跑兩次」互相覆蓋。
-		BASE=$(printf '%s' "${NAME%.md}" | tr -d '\n\r' | tr ' /:\\*?"<>|' '_________' | cut -c1-60)
+		# ⚠️ `cut -c` 在非 UTF-8 locale 下切的是 bytes，會把多位元組字元切成半個 ——
+		#    那種殘缺位元組在部分檔案系統上直接寫不進去。UTF-8 環境保留原名（含中文），
+		#    其他 locale 一律降級成 ASCII 安全字元。
+		BASE=$(printf '%s' "${NAME%.md}" | tr -d '\n\r\t' | tr ' /:\\*?"<>|' '_________')
+		case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
+		*UTF-8* | *utf8* | *UTF8*) BASE=$(printf '%s' "$BASE" | cut -c1-60) ;;
+		*) BASE=$(printf '%s' "$BASE" | sed 's/[^A-Za-z0-9._-]/_/g' | cut -c1-60) ;;
+		esac
 		[ -n "$BASE" ] || BASE=review
-		OUT_FILE="$OUT_DIR/$TS-$$-$RUBRIC-$BASE.md"
+		# rubric 可能是一整條路徑（`--rubric ../shared/x.md`）—— 直接塞進檔名會帶著
+		# `/` 與 `..` 寫到別的目錄去。內建三份保留原名，其餘一律叫 custom。
+		case "$RUBRIC" in
+		code | copy | research) RUBRIC_TAG="$RUBRIC" ;;
+		*) RUBRIC_TAG="custom" ;;
+		esac
+		OUT_FILE="$OUT_DIR/$TS-$$-$RUBRIC_TAG-$BASE.md"
 		# YAML 值一律引號包住並跳脫：檔名可能含冒號或引號，直接寫進 frontmatter
 		# 會把 metadata 結構弄壞（下游把它當設定讀時更麻煩）。
-		NAME_SAFE=$(printf '%s' "$NAME" | tr -d '\n\r' | sed 's/\\/\\\\/g; s/"/\\"/g')
-		RUBRIC_SAFE=$(printf '%s' "$RUBRIC" | tr -d '\n\r' | sed 's/\\/\\\\/g; s/"/\\"/g')
+		OUT_TMP="$OUT_DIR/.ai-review.$$.tmp"
+		NAME_SAFE=$(printf '%s' "$NAME" | tr -d '[:cntrl:]' | sed 's/\\/\\\\/g; s/"/\\"/g')
+		RUBRIC_SAFE=$(printf '%s' "$RUBRIC" | tr -d '[:cntrl:]' | sed 's/\\/\\\\/g; s/"/\\"/g')
 		{
 			printf -- '---\n'
 			printf 'source: "%s"\n' "$NAME_SAFE"
@@ -398,7 +435,10 @@ if [ "$SAVE" -eq 1 ]; then
 			printf '# AI review｜%s｜rubric=%s｜backend=%s\n\n' "$NAME" "$RUBRIC" "$BACKEND"
 			cat "$ANSWER_FILE"
 			printf '\n'
-		} >"$OUT_FILE" 2>/dev/null && SAVED="$OUT_FILE"
+		# 暫存檔建在**目標目錄裡**（同檔案系統）才 mv：跨檔案系統的 mv 是複製＋刪除，
+		# 既不是原子操作、也會跟著既有 symlink 寫出去；同目錄 rename 才能一次換上。
+		} >"$OUT_TMP" 2>/dev/null && mv -f "$OUT_TMP" "$OUT_FILE" 2>/dev/null && SAVED="$OUT_FILE"
+		[ -n "$SAVED" ] || rm -f "$OUT_TMP" 2>/dev/null
 	fi
 	if [ -z "$SAVED" ]; then
 		printf '⚠️ 落檔失敗（目錄不可寫？）：%s —— 意見仍在上面，未遺失。\n' "$OUT_DIR" >&2
