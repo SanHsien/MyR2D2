@@ -60,6 +60,10 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
 | `failed_version` | 後端 CLI 版本不相容 | 2 |
 | `failed_empty` | 後端回空內容 | 2 |
 | `failed_unknown` | 無法歸類 | 2 |
+| （不印狀態） | **用法錯誤**：沒給來源／缺 `--rubric`／`--effort` 值不合法／一次給兩份來源 | 1 |
+
+`--strict` 是**你主動要求**才生效的例外：它把 `skipped_*` 變成 3，讓 CI 能把「沒有二審」
+當成失敗擋下來。預設不開，因為「沒有後端不得中斷流程」是這支工具的硬需求。
 
 ⚠️ **狀態分類是比對後端 stderr 文字的啟發式，不是後端官方保證的介面** ——
 CLI 升版就可能失準。所以失敗時原始 stderr 一律照印，別只信標籤。
@@ -95,7 +99,15 @@ CLI 升版就可能失準。所以失敗時原始 stderr 一律照印，別只�
 AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 ```
 
-⚠️ 代價：自帶後端的品質不可控，而 rubric 的措辭是為「另一個模型家族」寫的。
+後端跑不起來（找不到命令、沒有執行權限）或它自己說沒登入時，一樣走 `skipped_*`＋exit 0，
+不會中斷你的流程。
+
+⚠️ 三個代價講在前面：
+① 自帶後端的品質不可控，而 rubric 的措辭是為「另一個模型家族」寫的；
+② `AI_REVIEW_CMD` 是**整條 shell 命令**（用 `sh -c` 執行），不是單純的執行檔路徑 ——
+別讓不可信的來源（外部 `.env`、CI 變數）決定它的值；
+③ 若你的後端把錯誤訊息印到 **stdout** 而且回 exit 0，本工具分不出那是意見還是錯誤頁，
+只會用長度給你一個「偏短」的警告 —— 自訂後端時自己看一眼輸出。
 另外三個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`，建議進 `.gitignore`）、
 `AI_REVIEW_RUBRICS`（自訂 rubric 目錄）。
 

@@ -207,9 +207,9 @@ for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-revie
 ```
 
 再以每個 shell 各跑一次完整行為矩陣（狀態分類 ×7、未安裝、`--strict`、可插拔後端 ×2、
-呼叫鏈、路徑含空白、落檔目錄不可寫、stdin、用法錯誤 ×2）。
-**通過**：語法全過；行為矩陣每個 shell 17/17。
-狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell × 17 項全過。
+呼叫鏈、路徑含空白、落檔目錄不可寫、stdin、用法錯誤 ×2，加 E-06 的 9 項回歸）。
+**通過**：語法全過；行為矩陣每個 shell 26/26。
+狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell × 26 項全過。
 
 ### E-02 🟡 真實後端 ok 路徑
 
@@ -231,6 +231,25 @@ skills/ai-review/scripts/ai-review.sh <某檔> --rubric code
 登出後端後呼叫（或以 stub 模擬 `codex login status` 回「not logged in」）。
 **通過**：狀態為 `skipped_not_logged_in`、退出碼 0，且引導文字講的是**登入**不是重裝。
 狀態（2026-08-20）：⚠️ **僅以 stub 實測**；沒有真的把帳號登出驗過（會影響使用中的環境）。
+
+### E-06 🟢 跨模型二審抓到的缺陷回歸（v0.5.1）
+
+v0.5.0 出貨後把「SKILL.md＋腳本」整包送 GPT 與 Gemini 各審一次，兩邊獨立指出同一批缺陷。
+逐項回歸（納入 E-01 的矩陣，每個 shell 都跑）：
+
+1. `AI_REVIEW_CMD` 指到不存在的命令（exit 127）→ 必須 `skipped_not_installed`＋exit 0
+   （原本落進 `failed_unknown`＋exit 2，**直接違反「沒有後端不得中斷上層流程」的硬需求**）。
+2. 自訂後端回「not logged in」→ `skipped_not_logged_in`＋exit 0（原本被強制轉成 `failed_unknown`）。
+3. `authorization policy denied`／`auth service unavailable` 這類**真失敗不得被吞成 skipped**
+   （原本分類器有一條模糊的 `*auth*`，會讓真失敗安靜地回 exit 0）。
+4. `--effort` 非白名單值 → exit 1（原本會送進後端，最後被誤判成「版本不相容」並給錯引導；
+   值也會被插進 `-c model_reasoning_effort="…"`）。
+5. 一次給兩份來源檔 → exit 1（原本靜默只審最後一份）。
+6. 同一秒跑兩次 → 落檔不互相覆蓋（檔名加 PID）。
+7. 檔名含冒號／空白 → frontmatter 仍是合法 YAML（值加引號並跳脫）。
+8. 後端 exit 0 但回空 → 照印原始 stderr（SKILL.md 宣稱「失敗時一律照印」，原本空回覆這條沒做到）。
+
+狀態（2026-08-20）：✅ 全數實測通過（5 shell × 26 項）。
 
 ### E-05 ✋ 平台覆蓋
 
