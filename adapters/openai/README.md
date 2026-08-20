@@ -16,6 +16,7 @@ The SKILL.md files are plain Markdown instructions — any instruction-following
 | token-optimizer | ⚠️ 原則通用 | ⚠️ 原則通用 | 五鐵則(分層/壓縮上報/角色鎖死/獨立驗證/失敗三停)通用;§1 模型名換成你家的檔位(如 o4-mini vs o3)。⚠️ Workflow 專屬語彙**不只 §6**——`agent()`/`schema`/`budget.remaining()`/`label` 散布在 §1 絕對規則、§2、§5、§6、§7 自檢、§8:移植時把這些讀成「你的多代理派工機制」的代稱、規則要意譯(例:「每次派工都明確指定模型」),別照抄語法。§1「進階兜底」段(settings.json/env)是 Claude Code 專屬,跳過。原作 kieiken/ultracode-token-optimization 就是 Codex 環境寫的,等於「移植回老家」。<br>The five iron rules are universal; swap §1 model names for your vendor's tiers. ⚠️ Workflow-specific syntax is **not limited to §6** — `agent()`/`schema`/`budget.remaining()`/`label` appear in §1's red rule, §2, §5, §6, the §7 checklist, and §8: read them as stand-ins for *your* multi-agent dispatch mechanism and port the rules by meaning ("always pin the model when dispatching"), not by syntax. Skip §1's advanced-backstop paragraph (settings.json/env — Claude Code only). Fun fact: the upstream (kieiken) was written FOR Codex — porting it back is going home. |
 | mission-log / daily-debrief / weekly-debrief | ❌ | ❌ | 資料來源是 Claude Code 自家 transcript(~/.claude/projects),其他工具沒有這份資料——skill 指令可讀,但無料可收。想移植得把收割器改讀你家 agent 的 session 檔(如 Codex 的 ~/.codex/sessions)。<br>Data source is Claude Code's own transcripts — other tools don't have it. Porting means pointing the harvester at your agent's session files (e.g. Codex's ~/.codex/sessions). |
 | damage-report | ✅ | ✅ | 純規則零依賴,五問+「寫無」原封搬;第 5 問的 /dropoff 引用換成你的交接慣例即可。最適合直接併進 AGENTS.md 常駐。**ChatGPT 免動手:`prompts/damage-report.md` 有現成簡版,整段貼進 custom instructions 即用。**<br>Pure rules, zero deps — the five questions and the "write none" rule port verbatim; swap the /dropoff mention in Q5 for your own handoff habit. Ideal for merging straight into AGENTS.md. |
+| ai-review | ✅ | ⚠️ | Codex CLI 環境**本來就有後端**,腳本(單檔 POSIX shell)直接可跑;不想用 codex 就設 `AI_REVIEW_CMD` 換後端。ChatGPT 網頁版沒有 shell:改用 `prompts/ai-review.md`,把它貼進**另一個** AI(不是寫這份東西的那個)就是二審。<br>Codex environments already have the backend — the single-file POSIX shell script runs as-is; set `AI_REVIEW_CMD` to swap it. ChatGPT web has no shell: use `prompts/ai-review.md` and paste it into *another* AI (not the one that wrote the work). |
 | flight-to-calendar | ❌ | ⚠️ | 硬依賴 Google Calendar 寫入工具。Codex CLI 無;ChatGPT 需自備 Calendar 的 Action/connector 才能用,規則本身(時區換算/一段一事件/夕陽座位)全通用。<br>Hard dependency on a Google Calendar write tool. Codex CLI: none. ChatGPT: needs a Calendar Action/connector; the rules themselves (timezone math, one-leg-one-event, sunset seats) are universal. |
 
 ## Codex CLI 安裝法 | Codex CLI setup
@@ -39,7 +40,7 @@ Installed into `.agents/skills/`, each skill's name+description is injected into
 ```bash
 # 把要用的 skill 內文(去掉 YAML frontmatter)接進 AGENTS.md
 # Append the skill bodies (minus YAML frontmatter) into AGENTS.md
-for s in save-all dropoff pickup damage-report token-optimizer; do
+for s in save-all dropoff pickup damage-report ai-review token-optimizer; do
   echo -e "\n\n<!-- MyR2D2: $s -->" >> AGENTS.md
   sed '1,/^---$/d' ../../skills/$s/SKILL.md | sed '1,/^---$/d' >> AGENTS.md
 done

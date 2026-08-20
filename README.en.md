@@ -8,7 +8,7 @@
 
 R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
 
-That's MyR2D2's job description — 9 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's MyR2D2's job description — 10 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
@@ -19,6 +19,7 @@ That's MyR2D2's job description — 9 skills covering things that "won't kill yo
 | **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
 | **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
 | **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, R2 runs its own diagnostics and beeps the damage report — without waiting for Luke to ask |
+| **ai-review** | Send the work to **another model** for a second opinion, digest it, then write the report; says "self-review only" when no backend is there | R2 and C-3PO bicker for six films — each covering the other's blind half |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
 
@@ -39,6 +40,7 @@ Claude sessions are **amnesiac**: close the conversation and everything not writ
 - `dropoff` / `pickup` cover "after crossing over" — cards written so a stranger session can take over from the card alone.
 - `mission-log` / `daily-debrief` / `weekly-debrief` cover "the longer timeline" — transcripts auto-delete after 30 days; dailies/weeklies condense the value into durable records before it evaporates.
 - `damage-report` covers "the moment you wrap up" — "it runs" is not "it's done"; five questions catch fake-done, fake-verified, and silent failures.
+- `ai-review` covers the ceiling of self-review — asking the same model to "check again" mostly re-confirms what it already believed; a different model family is what catches your blind spots.
 - `token-optimizer` covers the other scarce resource: **usage quota** on subscription plans. One missing model spec in a fan-out and your quota evaporates.
 
 All of these were iterated out of real daily-driver usage, not theory.
@@ -75,13 +77,13 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### Chat-only? No-install lite prompts
 
-No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — starting with `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a ≤1,500-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free).
+No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a ≤1,500-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free) and `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review).
 
 ### Cowork / claude.ai
 
 Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, etc., or natural language in either language.
+Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, `/damage-report`, `/ai-review`, etc., or natural language in either language.
 
 ## Updating
 
@@ -101,12 +103,14 @@ One command updates every installed skill (sources are recorded in the install-t
 | dropoff / pickup³ | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
 | damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
+| ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
 
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 ³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
+⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. With no backend it reports `skipped_*` and still **exits 0**, so it never breaks your flow. Verified on macOS under `sh`/`dash`/`bash`/`ksh`/`zsh`; **Linux and Windows untested**.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -123,7 +127,8 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 | mission-log | None — the harvester is a stdlib-only python3 script, zero tokens |
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
-| damage-report | None (pure rules; the `/dropoff` mention in Q5 is an optional cross-reference) |
+| damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
+| ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. No extra packages: no npm module, no brew formula, no API key of your own |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
@@ -142,11 +147,13 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 ```
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
-├── skills/                            ← 9 skills (zh-TW body, bilingual triggers)
+├── skills/                            ← 10 skills (zh-TW body, bilingual triggers)
 │   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
-│   ├── damage-report/  ├── token-optimizer/  └── flight-to-calendar/
+│   ├── damage-report/  ├── ai-review/  ├── token-optimizer/
+│   └── flight-to-calendar/
 ├── prompts/                           ← no-install lite prompts (paste into any chat)
+├── docs/                              ← test plan + verification notes for external claims
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page
@@ -162,6 +169,7 @@ Eric Lu ("Uncle Eric") — 30 years in product, now a product consultant, headhu
 
 - Long-form writing: [uncleric.com](https://www.uncleric.com) (zh-TW)
 - Find me: [Threads @tingyulu](https://www.threads.com/@tingyulu) | [LinkedIn](https://www.linkedin.com/in/uncleeric/)
+- Weekly jobs newsletter: [大叔的人生相談室](https://www.linkedin.com/newsletters/7484182774178803713/) (zh-TW)
 
 ## License
 

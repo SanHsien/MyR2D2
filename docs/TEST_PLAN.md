@@ -26,7 +26,8 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 "
 ```
 
-**通過**：全部 skill（v0.3.0 起為 9 支）全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
+**通過**：全部 skill（v0.5.0 起為 10 支）全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
+⚠️ 驗證器自己也要驗：跑一次**故意壞掉的 YAML**（如 `description: bad: colon`）確認它真的會 FAIL，否則你可能在看一個永遠說 OK 的空轉腳本。
 
 ### REG-02 🟢 agentskills.io 官方 validator
 
@@ -34,7 +35,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 for d in skills/*/; do npx --yes skills-ref validate "$d"; done
 ```
 
-**通過**：全數（現為 9 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
+**通過**：全數（現為 10 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
 
 ### REG-03 🟢 本地安裝煙霧測試
 
@@ -42,7 +43,7 @@ for d in skills/*/; do npx --yes skills-ref validate "$d"; done
 cd "$(mktemp -d)" && git init -q . && npx --yes skills@latest add <repo根目錄> -y
 ```
 
-**通過**：回報 `Installed 9 skills`（與 repo 現有支數一致）、0 個 Skipped。
+**通過**：回報 `Installed 10 skills`（與 repo 現有支數一致）、0 個 Skipped。
 
 ### REG-04 🟢 公開內容守門
 
@@ -191,6 +192,51 @@ dropoff 時使用者說「不用即時通知」→ 不發訊、卡上 `notify: s
 dropoff 篩目標專案候選（新鮮＝7 天內活躍）的三種情況，逐一驗：
 **通過**：恰好一個新鮮候選 → 自動發訊；超過一個 → 列出問使用者挑，且選擇被記進 `.claude/handoffs/routing.md`（下次同目標直接用，該 session 消失／過期則重問並更新）；一個都沒有（全過期）→ 仍問使用者（硬按過期的 or 只留卡），不自動喚醒沉睡 session。
 狀態（2026-08-09）：❓ 未實測（規則層；由真實誤喚醒事故反推立規，首次觸發即驗證）。
+
+---
+
+## E. ai-review（跨模型二審，v0.5.0 起）
+
+> 腳本＝`skills/ai-review/scripts/ai-review.sh`（單檔 POSIX shell）。設計原則：**狀態走 stdout、
+> 退出碼只分真失敗** —— 沒裝後端是預期中的降級，不得中斷上層流程。
+
+### E-01 🟢 多 shell 語法與行為矩陣
+
+```bash
+for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-review/scripts/ai-review.sh; done
+```
+
+再以每個 shell 各跑一次完整行為矩陣（狀態分類 ×7、未安裝、`--strict`、可插拔後端 ×2、
+呼叫鏈、路徑含空白、落檔目錄不可寫、stdin、用法錯誤 ×2）。
+**通過**：語法全過；行為矩陣每個 shell 17/17。
+狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell × 17 項全過。
+
+### E-02 🟡 真實後端 ok 路徑
+
+```bash
+skills/ai-review/scripts/ai-review.sh <某檔> --rubric code
+```
+
+**通過**：回 `AI_REVIEW_STATUS: ok`、退出碼 0、意見內容確實依 rubric 分項（不是錯誤頁）。
+狀態（2026-08-20）：✅ 已實測（Codex CLI 0.148.0，真的抓出示範檔的邏輯錯誤）。
+
+### E-03 ✋ 降級不中斷上層
+
+在 `set -e` 的 wrapper 內、且輸出被 `$(…)` 捕捉的情況下，對「沒有後端」的環境呼叫。
+**通過**：wrapper 繼續往下跑、退出碼 0、狀態為 `skipped_not_installed`。
+狀態（2026-08-20）：✅ 已實測（含 `--strict` 反向確認會回 3）。
+
+### E-04 ✋ 未登入偵測
+
+登出後端後呼叫（或以 stub 模擬 `codex login status` 回「not logged in」）。
+**通過**：狀態為 `skipped_not_logged_in`、退出碼 0，且引導文字講的是**登入**不是重裝。
+狀態（2026-08-20）：⚠️ **僅以 stub 實測**；沒有真的把帳號登出驗過（會影響使用中的環境）。
+
+### E-05 ✋ 平台覆蓋
+
+**通過**：README 宣稱支援的平台都實跑過。
+狀態（2026-08-20）：❌ **Linux／Windows 未實測** —— 因此 README 與 SKILL.md 均未宣稱跨平台，
+只寫「macOS 上以 5 種 shell 實測、其餘未驗」。要宣稱前先補這格。
 
 ---
 
