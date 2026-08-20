@@ -110,7 +110,7 @@ npx skills update
 ¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
 ² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
 ³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
-⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端時它回報 `skipped_*` 並**照常回 0**，不會中斷流程。腳本已在 macOS 的 `sh`／`dash`／`bash`／`ksh`／`zsh` 實測；**Linux／Windows 未實測**。
+⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。腳本已在 macOS 的 `sh`／`dash`／`bash`／`ksh`／`zsh` 實測；**Linux／Windows 與免費方案帳號未實測**。
 
 - **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
 - **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。

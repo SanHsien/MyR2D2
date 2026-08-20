@@ -9,6 +9,7 @@
 #   --model <名稱>           傳給後端的模型名（預設不指定，吃後端預設）
 #   --effort low|medium|high 推理力度（僅 codex 後端）
 #   --strict                 skipped_* 也回非零（預設 skipped 回 0）
+#   --soft-fail              failed_* 也回 0（二審是加分項、絕不能擋住流程時用）
 #   --no-save                不落檔，只印到 stdout
 #   -h, --help               說明
 #
@@ -40,6 +41,7 @@ CONTEXT=""
 MODEL=""
 EFFORT=""
 STRICT=0
+SOFT=0
 SAVE=1
 
 usage() {
@@ -70,6 +72,7 @@ while [ $# -gt 0 ]; do
 		[ $# -ge 2 ] || { echo "❌ --effort 後面要接值" >&2; exit 1; }
 		EFFORT="$2"; shift 2 ;;
 	--strict) STRICT=1; shift ;;
+	--soft-fail) SOFT=1; shift ;;
 	--no-save) SAVE=0; shift ;;
 	-h | --help) usage; exit 0 ;;
 	--) shift; [ $# -gt 0 ] && { set_src "$1"; shift; } ;;
@@ -220,8 +223,16 @@ EOF
 		;;
 	failed_quota)
 		cat >&2 <<'EOF'
-⚠️ 二審失敗：看起來是額度／頻率限制（不是沒裝、也不是沒登入）。
-   等額度回補後重跑即可；或用 --model 換小一點的模型、或設 AI_REVIEW_CMD 換後端。
+⚠️ 二審失敗：看起來是額度／頻率或方案限制（不是沒裝、也不是沒登入）。
+
+   三種可能，處理方式不同：
+     1) 額度暫時用完 → 等額度回補後重跑。
+     2) 你的方案不含後端**預設**的那個模型 → 用 --model 指定你的方案有的模型。
+        （本工具刻意不釘死模型：釘了會過期，也猜不到你的方案有什麼。）
+     3) 這個後端在你的帳號上就是跑不動 → 設 AI_REVIEW_CMD 換一個。
+
+   ℹ️ 免費方案的可用模型與額度，官方文件未逐項載明 —— 撞牆不代表你設定錯了。
+   ℹ️ 不希望這種失敗影響退出碼（例如包在 set -e 的流程裡）→ 加 --soft-fail。
 EOF
 		;;
 	failed_network)
@@ -264,7 +275,9 @@ emit_status_and_exit() {
 	case "$1" in
 	ok) exit 0 ;;
 	skipped_*) [ "$STRICT" -eq 1 ] && exit 3; exit 0 ;;
-	*) exit 2 ;;
+	# --soft-fail：連「後端拿不到意見」也不讓它影響退出碼。給「二審是加分項、
+	# 絕不能擋住主流程」的呼叫端用（狀態字串仍在 stdout，資訊沒有被抹掉）。
+	*) [ "$SOFT" -eq 1 ] && exit 0; exit 2 ;;
 	esac
 }
 
