@@ -206,10 +206,15 @@ dropoff 篩目標專案候選（新鮮＝7 天內活躍）的三種情況，逐�
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-review/scripts/ai-review.sh; done
 ```
 
-再以每個 shell 各跑一次完整行為矩陣（狀態分類 ×7、未安裝、`--strict`、可插拔後端 ×2、
-呼叫鏈、路徑含空白、落檔目錄不可寫、stdin、用法錯誤 ×2，加 E-06／E-07／E-09 的回歸）。
-**通過**：語法全過；行為矩陣每個 shell 41/41。
-狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell × 41 項全過。
+行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（40 項，stub 後端不燒額度、
+產出寫暫存區不弄髒目錄、全過回 0 可進 CI）：
+
+```bash
+for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-review/tests/matrix.sh; done
+```
+
+**通過**：語法全過；每個 shell 皆 40/40（缺 `python3`+`pyyaml` 時 39 過 1 略過）。
+狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell 全過；`npx skills add` 後 `tests/` 隨 skill 一起裝出。
 
 ### E-02 🟡 真實後端 ok 路徑
 

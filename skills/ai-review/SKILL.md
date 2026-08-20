@@ -150,7 +150,16 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 `dirname --`／`basename --`／`cp --` 這類**規格沒有硬性保證**的行為。
 真正的依據是下面實測過的組合，不是規格推論。
 
-腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過完整驗收矩陣
+**你可以自己驗一次，別只信這段文字**：
+
+```bash
+sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 shell 跑受測腳本
+```
+
+40 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
+跑完自動清掉），全過回 exit 0，可直接放進 CI。缺 `python3`+`pyyaml` 時只會略過其中一項。
+
+腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過這份矩陣
 （狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
 路徑含空白、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
 並以真實 Codex CLI 驗過 `ok` 路徑。
