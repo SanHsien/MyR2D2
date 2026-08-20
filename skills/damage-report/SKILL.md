@@ -90,7 +90,8 @@ description: '「開發／優化／修 bug／研究查證」類任務收尾的�
 若環境裡有 [`ai-review`](../ai-review/SKILL.md)，把順序改成：
 
 1. 先寫五問**草稿**（不是最終回報）。
-2. 連同產出物送二審：`ai-review.sh <產出物> --rubric code|copy|research --context "<要解什麼>"`。
+2. 連同產出物送二審 —— **用完整路徑呼叫**，別打裸命令名：
+   `<ai-review skill 目錄>/scripts/ai-review.sh <產出物> --rubric code|copy|research --context "<要解什麼>"`
 3. 看回傳的最後一行 `AI_REVIEW_STATUS:` ——
    `ok` 就把意見**消化進**五問（哪幾條採納、哪幾條不採納與理由），
    `skipped_*`／`failed_*` 就在回報裡**明講「本次僅自審」**。

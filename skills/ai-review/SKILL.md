@@ -35,6 +35,10 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
    ```
 
    常用選項：`--model`／`--effort low|medium|high`／`--strict`／`--soft-fail`／`--no-save`。
+
+   ⚠️ **一律用完整路徑呼叫，不要打裸的 `ai-review`** —— `ai-review` 是個很容易撞名的名字，
+   你的 `PATH` 上可能已經有另一支同名執行檔（別的工具、你自己寫的、或這支 skill 的私人變體）。
+   打裸命令名會叫到那一支，而且它可能**看起來也在做二審**，你不會發現叫錯了。
 4. **看狀態**：stdout 最後一行一定是 `AI_REVIEW_STATUS: <狀態>`。
    - `ok` → 進第 5 步。
    - `skipped_*` → **本次沒有二審**（沒裝／沒登入）；腳本已在畫面上印好逐步引導，
