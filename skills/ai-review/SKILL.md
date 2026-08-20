@@ -86,7 +86,9 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
 不保證開箱即用。
 
 ⚠️ **狀態分類是比對後端 stderr 文字的啟發式，不是後端官方保證的介面** ——
-CLI 升版就可能失準。所以失敗時後端的 **stderr 與 stdout 都照印**，別只信標籤。
+CLI 升版就可能失準。所以失敗時後端的 stderr 與 stdout **各印尾 20 行**，別只信標籤。
+⚠️ 那是尾段不是全文（原因若在開頭會被截掉），而且後端回顯可能含 token 或你送審的片段 ——
+別把它無腦貼進公開的 CI log。
 「沒裝」與「沒登入」刻意分成兩種：新手最常卡在第二種，而若訊息說「找不到 codex」，
 他會再裝一次然後更困惑。
 
@@ -132,8 +134,9 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 （後端回**非零**時不受此限：stderr 與 stdout 都會納入分類並照印。）
 另外兩個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`）、
 `AI_REVIEW_RUBRICS`（自訂 rubric 目錄）。
-⚠️ 落檔會把**送審內容的審閱結果**留在磁碟上，權限跟著你的 `umask` 走 ——
-`.gitignore` 只擋 git，不擋本機其他工具讀它。不想留就加 `--no-save`。
+⚠️ 落檔會把**送審內容的審閱結果**留在磁碟上。檔案以 `600` 建立（只有你讀得到），
+但目錄本身仍受你的 `umask` 影響，而且 `.gitignore` 只擋 git、不擋本機其他工具。
+不想留就加 `--no-save`。
 
 ## 進階：自己的 rubric
 
