@@ -15,6 +15,10 @@
 
 set -u
 
+# 環境隔離：外層 shell 若 export 過這幾個變數（例如平常就把 AI_REVIEW_CMD 指到自己的後端），
+# 會污染下面所有「乾淨環境」情境——實測過會造成 17 項假紅。測試自己要先把環境清乾淨。
+unset AI_REVIEW_CMD AI_REVIEW_DIR AI_REVIEW_RUBRICS
+
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1
 S="${AI_REVIEW_SH:-$DIR/../scripts/ai-review.sh}"
 SH="${SH:-/bin/sh}"
@@ -120,6 +124,22 @@ if [ "$CRC" -eq 0 ] && printf '%s' "$CHAIN" | grep -q UPSTREAM_ALIVE; then
 	ok_ "set -e + \$(…) 下上層存活"
 else
 	no_ "set -e + \$(…) 下上層存活（rc=$CRC）"
+fi
+# 負對照組：真失敗（429、未帶 --soft-fail）必須讓 set -e 的上層確實中斷——
+# 與上面的正面案例成對，證明「該停的時候真的會停」，不是腳本永遠回 0。
+mkstub 1 "stream error: 429 Too Many Requests (rate limit exceeded)"
+cat >"$W/chain2.sh" <<EOF
+#!/bin/sh
+set -e
+R=\$(env PATH="$STUB:/usr/bin:/bin" $SH "$S" "$W/sample.py" --rubric code 2>/dev/null)
+echo SHOULD_NOT_REACH
+EOF
+chmod +x "$W/chain2.sh"
+CHAIN2=$("$W/chain2.sh" 2>&1); CRC2=$?
+if [ "$CRC2" -ne 0 ] && ! printf '%s' "$CHAIN2" | grep -q SHOULD_NOT_REACH; then
+	ok_ "負對照：真失敗在 set -e 下確實中斷上層"
+else
+	no_ "負對照：真失敗沒有中斷上層（rc=$CRC2）"
 fi
 
 echo "-- E. 環境邊界 --"

@@ -156,8 +156,10 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 shell 跑受測腳本
 ```
 
-40 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
+41 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
 跑完自動清掉），全過回 exit 0，可直接放進 CI。缺 `python3`+`pyyaml` 時只會略過其中一項。
+矩陣開頭會自動 `unset` 外層可能 export 過的 `AI_REVIEW_CMD` 等變數——你平常把後端指到別處
+也不會污染測試結果。
 
 腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過這份矩陣
 （狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、

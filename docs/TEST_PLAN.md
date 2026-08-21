@@ -212,15 +212,15 @@ dropoff 篩目標專案候選（新鮮＝7 天內活躍）的三種情況，逐�
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-review/scripts/ai-review.sh; done
 ```
 
-行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（40 項，stub 後端不燒額度、
-產出寫暫存區不弄髒目錄、全過回 0 可進 CI）：
+行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（41 項，stub 後端不燒額度、
+產出寫暫存區不弄髒目錄、開頭自動 `unset` 外部 `AI_REVIEW_*` 變數以隔離環境、全過回 0 可進 CI）：
 
 ```bash
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-review/tests/matrix.sh; done
 ```
 
-**通過**：語法全過；每個 shell 皆 40/40（缺 `python3`+`pyyaml` 時 39 過 1 略過）。
-狀態（2026-08-20）：✅ 已實測，macOS 27 上 5 shell 全過；`npx skills add` 後 `tests/` 隨 skill 一起裝出。
+**通過**：語法全過；每個 shell 皆 41/41（缺 `python3`+`pyyaml` 時 40 過 1 略過）。
+狀態（2026-08-21）：✅ 已實測，macOS 27 上 5 shell 皆 41/41；外部 `export AI_REVIEW_CMD` 污染下結果不變（隔離生效）；`npx skills add` 後 `tests/` 隨 skill 一起裝出（2026-08-20 驗）。
 
 ### E-02 🟡 真實後端 ok 路徑
 
