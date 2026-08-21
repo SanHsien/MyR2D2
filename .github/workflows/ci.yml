@@ -1,0 +1,110 @@
+# MyR2D2 CI — 發布關卡的機械部分(對應 docs/TEST_PLAN.md A 段;REG-03 安裝煙霧與發現層抽驗仍人工)
+# 存在理由:v0.1.1 帶著 5 支無效 YAML 上線三天無人發現。這裡擋的是同型事故。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安裝依賴(多 shell + pyyaml;用 apt 避開 pip externally-managed 問題)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq zsh ksh dash python3-yaml
+
+      - name: REG-01 YAML frontmatter 雙 parser(python+ruby,各含陽性對照)
+        run: |
+          python3 - <<'PY'
+          import yaml, glob, re, sys
+          fails = 0
+          files = sorted(glob.glob('skills/*/SKILL.md'))
+          if len(files) != 10:
+              print(f'FAIL skill 數量 {len(files)} != 10(新增/刪除 skill 要同步改這裡與 README 計數)')
+              fails += 1
+          for f in files:
+              m = re.match(r'^---\n(.*?)\n---\n', open(f, encoding='utf-8').read(), re.S)
+              try:
+                  print('OK  ', f, list(yaml.safe_load(m.group(1)).keys()))
+              except Exception as e:
+                  print('FAIL', f, type(e).__name__)
+                  fails += 1
+          # 陽性對照:驗證器必須抓得到壞 YAML,否則上面全是空轉(v0.1.1 教訓)
+          try:
+              yaml.safe_load('description: bad: colon')
+              print('FAIL 陽性對照:parser 吞下了壞 YAML')
+              fails += 1
+          except yaml.YAMLError:
+              print('OK   陽性對照(壞 YAML 被拒)')
+          sys.exit(1 if fails else 0)
+          PY
+          ruby - <<'RB'
+          # encoding: utf-8
+          require 'psych'
+          fails = 0
+          Dir.glob('skills/*/SKILL.md').sort.each do |f|
+            m = File.read(f, encoding: 'utf-8').match(/\A---\n(.*?)\n---\n/m)
+            begin
+              Psych.safe_load(m[1])
+              puts "OK   #{f}"
+            rescue Psych::SyntaxError => e
+              puts "FAIL #{f} #{e.class}"
+              fails += 1
+            end
+          end
+          begin
+            Psych.safe_load('description: bad: colon')
+            puts 'FAIL 陽性對照:Psych 吞下了壞 YAML'
+            fails += 1
+          rescue Psych::SyntaxError
+            puts 'OK   陽性對照(壞 YAML 被拒)'
+          end
+          exit(fails.zero? ? 0 : 1)
+          RB
+
+      - name: REG-02 agentskills.io 官方 validator
+        run: |
+          for d in skills/*/; do
+            npx --yes skills-ref validate "$d" || exit 1
+          done
+
+      - name: 公開內容守門 grep(鐵則1 泛型版)
+        run: |
+          # 白名單三類,逐條對應 repo 已宣告的預期命中(CLAUDE.md 鐵則1「已知的預期命中」節):
+          # 1. CLAUDE.md 整檔 —— 它是規則書,表格裡示範「私人寫法長什麼樣」必然含 pattern 字面
+          # 2. 「Notion、Linear」「Notion, Linear」—— README/dropoff/pickup「接上你自己的任務系統」
+          #    對第三方產品的通用舉例
+          # 3. 「Notion 上傳/Telegram/Slack」—— daily-debrief 的 JOURNAL_POST_CMD 通用舉例
+          # 白名單只准這樣逐字面收窄,不准整檔排除 README/skills(會蓋掉未來的真外洩)。
+          HITS=$(git grep -inE "/Users/|~/(Documents|ClaudeProjects)/|Notion|telegram" -- ':!CLAUDE.md' \
+            | grep -vF 'Notion、Linear' \
+            | grep -vF 'Notion, Linear' \
+            | grep -vF 'Notion 上傳/Telegram/Slack' || true)
+          if [ -n "$HITS" ]; then
+            echo "守門 grep 有白名單外的命中:"
+            echo "$HITS"
+            exit 1
+          fi
+          echo "OK 守門 grep 無新命中"
+
+      - name: README 雙語行數對齊
+        run: |
+          test "$(wc -l < README.md)" -eq "$(wc -l < README.en.md)" \
+            || { echo "FAIL README.md 與 README.en.md 行數不等"; exit 1; }
+          echo "OK $(wc -l < README.md) 行對齊"
+
+      - name: ai-review 行為矩陣(5 shell × 41 項)
+        run: |
+          for s in sh dash bash ksh zsh; do
+            echo "== $s =="
+            SH=$s sh skills/ai-review/tests/matrix.sh || exit 1
+          done
+
+      - name: mission-log harvest 測試(含 LC_ALL=C 變體)
+        run: |
+          python3 skills/mission-log/tests/harvest_test.py
+          LC_ALL=C python3 skills/mission-log/tests/harvest_test.py
