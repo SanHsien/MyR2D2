@@ -109,10 +109,10 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 
 ### 行文慣例
 
-- **全形標點**（，。、：「」（））＋半形反引號包指令。私人版用半形，公開版用全形，別混
+- **標點**：敘事／文稿類內容用全形（，。、：「」（））；指令／log／程式導向的 skill（如日誌三支）可用半形。判準＝內容性質；單檔內部一致即可。既有檔不回溯改。反引號一律半形包指令
 - 步驟**預設用 markdown 有序清單**（`1. 2. 3.`）掛在 `## 動作`／`## 步驟` 底下（`dropoff`、`pickup`、`flight-to-calendar` 都是）。只有步驟多到需要拆前置動作、或想讓每步能被單獨引用時，才升級成 H3 依序編號並從 `### 0.` 開始（目前只有 `save-all`）
 - 子項目用圈碼 ①②③④⑤，後續步驟用同一組圈碼回頭對應，不重打項目名
-- emoji 語意固定：⚠️ 風險／🚫 禁止／✅ 完成條件／🔁 重複性規則／📝 紀律／🔴 絕對規則／🤖 彩蛋
+- emoji 語意固定：⚠️ 風險／🚫 禁止／✅ 完成條件／🔁 重複性規則／📝 紀律／🔴 絕對規則／🔒 資料界線／安全／🤖 彩蛋
 - **「驗證優先於宣告」是全 repo 的主題句**：凡是寫入動作，一律配上具體驗證指令（`wc -l`／`stat`／`grep`／`cat` 回讀）＋明講「別信工具回的『成功』字面」
 - 零依賴優先：預設不綁任何外部服務；要接外部系統寫進「進階」節，並註明「檔案版是零依賴的最小公倍數，不是天花板」
 
@@ -132,13 +132,13 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | `README.md` `## 安裝` 末句「裝完打…」 | L86 | 逐一點名可觸發的斜線命令 |
 | `README.md` `## 更新` | L88–96 | `npx skills update`／plugin 更新法／Watch Releases 通知 |
 | `README.md` `## 相容性矩陣` | L98–108＋註記 L110–113 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 trusted-folder、日誌三支資料來源、門鈴註³、ai-review 後端註⁴、未實測範圍註記 |
-| `README.md` `## 各 skill 的依賴` | L121–134 | 依賴表（日誌三支的相依關係、門鈴選用增強、ai-review 的後端需求在此宣告） |
+| `README.md` `## 各 skill 的依賴` | L121–134 | 依賴表（日誌三支的相依關係、門鈴選用增強、ai-review 的後端需求在此宣告；ai-review 格含**測項數**——測試計數一變這裡也要動） |
 | `README.md` `## Repo 結構` tree | L145–160 | skill 目錄名＋「10 支 skill」計數＋`prompts/`／`docs/` 列 |
 | `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 170 行**，改完要複驗仍對齊） |
 | `prompts/<skill>.md`＋`.en.md` | — | **免安裝簡版**（規則類 skill 適用，damage-report 首例）：skill 的五問／規則本體一改，簡版兩檔要同步改寫，別讓簡版變舊版 |
 | `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
 | `docs/TEST_PLAN.md` D 段 | C 段之前 | 交接門鈴測項 D-01～06——dropoff/pickup 的門鈴行為一改要同步 |
-| `docs/TEST_PLAN.md` E 段＋`docs/AI_REVIEW_SOURCES.md` | D 段之後 | ai-review 測項 E-01～05 與**外部前提的查證原文**（方案涵蓋、安裝／登入指令）——腳本行為或引導文字一改要同步；查證超過兩週視為過期 |
+| `docs/TEST_PLAN.md` E 段＋`docs/AI_REVIEW_SOURCES.md` | D 段之後 | ai-review 測項 E-01～09 與**外部前提的查證原文**（方案涵蓋、安裝／登入指令）——腳本行為或引導文字一改要同步；查證超過兩週視為過期 |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |
 | `adapters/openai/README.md` 可移植性總表 | L12–17 | 四列對應四組 skill |
@@ -156,13 +156,14 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 
 - **版號單一權威來源＝`.claude-plugin/plugin.json` 的 `version`。** `marketplace.json` 不重複記版號、SKILL.md 不加 per-skill version。
 - **無 CHANGELOG.md** —— release note 只活在 tag 訊息與 commit body 裡。要新增 changelog 是新慣例，不是延續現狀，先問過作者。
+- **release 一天最多一個**：高頻迭代期間照常 commit／push，對外以彙總版發布，不逐 commit 打版。
 - 發布流程：
-  0. **先跑 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) A 段回歸**（至少 REG-01 雙 parser 驗證＋REG-03 安裝煙霧測試），全綠才進下一步。這道關卡防的缺陷影響**所有** npx-skills 下游 agent（v0.1.1 事故對 gemini-cli／codex 同樣 0/5 全滅），不只 Claude Code——別再把影響半徑寫窄。
+  0. **CI 綠燈（見 `.github/workflows/ci.yml`）為必要條件**；REG-03 安裝煙霧與發現層抽驗仍人工。本地先跑 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) A 段回歸，全綠才進下一步。這道關卡防的缺陷影響**所有** npx-skills 下游 agent（v0.1.1 事故對 gemini-cli／codex 同樣 0/5 全滅），不只 Claude Code——別再把影響半徑寫窄。
   1. bump `plugin.json` 的 `version`，**與該版所有內容改動放同一個 commit**（不要「先改內容、後補版號」）
   2. commit message＝`vX.Y.Z: <繁中一句話摘要>`，內文條列改了什麼
   3. 手動建 annotated tag：`git tag -a vX.Y.Z -m "<發布公告文字>"` —— tag 訊息是**獨立撰寫的公告，不抄 commit message**
   4. `git push origin main --tags`
-- 無 CI／GitHub Actions。**每版建 GitHub Release**（`gh release create vX.Y.Z`，內文＝雙語更新留言；v0.1.1 起三版皆有，2026-08-07 定為慣例）。
+- CI＝GitHub Actions（2026-08 起）；Release 仍手動。**每版建 GitHub Release**（`gh release create vX.Y.Z`，內文＝雙語更新留言；v0.1.1 起三版皆有，2026-08-07 定為慣例）。
 
 🔴 **commit message 與 tag 訊息也要過鐵則 1** —— 它們是本 repo 唯一的 release note 載體，會原樣推上公開 GitHub，但**不在守門 grep 的掃描範圍內**（那條指令掃的是檔案樹，讀不到還沒執行的 `git commit -m`／`git tag -a -m` 參數）。動筆寫這兩處前，自己照去識別化表過一遍，別指望指令幫你擋。
 
