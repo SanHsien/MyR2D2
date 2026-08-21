@@ -124,11 +124,11 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
 | dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/`; the instant doorbell is an optional enhancement (Claude Code v2.1.224+), auto-skipped where unavailable |
-| mission-log | None — the harvester is a stdlib-only python3 script, zero tokens |
+| mission-log | None — the harvester is a stdlib-only python3 script, zero tokens. Ships tests (`tests/harvest_test.py`, synthetic fixtures — never reads your real data) |
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
 | damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
-| ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. No extra packages: no npm module, no brew formula, no API key of your own. Ships 40 regression tests (`tests/matrix.sh`, no quota burned) |
+| ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. No extra packages: no npm module, no brew formula, no API key of your own. Ships 41 regression tests (`tests/matrix.sh`, no quota burned) |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
