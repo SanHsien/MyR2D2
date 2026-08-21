@@ -14,6 +14,32 @@
 
 ## A. 發布前回歸（每次 release tag 前必跑，全綠才可 push）
 
+> **一鍵版**（與 CI `.github/workflows/ci.yml` 等價的機械關卡；兩邊漂移時以 ci.yml 為準）：
+>
+> ```bash
+> set -e
+> python3 - <<'PY'
+> import yaml, glob, re, sys
+> fails = 0
+> files = sorted(glob.glob('skills/*/SKILL.md'))
+> assert len(files) == 10, f'skill 數 {len(files)} != 10'
+> for f in files:
+>     m = re.match(r'^---\n(.*?)\n---\n', open(f, encoding='utf-8').read(), re.S)
+>     try: yaml.safe_load(m.group(1))
+>     except Exception as e: print('FAIL', f, type(e).__name__); fails += 1
+> try:
+>     yaml.safe_load('description: bad: colon'); print('FAIL 陽性對照'); fails += 1
+> except yaml.YAMLError: pass
+> sys.exit(1 if fails else 0)
+> PY
+> for d in skills/*/; do npx --yes skills-ref validate "$d"; done
+> # 守門 grep：照 CLAUDE.md 鐵則 1 那條跑（CI 版含白名單，見 ci.yml 第 3 步；不在此重抄一份）
+> test "$(wc -l < README.md)" -eq "$(wc -l < README.en.md)"
+> for s in sh dash bash ksh zsh; do SH=$s sh skills/ai-review/tests/matrix.sh; done
+> python3 skills/mission-log/tests/harvest_test.py
+> LC_ALL=C python3 skills/mission-log/tests/harvest_test.py
+> ```
+
 ### REG-01 🟢 YAML frontmatter 雙 parser 驗證
 
 ```bash
@@ -319,7 +345,8 @@ skill 層三項行為皆正確、damage-report 整合節可達）。
 >（編號跳序＝歷史演進痕跡，刻意保留：E-05 性質是收尾總查，物理位置固定在 E-09 之後，編號不重排。）
 
 **通過**：README 宣稱支援的平台與帳號方案都實跑過。
-狀態（2026-08-20）：❌ **Linux／Windows 未實測**；❌ **免費方案帳號未實測** ——
+狀態（2026-08-21）：✅ **Linux 經 CI（ubuntu-latest）**——矩陣 5 shell × 41 項與 harvest 測試隨每次 push 實跑；
+❌ **Windows 未實測**；❌ **免費方案帳號未實測** ——
 官方用量限制表不含免費方案（見 `AI_REVIEW_SOURCES.md`），因此無法宣稱免費帳號開箱即用。
 README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
 
