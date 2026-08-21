@@ -15,4 +15,6 @@ After finishing any build / bug-fix / research task, run this self-check **befor
 
 【② What could be improved】Max 2–3 concrete items; **write "none" if nothing real — never pad**.
 
+【Advanced】If a cross-model review tool (e.g. ai-review) is available, send the five-question draft to another model before finalizing; otherwise state "self-review only".
+
 Rule: the self-check runs before the summary, not after.

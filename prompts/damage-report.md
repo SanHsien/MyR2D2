@@ -1,13 +1,13 @@
 # damage-report 簡版 prompt（免安裝，貼上就能用）
 
-> 給只用網頁版 Chat 的人：把 `---` 以下整段（1,752 字元）貼進**對話開頭**或平台的常駐指令欄，之後每次任務收尾它就會自動跑。完整版（含設計說明）見 [skills/damage-report/](../skills/damage-report/SKILL.md)；窄欄位用 [極簡版](damage-report.lite.md)（1,051 字元）。
+> 給只用網頁版 Chat 的人：把 `---` 以下整段（781 字元）貼進**對話開頭**或平台的常駐指令欄，之後每次任務收尾它就會自動跑。完整版（含設計說明）見 [skills/damage-report/](../skills/damage-report/SKILL.md)；更窄的欄位、或想省注意力預算的場合用 [極簡版](damage-report.lite.md)（453 字元）。
 >
-> **各平台貼哪裡**（2026-08-08 查證；上限以貼入當下介面實測為準，多數平台官方未載明數字）：
+> **各平台貼哪裡**（2026-08-08 查證，ChatGPT 上限 2026-08-21 複驗未變；上限以貼入當下介面實測為準，多數平台官方未載明數字）：
 >
 > | 平台 | 常駐位置 | 放得下嗎 |
 > |---|---|---|
 > | Claude.ai | Settings → Instructions for Claude；或 Project instructions（僅該專案） | 官方未載明上限，實測為準 |
-> | ChatGPT | Settings → Personalization → Custom Instructions | **付費 5,000 ✅／Free 1,500 ❌ → 用極簡版或 Projects**（官方數字） |
+> | ChatGPT | Settings → Personalization → Custom Instructions | **付費 5,000 ✅／Free 1,500，本版 781 字元放得下 ✅**（官方數字） |
 > | Gemini | Settings → Saved Info（⚠️ **Gems 不吃 Saved Info**，Gem 要另貼進它自己的 instructions 欄） | 官方未載明，實測為準 |
 > | Perplexity | Space／Project 的 Instructions 欄 | 約 8,000（非官方保證）✅ |
 > | Grok | Settings → Personalization → Custom Instructions | 無官方數字，實測為準 |
@@ -35,5 +35,7 @@
 5. 結論落地了嗎？要人決策的，收斂成編號選項，不是散文。
 
 【② 還能怎麼優化】最多 2–3 條、具體可執行、標值不值得現在做；**沒有就寫「無」——禁止為了有產出而發明建議**。
+
+【進階】自審的判準是自己定的，推理自洽就過關。若環境裡有跨模型二審工具（如 MyR2D2 的 ai-review），五問先寫成**草稿**、連同產出物送另一個模型審，消化意見（採納哪幾條、不採納的理由）再寫最終回報；二審沒得用或沒跑成，就在回報裡明講「本次僅自審」。
 
 規則：自檢在寫總結之前跑，不是寫完再補；混合任務兩組都掃、重疊的答一次。

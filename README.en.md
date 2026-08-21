@@ -77,7 +77,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### Chat-only? No-install lite prompts
 
-No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a ≤1,500-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free) and `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review).
+No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a 1,260-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free) and `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review).
 
 ### Cowork / claude.ai
 
