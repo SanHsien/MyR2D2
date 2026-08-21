@@ -23,33 +23,46 @@ MyR2D2 就是這個定位 —— 10 支 skills，管的都是「不做不會死�
 | **token-optimizer** | 多代理派工前的節流鐵則：模型分層、壓縮上報、失敗三次就停 | 能源分配，別讓護盾吃光動力 |
 | **flight-to-calendar** | 航班上 Google Calendar：跨時區不出錯、轉機拆段、夕陽座位 | astromech 本職：導航 |
 
-## 一組 skill、兩種語言習慣
+## 這套東西怎麼開發的
 
-Skill 本體是繁體中文（單一真相，不維護平行翻譯版）;**觸發詞中英各一組對應**，寫在每支 skill 的 description 裡:
+Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全部蒸發。這套 skills 的共同主題就是對抗失憶——上表每一支，管的都是失憶鏈上的一段。全部是在真實日常使用中踩坑迭代出來的，不是理論設計。
 
-- 中文習慣：「要重開機了」「交接給 X」「有沒有交接給我的」
-- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
+開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，41 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，每一版修了什麼見 [Releases](https://github.com/tingyulu/MyR2D2/releases)。
 
-Claude 讀繁中指令、照樣用你的對話語言回覆 —— 英文使用者的體驗不打折，而 skill 永遠只有一份要維護。
+## 相容性矩陣
 
-## 為什麼需要這套？
+先看這張表，確認你的工具能用哪幾支：
 
-Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全部蒸發。這套 skills 的共同主題就是對抗失憶:
+| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT（僅手動貼入） |
+|---|---|---|---|---|---|
+| save-all | ✅ | ✅（token 統計步自動跳過） | ✅\*（同左） | ✅\*（token 統計步刪掉） | ⚠️ 僅檢查清單 |
+| dropoff / pickup³ | ✅ | ✅ | ✅\* | ✅\* | ❌（無共用磁碟） |
+| mission-log / daily-debrief / weekly-debrief | ✅ | ❌（無本機 transcript） | ❌² | ❌² | ❌² |
+| damage-report | ✅ | ✅（規則類，零工具依賴） | ✅（規則類） | ✅（規則類） | ⚠️ 貼入當收尾檢查清單 |
+| ai-review | ✅（需二審後端⁴） | ⚠️ 規則可用、腳本要能跑 shell | ⚠️ 同左 | ⚠️ 同左 | ⚠️ 改用 prompts/ 貼進另一個 AI |
+| token-optimizer | ✅ | ✅（規則類，無工具依賴） | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ |
+| flight-to-calendar | ✅（需 Calendar connector） | ✅（需 Calendar connector） | ⚠️ 需自備 Calendar MCP（未實測） | ❌ 無 Calendar 工具 | ⚠️ 需自備 Action |
 
-- `save-all` 管「關掉之前」— in-flight 狀態外部化，而且**驗證真的落地**（寫入會靜默失敗，別信「成功」字面）。
-- `dropoff` / `pickup` 管「跨過去之後」— 交接卡寫到陌生 session 光看卡就能接手的程度。
-- `mission-log` / `daily-debrief` / `weekly-debrief` 管「更長的時間軸」— transcript 30 天就自動刪除，日結/週結把價值在蒸發前收斂成可長存的記錄。
-- `damage-report` 管「收尾那一刻」— 「改完能跑」不等於「做對了」，五問攔下假完成／假驗證／安靜失敗。
-- `ai-review` 管「自己審自己的上限」— 同一個模型再檢查一次，只會確認它本來就相信的事；換一個模型家族才抓得到你的盲區。
-- `token-optimizer` 管另一種資源：訂閱制的**用量配額**。多代理 fan-out 漏指定模型，配額瞬間蒸發。
+\* ＝安裝／發現層實測，執行層為規則推論（見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) CROSS-05）。
+¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
+² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
+³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
+⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。腳本已在 macOS 的 `sh`／`dash`／`bash`／`ksh`／`zsh` 實測，Linux 由 CI（ubuntu-latest）每次 push 實跑；**Windows 與免費方案帳號仍未實測**。
 
-以上全部是在真實日常使用中踩坑迭代出來的，不是理論設計。
+- **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
+- **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
+- Cursor／Copilot 等其他 `npx skills` 目標：未實測。
+
+ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入、三個坑）見 **[adapters/openai/](adapters/openai/README.md)**。
 
 ## 安裝
+
+**怎麼選**：CLI 使用者 → npx 或 Plugin｜想手動控制 → 手動複製｜只用網頁版 Chat → 免安裝簡版｜claude.ai Cowork → 最後一段。
 
 ### skills.sh（`npx skills`）——推薦，一行裝完
 
 [![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) [![CI](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml)
+（skills.sh badge 的數字＝累計安裝次數，不是 skill 支數。）
 
 ```bash
 npx skills add tingyulu/MyR2D2
@@ -81,7 +94,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### Cowork / claude.ai
 
-把要用的 skill 資料夾（`skills/<名稱>/`）加進你的 Cowork 專案 skills（或專案目錄的 `.claude/skills/`）。
+先照「手動複製」段 `git clone`（或 GitHub 網頁 **Code → Download ZIP**）取得 repo，再把要用的 skill 資料夾（`skills/<名稱>/`）加進你的 Cowork 專案 skills（或專案目錄的 `.claude/skills/`）。
 
 裝完打 `/save-all`、`/dropoff`、`/pickup`、`/daily-debrief`、`/damage-report`、`/ai-review` 等即可觸發，或用上面任一語言的自然語句。
 
@@ -95,28 +108,14 @@ npx skills update
 
 一行更新所有已裝 skill（來源記在安裝時的 lock 檔；`-g`／`-p` 限定全域／專案層）。Plugin 路徑裝的改用 `/plugin` 介面更新 marketplace。想在新版發布時收到通知：GitHub 上對本 repo **Watch → Custom → Releases**。
 
-## 相容性矩陣
+## 一組 skill、兩種語言習慣
 
-| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT（僅手動貼入） |
-|---|---|---|---|---|---|
-| save-all | ✅ | ✅（token 統計步自動跳過） | ✅（同左） | ✅（token 統計步刪掉） | ⚠️ 僅檢查清單 |
-| dropoff / pickup³ | ✅ | ✅ | ✅ | ✅ | ❌（無共用磁碟） |
-| mission-log / daily-debrief / weekly-debrief | ✅ | ❌（無本機 transcript） | ❌² | ❌² | ❌² |
-| damage-report | ✅ | ✅（規則類，零工具依賴） | ✅（規則類） | ✅（規則類） | ⚠️ 貼入當收尾檢查清單 |
-| ai-review | ✅（需二審後端⁴） | ⚠️ 規則可用、腳本要能跑 shell | ⚠️ 同左 | ⚠️ 同左 | ⚠️ 改用 prompts/ 貼進另一個 AI |
-| token-optimizer | ✅ | ✅（規則類，無工具依賴） | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ | ⚠️ 原則通用¹ |
-| flight-to-calendar | ✅（需 Calendar connector） | ✅（需 Calendar connector） | ⚠️ 需自備 Calendar MCP（未實測） | ❌ 無 Calendar 工具 | ⚠️ 需自備 Action |
+Skill 本體是繁體中文（單一真相，不維護平行翻譯版）;**觸發詞中英各一組對應**，寫在每支 skill 的 description 裡:
 
-¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
-² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
-³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
-⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。腳本已在 macOS 的 `sh`／`dash`／`bash`／`ksh`／`zsh` 實測，Linux 由 CI（ubuntu-latest）每次 push 實跑；**Windows 與免費方案帳號仍未實測**。
+- 中文習慣：「要重開機了」「交接給 X」「有沒有交接給我的」
+- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
 
-- **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
-- **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
-- Cursor／Copilot 等其他 `npx skills` 目標：未實測。
-
-ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入、三個坑）見 **[adapters/openai/](adapters/openai/README.md)**。
+Claude 讀繁中指令、照樣用你的對話語言回覆 —— 英文使用者的體驗不打折，而 skill 永遠只有一份要維護。
 
 ## 各 skill 的依賴
 
@@ -129,7 +128,7 @@ ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入�
 | weekly-debrief | **需一併安裝 daily-debrief 與 mission-log**（缺日結會自動補生成） |
 | damage-report | 無（純規則;第 5 問提到的 `/dropoff`、進階節的 `ai-review` 都是選用交叉引用） |
 | ai-review | **二審後端**(預設 Codex CLI;`AI_REVIEW_CMD` 可換任何讀 stdin／吐 stdout 的命令)＋POSIX shell。無額外套件依賴:不需 npm 套件、brew formula 或自備 API key。附 41 項回歸測試(`tests/matrix.sh`,不燒額度) |
-| token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境;§1「進階兜底」僅 Claude Code CLI 生效） |
+| token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境——Workflow＝Claude Code 的多代理編排功能;§1「進階兜底」僅 Claude Code CLI 生效） |
 | flight-to-calendar | **Google Calendar MCP connector**（硬依賴） |
 
 dropoff/pickup 預設是零依賴的檔案版；如果你有自己的任務系統(CLI todo、Notion、Linear…),SKILL.md 內附「接上你自己的任務系統」的替換說明。
@@ -147,6 +146,7 @@ dropoff/pickup 預設是零依賴的檔案版；如果你有自己的任務系�
 ```
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json(單一 plugin)
+├── .github/workflows/                 ← CI(YAML 驗證、守門 grep、行為矩陣、harvest 測試)
 ├── skills/                            ← 10 支 skill(繁中本體、雙語觸發)
 │   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/

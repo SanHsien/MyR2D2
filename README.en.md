@@ -23,33 +23,46 @@ That's MyR2D2's job description — 10 skills covering things that "won't kill y
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
 
-## One skill set, two language habits
+## How this pack gets built
 
-The skill bodies are written in Traditional Chinese (single source of truth — no parallel translations to maintain). **Trigger phrases come in matched zh/en pairs** in each skill's description:
+Claude sessions are **amnesiac**: close the conversation and everything not written to disk evaporates. The common theme here is fighting that amnesia — every skill in the table covers one link of the amnesia chain. All of it was iterated out of real daily-driver usage, not theory.
 
-- 中文習慣:「要重開機了」「交接給 X」「有沒有交接給我的」
-- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
+The development process eats the same rules: **before every release, the work goes to a different model family for review** (asking the same model to "check again" mostly re-confirms what it already believed). `ai-review` itself was built this way — three rounds of cross-model review caught 21 defects, 13 of which were introduced by the previous round's own fixes, and 41 regression tests ship in the box. All of it is checkable: method and evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md), per-version fixes in [Releases](https://github.com/tingyulu/MyR2D2/releases).
 
-Claude follows the zh-TW instructions and replies in whatever language you speak — English users lose nothing, and there's only ever one copy of each skill to maintain.
+## Compatibility matrix
 
-## Why this pack?
+Start here — check which skills your tool can run:
 
-Claude sessions are **amnesiac**: close the conversation and everything not written to disk evaporates. The common theme here is fighting that amnesia:
+| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT (manual paste only) |
+|---|---|---|---|---|---|
+| save-all | ✅ | ✅ (token-count step auto-skips) | ✅\* (same) | ✅\* (drop the token-count step) | ⚠️ checklist only |
+| dropoff / pickup³ | ✅ | ✅ | ✅\* | ✅\* | ❌ (no shared disk) |
+| mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
+| damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
+| ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
+| token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
+| flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
 
-- `save-all` covers "before closing" — externalize in-flight state, and **verify it actually landed** (silent write failures are real; never trust a literal "success").
-- `dropoff` / `pickup` cover "after crossing over" — cards written so a stranger session can take over from the card alone.
-- `mission-log` / `daily-debrief` / `weekly-debrief` cover "the longer timeline" — transcripts auto-delete after 30 days; dailies/weeklies condense the value into durable records before it evaporates.
-- `damage-report` covers "the moment you wrap up" — "it runs" is not "it's done"; five questions catch fake-done, fake-verified, and silent failures.
-- `ai-review` covers the ceiling of self-review — asking the same model to "check again" mostly re-confirms what it already believed; a different model family is what catches your blind spots.
-- `token-optimizer` covers the other scarce resource: **usage quota** on subscription plans. One missing model spec in a fan-out and your quota evaporates.
+\* = install/discovery layers verified; execution layer is rules-based inference (see [docs/TEST_PLAN.md](docs/TEST_PLAN.md) CROSS-05).
+¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
+² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
+³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
+⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model (pinned names go stale); if the backend's default model is outside your plan, pass `--model`. Verified on macOS under `sh`/`dash`/`bash`/`ksh`/`zsh`, and on Linux via CI (ubuntu-latest) on every push; **Windows and free-tier accounts remain untested**.
 
-All of these were iterated out of real daily-driver usage, not theory.
+- **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
+- **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
+- Other `npx skills` targets (Cursor, Copilot, …): untested.
+
+Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallback, three gotchas): **[adapters/openai/](adapters/openai/README.md)**.
 
 ## Install
+
+**Pick your lane**: CLI user → npx or Plugin | want manual control → manual copy | chat-only → no-install lite prompts | claude.ai Cowork → last section.
 
 ### skills.sh (`npx skills`) — recommended, one command
 
 [![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) [![CI](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml)
+(The skills.sh badge counts cumulative installs, not the number of skills.)
 
 ```bash
 npx skills add tingyulu/MyR2D2
@@ -81,7 +94,7 @@ No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions f
 
 ### Cowork / claude.ai
 
-Add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
+First get the repo via the manual-copy `git clone` (or **Code → Download ZIP** on the GitHub page), then add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
 Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, `/damage-report`, `/ai-review`, etc., or natural language in either language.
 
@@ -95,28 +108,14 @@ npx skills update
 
 One command updates every installed skill (sources are recorded in the install-time lock file; `-g`/`-p` scopes to global/project). For plugin installs, update the marketplace via the `/plugin` UI. To get notified on new releases: **Watch → Custom → Releases** on this repo.
 
-## Compatibility matrix
+## One skill set, two language habits
 
-| Skill | Claude Code CLI | Cowork / claude.ai | Gemini CLI | Codex CLI | ChatGPT (manual paste only) |
-|---|---|---|---|---|---|
-| save-all | ✅ | ✅ (token-count step auto-skips) | ✅ (same) | ✅ (drop the token-count step) | ⚠️ checklist only |
-| dropoff / pickup³ | ✅ | ✅ | ✅ | ✅ | ❌ (no shared disk) |
-| mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
-| damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
-| ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
-| token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
-| flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
+The skill bodies are written in Traditional Chinese (single source of truth — no parallel translations to maintain). **Trigger phrases come in matched zh/en pairs** in each skill's description:
 
-¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
-² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
-³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
-⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model (pinned names go stale); if the backend's default model is outside your plan, pass `--model`. Verified on macOS under `sh`/`dash`/`bash`/`ksh`/`zsh`, and on Linux via CI (ubuntu-latest) on every push; **Windows and free-tier accounts remain untested**.
+- 中文習慣:「要重開機了」「交接給 X」「有沒有交接給我的」
+- English habit: "about to reboot", "hand this off to X", "anything handed off to me?"
 
-- **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
-- **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
-- Other `npx skills` targets (Cursor, Copilot, …): untested.
-
-Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallback, three gotchas): **[adapters/openai/](adapters/openai/README.md)**.
+Claude follows the zh-TW instructions and replies in whatever language you speak — English users lose nothing, and there's only ever one copy of each skill to maintain.
 
 ## Per-skill dependencies
 
@@ -129,7 +128,7 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
 | damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
 | ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. No extra packages: no npm module, no brew formula, no API key of your own. Ships 41 regression tests (`tests/matrix.sh`, no quota burned) |
-| token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool; §1's advanced backstop is Claude Code CLI-only) |
+| token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool — Workflow is Claude Code's multi-agent orchestration feature; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
 dropoff/pickup default to the zero-dependency file-based version; if you run your own task system (CLI todo, Notion, Linear…), each SKILL.md includes a "plug in your own task system" section.
@@ -147,6 +146,7 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 ```
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
+├── .github/workflows/                 ← CI (YAML validation, content gate, behavior matrix, harvest tests)
 ├── skills/                            ← 10 skills (zh-TW body, bilingual triggers)
 │   ├── save-all/  ├── dropoff/  ├── pickup/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
