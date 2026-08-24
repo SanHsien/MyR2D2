@@ -33,9 +33,11 @@ REQUIRED = (
     "docs/REVIEW.md",
     "docs/UPSTREAM.md",
     "docs/WINDOWS-AI-ENVIRONMENTS.md",
+    "docs/WINDOWS-RUNTIME-EVIDENCE.md",
     "tools/dev_check.ps1",
     "tools/dev_check.sh",
     "tools/windows_agent_smoke.ps1",
+    "tools/windows_runtime_smoke.ps1",
     "tools/upstream_baseline.json",
 )
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -139,6 +141,20 @@ def validate(root: Path) -> list[str]:
         for phrase in ("SanHsien/MyR2D2", "tingyulu/MyR2D2", "gh repo set-default"):
             if phrase not in text:
                 errors.append(f"AGENTS.md is missing boundary: {phrase}")
+
+    runtime_smoke = root / "tools/windows_runtime_smoke.ps1"
+    if runtime_smoke.is_file():
+        runtime_text = runtime_smoke.read_text(encoding="utf-8")
+        for phrase in ("AllowModelUse", "TimeoutSeconds", "Assert-DamageReportDiscovery"):
+            if phrase not in runtime_text:
+                errors.append(f"Windows runtime smoke is missing safety contract: {phrase}")
+
+    runtime_evidence = root / "docs/WINDOWS-RUNTIME-EVIDENCE.md"
+    if runtime_evidence.is_file():
+        evidence_text = runtime_evidence.read_text(encoding="utf-8")
+        for phrase in ("exact repo SHA", "Codex Desktop", "unknown"):
+            if phrase not in evidence_text:
+                errors.append(f"Windows runtime evidence is missing claim boundary: {phrase}")
 
     harvester = root / "skills/mission-log/scripts/harvest.py"
     if harvester.is_file() and "os.uname(" in harvester.read_text(encoding="utf-8"):

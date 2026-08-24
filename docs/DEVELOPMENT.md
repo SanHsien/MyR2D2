@@ -17,7 +17,7 @@ MyR2D2 的產品本體是 Markdown、POSIX shell 與一個標準庫 Python 收�
 pwsh -NoProfile -File tools\dev_check.ps1
 ```
 
-PowerShell gate 會執行 repo contract、upstream checker tests、兩個可用 shell 的 `ai-review` 矩陣、mission-log 測試、skills validator、隔離式 Codex／Claude Code Windows Desktop／TUI／CLI package smoke 與 Git whitespace 檢查。
+PowerShell gate 會執行 repo contract、upstream checker tests、兩個可用 shell 的 `ai-review` 矩陣、mission-log 測試、skills validator、隔離式 Codex／Claude Code package smoke 與 Git whitespace 檢查。它不呼叫模型；需要 release 級 runtime 證據時，另以明確的 `-AllowModelUse` 執行 `tools\windows_runtime_smoke.ps1`。
 
 Git Bash 位於 NTFS 時不具 POSIX mode-bit 語義，因此 `0600` 顯示檢查會明確標成一項平台 skip；其他案例仍須通過。Linux CI 會執行沒有 skip 的完整 5-shell 矩陣。
 
@@ -47,7 +47,7 @@ for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
 
 ## 遠端驗證
 
-推送後以 exact SHA 核對 GitHub Actions；不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
+變更走 branch → `SanHsien/MyR2D2` PR → required checks → merge；`main` 禁止直接推送。合併後以 exact SHA 核對 GitHub Actions，不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
 
 各 Windows AI Desktop／TUI／CLI 的能力與抽測邊界見 [`WINDOWS-AI-ENVIRONMENTS.md`](WINDOWS-AI-ENVIRONMENTS.md)。
 最近一次完整 repository review、finding 與殘餘風險見 [`REVIEW.md`](REVIEW.md)。

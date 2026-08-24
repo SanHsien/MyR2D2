@@ -28,6 +28,7 @@ sh tools/dev_check.sh
 ## Commit 與 PR
 
 - 使用 Conventional Commits。
+- 從最新 `main` 建 branch；`main` 受保護且禁止直接 push，必須經 `SanHsien/MyR2D2` PR 與 required checks 合併。
 - PR 需說明問題、解法、風險與實際驗證證據。
 - PR 一律建立在 `SanHsien/MyR2D2`；回貢 upstream 必須另取得維護者明確授權。
 - CI 綠燈不取代 diff review。

@@ -2,6 +2,8 @@
 
 本 fork 把 Windows 原生的 AI Desktop、TUI 與 CLI 都視為一級開發環境。不同產品的 skill 能力不相同，因此驗收分成 package、discovery、trust 與 runtime 四層；其中一種介面安裝成功，不能直接替另一種介面宣稱可用。
 
+最近一次逐層結果與 exact-SHA 證據見 [`WINDOWS-RUNTIME-EVIDENCE.md`](WINDOWS-RUNTIME-EVIDENCE.md)。
+
 ## 共用 package 層
 
 ```powershell
@@ -37,3 +39,11 @@ Linux 不是本 fork 的主要互動開發介面；CI 只補驗 Git Bash／NTFS 
 ## 高成本抽測停止條件
 
 每個 release 對每個宣稱支援的 Windows 宿主最多做一次低風險抽測；取得「安裝 artifact、discovery/trust、實際產出」三層證據後立即停止。登入或 trust 必須由使用者完成時，只交接必要動作，完成後從現有狀態續驗。
+
+CLI runtime 抽測必須由維護者明確加 `-AllowModelUse`，預設不消耗額度：
+
+```powershell
+pwsh -NoProfile -File tools\windows_runtime_smoke.ps1 -AllowModelUse
+```
+
+這個結果只證明被選取 CLI 的 package、model-visible discovery 與 runtime engine；不替 Desktop 或互動 TUI 的 workspace／trust／UI 宣稱成功。

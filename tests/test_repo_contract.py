@@ -64,6 +64,30 @@ class RepoContractTests(unittest.TestCase):
                 any("workflow action must pin" in item for item in MODULE.validate(copy))
             )
 
+    def test_runtime_smoke_requires_explicit_model_use_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / "repo"
+            shutil.copytree(ROOT, copy, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+            path = copy / "tools" / "windows_runtime_smoke.ps1"
+            text = path.read_text(encoding="utf-8").replace("AllowModelUse", "ModelUse")
+            path.write_text(text, encoding="utf-8")
+            self.assertIn(
+                "Windows runtime smoke is missing safety contract: AllowModelUse",
+                MODULE.validate(copy),
+            )
+
+    def test_runtime_evidence_must_preserve_unknown_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / "repo"
+            shutil.copytree(ROOT, copy, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+            path = copy / "docs" / "WINDOWS-RUNTIME-EVIDENCE.md"
+            text = path.read_text(encoding="utf-8").replace("unknown", "untested")
+            path.write_text(text, encoding="utf-8")
+            self.assertIn(
+                "Windows runtime evidence is missing claim boundary: unknown",
+                MODULE.validate(copy),
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

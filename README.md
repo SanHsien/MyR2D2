@@ -29,7 +29,7 @@ MyR2D2 就是這個定位 —— 10 支 skills，管的都是「不做不會死�
 
 Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全部蒸發。這套 skills 的共同主題就是對抗失憶——上表每一支，管的都是失憶鏈上的一段。全部是在真實日常使用中踩坑迭代出來的，不是理論設計。
 
-開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，41 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，每一版修了什麼見 [Releases](https://github.com/tingyulu/MyR2D2/releases)。
+開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，45 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，fork 每一版修了什麼見 [Releases](https://github.com/SanHsien/MyR2D2/releases)。
 
 ## 相容性矩陣
 
@@ -129,7 +129,7 @@ Claude 讀繁中指令、照樣用你的對話語言回覆 —— 英文使用�
 | daily-debrief | **需一併安裝 mission-log**（收割器在那支裡） |
 | weekly-debrief | **需一併安裝 daily-debrief 與 mission-log**（缺日結會自動補生成） |
 | damage-report | 無（純規則;第 5 問提到的 `/dropoff`、進階節的 `ai-review` 都是選用交叉引用） |
-| ai-review | **二審後端**(預設 Codex CLI;`AI_REVIEW_CMD` 可換任何讀 stdin／吐 stdout 的命令)＋POSIX shell。無額外套件依賴:不需 npm 套件、brew formula 或自備 API key。附 41 項回歸測試(`tests/matrix.sh`,不燒額度) |
+| ai-review | **二審後端**(預設 Codex CLI;`AI_REVIEW_CMD` 可換任何讀 stdin／吐 stdout 的命令)＋POSIX shell。內建 600 秒 wall-clock timeout，可用 `--timeout` 調整。無額外套件依賴:不需 npm 套件、brew formula 或自備 API key。附 45 項回歸測試(`tests/matrix.sh`,不燒額度) |
 | token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境——Workflow＝Claude Code 的多代理編排功能;§1「進階兜底」僅 Claude Code CLI 生效） |
 | flight-to-calendar | **Google Calendar MCP connector**（硬依賴） |
 
@@ -164,14 +164,6 @@ MyR2D2/
 ## Attribution
 
 - `token-optimizer` 改寫自 [kieiken/ultracode-token-optimization](https://github.com/kieiken/ultracode-token-optimization)(MIT)，泛化為全 Claude 環境版本。
-
-## 作者
-
-大叔（Eric Lu）——30 年產品人，現在是產品顧問、獵頭、職涯教練。這套 skills 是我自己每天在用的工作流，痛點解掉了就順手開源。
-
-- 長文正本：[uncleric.com](https://www.uncleric.com)（寫職涯，寫產品，也寫生活）
-- 日常出沒：[Threads @tingyulu](https://www.threads.com/@tingyulu)｜[LinkedIn](https://www.linkedin.com/in/uncleeric/)
-- 每週職缺快報電子報：[大叔的人生相談室](https://www.linkedin.com/newsletters/7484182774178803713/)
 
 ## License
 

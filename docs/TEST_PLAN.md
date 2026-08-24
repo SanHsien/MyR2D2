@@ -233,15 +233,15 @@ dropoff 篩目標專案候選（新鮮＝7 天內活躍）的三種情況，逐�
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-review/scripts/ai-review.sh; done
 ```
 
-行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（41 項，stub 後端不燒額度、
+行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（45 項，stub 後端不燒額度、
 產出寫暫存區不弄髒目錄、開頭自動 `unset` 外部 `AI_REVIEW_*` 變數以隔離環境、全過回 0 可進 CI）：
 
 ```bash
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-review/tests/matrix.sh; done
 ```
 
-**通過**：語法全過；每個 shell 皆 41/41（缺 `python3`+`pyyaml` 時 40 過 1 略過）。
-狀態：macOS 27 上 5 shell 皆 41/41；Windows 11 Git Bash 為 40 過、0 失敗、1 項 NTFS mode-bit 明確略過，Linux CI 仍須 41/41。外部 `export AI_REVIEW_CMD` 污染下結果不變；`npx skills add` 後 `tests/` 隨 skill 一起裝出。
+**通過**：語法全過；每個 shell 皆 45/45（缺 `python3`+`pyyaml` 時 44 過 1 略過）。
+狀態：歷史 macOS 27 快照為 5 shell 41/41；本次 timeout 契約新增後待下次 macOS release 抽測。Windows 11 Git Bash 為 44 過、0 失敗、1 項 NTFS mode-bit 明確略過，Linux CI 仍須 45/45。外部 `export AI_REVIEW_CMD` 污染下結果不變；`npx skills add` 後 `tests/` 隨 skill 一起裝出。
 
 ### E-02 🟡 真實後端 ok 路徑
 
@@ -335,12 +335,18 @@ skill 層三項行為皆正確、damage-report 整合節可達）。
 
 狀態（2026-08-20）：✅ 全數實測通過（5 shell × 40 項，含 symlink 攻擊與落檔權限 600 檢查）。
 
+### E-10 🟢 有界 wall-clock timeout（v0.5.4 maintained fork）
+
+`--timeout <正整數秒>`／`AI_REVIEW_TIMEOUT_SECONDS` 對自訂後端、Codex 登入前置檢查與實際 review 呼叫都生效；預設 600 秒。Linux／Windows Git Bash 使用 GNU coreutils `timeout`，其他 POSIX 環境使用內建 watchdog，逾時先 TERM、兩秒後仍存活才 KILL。
+
+**通過**：自訂後端、Codex 登入檢查與 Codex review 三條 stub 路徑睡眠超過一秒時皆回 `failed_timeout`＋exit 2；timeout 非正整數在後端啟動前回 exit 1。狀態（2026-08-24）：✅ Windows Git Bash 已納入 45 項矩陣；Linux 5-shell 由 exact-SHA CI 驗證。
+
 ### E-05 ✋ 平台與方案覆蓋
 
 >（編號跳序＝歷史演進痕跡，刻意保留：E-05 性質是收尾總查，物理位置固定在 E-09 之後，編號不重排。）
 
 **通過**：README 宣稱支援的平台與帳號方案都實跑過。
-狀態（2026-08-21）：✅ **Linux 經 CI（ubuntu-latest）**——矩陣 5 shell × 41 項與 harvest 測試隨每次 push 實跑；
+狀態（2026-08-24）：✅ **Linux 經 CI（ubuntu-latest）**——矩陣 5 shell × 45 項與 harvest 測試隨每次 push 實跑；
 ✅ **Windows 11 Git Bash 已納入 canonical gate，但 POSIX `0600` 由 Linux CI 驗證**；❌ **免費方案帳號未實測** ——
 官方用量限制表不含免費方案（見 `AI_REVIEW_SOURCES.md`），因此無法宣稱免費帳號開箱即用。
 README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。

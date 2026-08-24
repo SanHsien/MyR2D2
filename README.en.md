@@ -29,7 +29,7 @@ That's MyR2D2's job description — 10 skills covering things that "won't kill y
 
 Claude sessions are **amnesiac**: close the conversation and everything not written to disk evaporates. The common theme here is fighting that amnesia — every skill in the table covers one link of the amnesia chain. All of it was iterated out of real daily-driver usage, not theory.
 
-The development process eats the same rules: **before every release, the work goes to a different model family for review** (asking the same model to "check again" mostly re-confirms what it already believed). `ai-review` itself was built this way — three rounds of cross-model review caught 21 defects, 13 of which were introduced by the previous round's own fixes, and 41 regression tests ship in the box. All of it is checkable: method and evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md), per-version fixes in [Releases](https://github.com/tingyulu/MyR2D2/releases).
+The development process eats the same rules: **before every release, the work goes to a different model family for review** (asking the same model to "check again" mostly re-confirms what it already believed). `ai-review` itself was built this way — three rounds of cross-model review caught 21 defects, 13 of which were introduced by the previous round's own fixes, and 45 regression tests ship in the box. All of it is checkable: method and evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md), maintained-fork fixes in [Releases](https://github.com/SanHsien/MyR2D2/releases).
 
 ## Compatibility matrix
 
@@ -129,7 +129,7 @@ Claude follows the zh-TW instructions and replies in whatever language you speak
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
 | damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
-| ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. No extra packages: no npm module, no brew formula, no API key of your own. Ships 41 regression tests (`tests/matrix.sh`, no quota burned) |
+| ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. A built-in 600-second wall-clock timeout is adjustable with `--timeout`. No extra packages: no npm module, no brew formula, no API key of your own. Ships 45 regression tests (`tests/matrix.sh`, no quota burned) |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool — Workflow is Claude Code's multi-agent orchestration feature; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
@@ -164,14 +164,6 @@ MyR2D2/
 ## Attribution
 
 - `token-optimizer` is adapted from [kieiken/ultracode-token-optimization](https://github.com/kieiken/ultracode-token-optimization) (MIT), generalized for all-Claude environments.
-
-## Author
-
-Eric Lu ("Uncle Eric") — 30 years in product, now a product consultant, headhunter, and career coach. These skills are my actual daily workflow; once a pain point got solved, open-sourcing it was the easy part.
-
-- Long-form writing: [uncleric.com](https://www.uncleric.com) (zh-TW)
-- Find me: [Threads @tingyulu](https://www.threads.com/@tingyulu) | [LinkedIn](https://www.linkedin.com/in/uncleeric/)
-- Weekly jobs newsletter: [大叔的人生相談室](https://www.linkedin.com/newsletters/7484182774178803713/) (zh-TW)
 
 ## License
 

@@ -34,7 +34,7 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
    <本skill目錄>/scripts/ai-review.sh <檔案> --rubric code --context "這東西要解什麼"
    ```
 
-   常用選項：`--model`／`--effort low|medium|high`／`--strict`／`--soft-fail`／`--no-save`。
+   常用選項：`--model`／`--effort low|medium|high`／`--timeout <秒>`（預設 600）／`--strict`／`--soft-fail`／`--no-save`。
 
    ⚠️ **一律用完整路徑呼叫，不要打裸的 `ai-review`** —— `ai-review` 是個很容易撞名的名字，
    你的 `PATH` 上可能已經有另一支同名執行檔（別的工具、你自己寫的、或這支 skill 的私人變體）。
@@ -43,7 +43,7 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
    - `ok` → 進第 5 步。
    - `skipped_*` → **本次沒有二審**（沒裝／沒登入）；腳本已在畫面上印好逐步引導，
      照著做或跳過都行。**回報時明講「本次僅自審」**，不要假裝審過。
-   - `failed_*` → 後端出錯（額度／網路／政策／版本／空回覆），原始錯誤已印在畫面上。
+   - `failed_*` → 後端出錯（額度／網路／逾時／政策／版本／空回覆），原始錯誤已印在畫面上。
 5. **消化，不要轉述**：把二審意見**併進**你原本的回報（哪幾條採納、哪幾條不採納與理由），
    🚫 不要另開一段「二審說……」把責任外包給它 —— 判斷還是你的。
 
@@ -60,11 +60,12 @@ damage-report 是自審五問，接上 ai-review 就變成**自審＋異質視�
 | `skipped_not_logged_in` | 有裝但看起來沒登入 | 0（`--strict` 下 3） |
 | `failed_quota` | 額度／頻率限制 | 2 |
 | `failed_network` | 網路／連線 | 2 |
+| `failed_timeout` | 超過 wall-clock 上限，後端已停止 | 2 |
 | `failed_policy` | 地區或組織政策擋下 | 2 |
 | `failed_version` | 後端 CLI 版本不相容 | 2 |
 | `failed_empty` | 後端回空內容 | 2 |
 | `failed_unknown` | 無法歸類 | 2 |
-| （不印狀態） | **用法錯誤**：沒給來源／缺 `--rubric`／`--effort` 值不合法／一次給兩份來源／`--strict` 與 `--soft-fail` 併用 | 1 |
+| （不印狀態） | **用法錯誤**：沒給來源／缺 `--rubric`／`--effort` 值不合法／timeout 非正整數／一次給兩份來源／`--strict` 與 `--soft-fail` 併用 | 1 |
 
 兩個退出碼開關，方向相反、都是**你主動要求**才生效：
 
@@ -97,7 +98,7 @@ CLI 升版就可能失準。所以失敗時後端的 stderr 與 stdout **各印�
 - **不是零依賴**：需要一個二審後端（預設 Codex CLI）＋ POSIX shell ＋ `mktemp`／`date`
   ＋可連外的網路。誠實說法是「**除後端 CLI 與 POSIX shell 外，無額外套件依賴**」——
   不需 npm 套件、不需 brew formula、不需自備 API key。
-- **每次要花時間與額度**：一次審閱約 1–3 分鐘，吃的是**你自己**的後端帳號額度。
+- **每次要花時間與額度**：一次審閱約 1–3 分鐘，吃的是**你自己**的後端帳號額度。腳本預設 600 秒停止後端；用 `--timeout` 或 `AI_REVIEW_TIMEOUT_SECONDS` 調整。
 - 官方方案表把 Codex 列在各方案內（含免費方案），**但官方的用量限制表並未列出免費方案的
   可用模型與額度**，且能不能跑起來還要看地區、帳號狀態與組織政策 ——
   「方案表上有」不等於「人人都能用」。查證原文與日期見
@@ -132,8 +133,8 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 ③ 若你的後端把錯誤訊息印到 **stdout** 而且回 exit 0，本工具分不出那是意見還是錯誤頁，
 只會用長度給你一個「偏短」的警告 —— 自訂後端時自己看一眼輸出。
 （後端回**非零**時不受此限：stderr 與 stdout 都會納入分類並照印。）
-另外兩個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`）、
-`AI_REVIEW_RUBRICS`（自訂 rubric 目錄）。
+另外三個環境變數：`AI_REVIEW_DIR`（落檔目錄，預設 `./.ai-reviews`）、
+`AI_REVIEW_RUBRICS`（自訂 rubric 目錄）、`AI_REVIEW_TIMEOUT_SECONDS`（預設 600；CLI 的 `--timeout` 優先）。
 ⚠️ 落檔會把**送審內容的審閱結果**留在磁碟上。檔案以 `600` 建立（只有你讀得到），
 但目錄本身仍受你的 `umask` 影響，而且 `.gitignore` 只擋 git、不擋本機其他工具。
 不想留就加 `--no-save`。
@@ -156,13 +157,13 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 shell 跑受測腳本
 ```
 
-41 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
+45 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
 跑完自動清掉），全過回 exit 0，可直接放進 CI。缺 `python3`+`pyyaml` 時只會略過其中一項。
 矩陣開頭會自動 `unset` 外層可能 export 過的 `AI_REVIEW_CMD` 等變數——你平常把後端指到別處
 也不會污染測試結果。
 
 腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過這份矩陣
 （狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
-路徑含空白、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
+路徑含空白、後端 wall-clock timeout、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
 並以真實 Codex CLI 驗過 `ok` 路徑。
 Linux 由 CI（ubuntu-latest）跑同一份矩陣；Windows 11 的 Git Bash 會跑完整行為案例，但 NTFS 無法提供 POSIX `0600` mode-bit 證據，因此該一項明確略過並由 Linux CI 權威驗證。**免費方案帳號未實測** —— 沒驗過的一律別當保證。

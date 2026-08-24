@@ -17,7 +17,7 @@ set -u
 
 # 環境隔離：外層 shell 若 export 過這幾個變數（例如平常就把 AI_REVIEW_CMD 指到自己的後端），
 # 會污染下面所有「乾淨環境」情境——實測過會造成 17 項假紅。測試自己要先把環境清乾淨。
-unset AI_REVIEW_CMD AI_REVIEW_DIR AI_REVIEW_RUBRICS
+unset AI_REVIEW_CMD AI_REVIEW_DIR AI_REVIEW_RUBRICS AI_REVIEW_TIMEOUT_SECONDS
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1
 S="${AI_REVIEW_SH:-$DIR/../scripts/ai-review.sh}"
@@ -109,6 +109,24 @@ run env PATH=/usr/bin:/bin AI_REVIEW_CMD='sh -c "echo not logged in >&2; exit 1"
 chk "自訂後端未登入→skipped" skipped_not_logged_in 0 "$ST" "$RC"
 run env PATH=/usr/bin:/bin AI_REVIEW_CMD='false' $SH "$S" "$W/sample.py" --rubric code
 chk "自訂後端失敗→failed" failed_unknown 2 "$ST" "$RC"
+run env PATH=/usr/bin:/bin AI_REVIEW_CMD='sleep 5; printf should_not_finish' $SH "$S" "$W/sample.py" --rubric code --timeout 1
+chk "自訂後端逾時→failed_timeout" failed_timeout 2 "$ST" "$RC"
+cat >"$STUB/codex" <<'EOF'
+#!/bin/sh
+[ "$1 $2" = "login status" ] && { sleep 5; echo "Logged in"; exit 0; }
+exit 0
+EOF
+chmod +x "$STUB/codex"
+run env PATH="$STUB:/usr/bin:/bin" $SH "$S" "$W/sample.py" --rubric code --timeout 1
+chk "Codex 登入檢查逾時" failed_timeout 2 "$ST" "$RC"
+cat >"$STUB/codex" <<'EOF'
+#!/bin/sh
+[ "$1 $2" = "login status" ] && { echo "Logged in"; exit 0; }
+sleep 5
+EOF
+chmod +x "$STUB/codex"
+run env PATH="$STUB:/usr/bin:/bin" $SH "$S" "$W/sample.py" --rubric code --timeout 1
+chk "Codex review 呼叫逾時" failed_timeout 2 "$ST" "$RC"
 
 echo "-- D. 呼叫鏈：降級不得中斷上層 --"
 cat >"$W/chain.sh" <<EOF
@@ -169,6 +187,8 @@ run env PATH=/usr/bin:/bin $SH "$S" "$W/sample.py" "$W/s.txt" --rubric code
 chk "一次給兩份來源" "" 1 "$ST" "$RC"
 run env PATH=/usr/bin:/bin $SH "$S" "$W/sample.py" --rubric code --strict --soft-fail
 chk "兩開關併用" "" 1 "$ST" "$RC"
+run env PATH=/usr/bin:/bin AI_REVIEW_TIMEOUT_SECONDS=0 $SH "$S" "$W/sample.py" --rubric code
+chk "timeout 非正整數" "" 1 "$ST" "$RC"
 run env PATH=/usr/bin:/bin AI_REVIEW_CMD='cat' $SH "$S" --rubric code --no-save -- "$W/sample.py"
 chk "-- 之後當來源檔" ok 0 "$ST" "$RC"
 

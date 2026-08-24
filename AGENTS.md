@@ -22,12 +22,12 @@
 - 不提交 API key、token、cookie、帳號資料、私人 prompt、真實客戶資料或 `.ai-reviews/` 產物。
 - 跨模型 review 前先去識別化；送給後端的內容視為已離開本機信任邊界。
 - 不把 Git Bash／NTFS 的 mode-bit 顯示當成 POSIX 權限證據。`0600` 安全斷言由 Linux CI 驗證。
-- 不 force-push `main`，不刪除 `upstream` remote，不盲目 merge upstream。
+- 不直接 push／force-push `main`，不刪除 `upstream` remote，不盲目 merge upstream。
 - 不新增 CHANGELOG；版本與 release 慣例沿用 `CLAUDE.md`。
 
 ## 開發方式
 
-- 一般維護直接提交並推送 `origin/main`；需要外部審查或高風險隔離時才使用 branch → PR → CI → merge。
+- 所有變更使用 branch → `SanHsien/MyR2D2` PR → required checks → merge；branch protection 對管理者同樣生效。
 - commit 使用 Conventional Commits，例如 `chore: add Windows development gate`。
 - 修 bug 先建立可重現測試，再做最小修正。
 - 改 skill 時必須同步檢查兩份 README、plugin metadata、adapter 與 `docs/TEST_PLAN.md`。

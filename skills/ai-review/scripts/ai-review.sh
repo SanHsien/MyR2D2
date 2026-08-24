@@ -8,6 +8,7 @@
 #   --context "…"            審閱背景（一句話告訴 reviewer 這東西要解什麼）
 #   --model <名稱>           傳給後端的模型名（預設不指定，吃後端預設）
 #   --effort low|medium|high 推理力度（僅 codex 後端）
+#   --timeout <秒>           後端最長執行時間（預設 600；逾時為 failed_timeout）
 #   --strict                 skipped_* 也回非零（預設 skipped 回 0）
 #   --soft-fail              failed_* 也回 0（二審是加分項、絕不能擋住流程時用）
 #   --no-save                不落檔，只印到 stdout
@@ -18,12 +19,13 @@
 #   AI_REVIEW_CMD      自訂 reviewer 命令：讀 stdin 的 prompt、吐 stdout 的意見。
 #                      設了就不走 codex（例：AI_REVIEW_CMD='ollama run llama3'）
 #   AI_REVIEW_RUBRICS  rubric 目錄（預設＝腳本旁的 ../rubrics）
+#   AI_REVIEW_TIMEOUT_SECONDS  --timeout 的預設值（未設定時 600）
 #
 # 輸出約定（給呼叫端用）：
 #   stdout ＝ 審閱意見 ＋ 最後一行 `AI_REVIEW_STATUS: <狀態>`
 #   stderr ＝ 給人看的引導、警告、落檔路徑
 #   狀態   ＝ ok | skipped_not_installed | skipped_not_logged_in
-#            | failed_quota | failed_network | failed_policy
+#            | failed_quota | failed_network | failed_timeout | failed_policy
 #            | failed_version | failed_empty | failed_unknown
 #   退出碼 ＝ 0（ok 與 skipped_*）／2（failed_*）／1（用法錯誤）／3（--strict 下的 skipped_*）
 #
@@ -43,6 +45,7 @@ EFFORT=""
 STRICT=0
 SOFT=0
 SAVE=1
+TIMEOUT_SECONDS="${AI_REVIEW_TIMEOUT_SECONDS:-600}"
 
 usage() {
 	sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
@@ -71,6 +74,9 @@ while [ $# -gt 0 ]; do
 	--effort)
 		[ $# -ge 2 ] || { echo "❌ --effort 後面要接值" >&2; exit 1; }
 		EFFORT="$2"; shift 2 ;;
+	--timeout)
+		[ $# -ge 2 ] || { echo "❌ --timeout 後面要接秒數" >&2; exit 1; }
+		TIMEOUT_SECONDS="$2"; shift 2 ;;
 	--strict) STRICT=1; shift ;;
 	--soft-fail) SOFT=1; shift ;;
 	--no-save) SAVE=0; shift ;;
@@ -101,6 +107,17 @@ case "$EFFORT" in
 	;;
 esac
 
+case "$TIMEOUT_SECONDS" in
+"" | *[!0-9]*)
+	echo "❌ --timeout／AI_REVIEW_TIMEOUT_SECONDS 只接受正整數秒（收到：$TIMEOUT_SECONDS）" >&2
+	exit 1
+	;;
+esac
+if ! [ "$TIMEOUT_SECONDS" -gt 0 ] 2>/dev/null; then
+	echo "❌ --timeout／AI_REVIEW_TIMEOUT_SECONDS 必須大於 0（收到：$TIMEOUT_SECONDS）" >&2
+	exit 1
+fi
+
 [ -n "$SRC" ] || { echo "❌ 要審什麼？給檔案路徑或 -（讀 stdin）。用法見 $SELF_NAME --help" >&2; exit 1; }
 [ -n "$RUBRIC" ] || { echo "❌ --rubric 必填：code｜copy｜research（或自訂 rubric 檔路徑）" >&2; exit 1; }
 
@@ -126,6 +143,49 @@ trap 'rm -rf "$TMPD"; exit 143' TERM
 PROMPT_FILE="$TMPD/prompt.txt"
 ANSWER_FILE="$TMPD/answer.txt"
 ERR_FILE="$TMPD/stderr.txt"
+
+# ── 有界執行 ────────────────────────────────────────────────────────
+# Linux／Windows Git Bash 優先使用 GNU coreutils timeout；macOS 等沒有 coreutils
+# 的環境改用 POSIX shell watchdog。124 保留給本 wrapper 表示 wall-clock timeout。
+# watchdog 先 TERM、兩秒後仍存活才 KILL，並在命令先結束時立即清掉 watcher。
+TIMEOUT_BIN=""
+for _timeout_candidate in timeout gtimeout; do
+	_timeout_path=$(command -v "$_timeout_candidate" 2>/dev/null || true)
+	if [ -n "$_timeout_path" ] && "$_timeout_path" --version 2>/dev/null | grep -qi 'coreutils'; then
+		TIMEOUT_BIN="$_timeout_path"
+		break
+	fi
+done
+
+run_bounded() {
+	_rb_seconds=$1
+	shift
+	if [ -n "$TIMEOUT_BIN" ]; then
+		"$TIMEOUT_BIN" -k 2 "$_rb_seconds" "$@"
+		return $?
+	fi
+
+	_rb_marker="$TMPD/timed-out"
+	rm -f "$_rb_marker"
+	"$@" &
+	_rb_command_pid=$!
+	(
+		sleep "$_rb_seconds"
+		if kill -0 "$_rb_command_pid" 2>/dev/null; then
+			: >"$_rb_marker"
+			kill -TERM "$_rb_command_pid" 2>/dev/null || true
+			sleep 2
+			kill -KILL "$_rb_command_pid" 2>/dev/null || true
+		fi
+	) &
+	_rb_watcher_pid=$!
+	wait "$_rb_command_pid"
+	_rb_rc=$?
+	kill "$_rb_watcher_pid" 2>/dev/null || true
+	wait "$_rb_watcher_pid" 2>/dev/null || true
+	[ -f "$_rb_marker" ] && return 124
+	return "$_rb_rc"
+}
 
 # ── 取得原文 ─────────────────────────────────────────────────────────
 # 一律先複製到暫存區再組 prompt：來源檔或 rubric 若在組裝途中被改動或刪除，
@@ -257,6 +317,13 @@ EOF
    確認可連外後重跑。離線環境請改用本機後端：AI_REVIEW_CMD='<你的本機模型命令>'
 EOF
 		;;
+	failed_timeout)
+		cat >&2 <<EOF
+⚠️ 二審失敗：後端超過 ${TIMEOUT_SECONDS} 秒，已停止本次呼叫。
+   可用 --timeout <秒> 或 AI_REVIEW_TIMEOUT_SECONDS 調整上限；先確認後端不是卡在登入提示。
+   不希望逾時擋住主流程可加 --soft-fail（狀態仍會是 failed_timeout）。
+EOF
+		;;
 	failed_policy)
 		cat >&2 <<'EOF'
 ⚠️ 二審失敗：看起來被地區或組織政策擋下（403／不可用）。
@@ -317,8 +384,13 @@ RC=0
 if [ -n "${AI_REVIEW_CMD:-}" ]; then
 	# 可插拔 reviewer：讀 stdin 的 prompt、吐 stdout 的意見。
 	BACKEND="custom"
-	sh -c "$AI_REVIEW_CMD" <"$PROMPT_FILE" >"$ANSWER_FILE" 2>"$ERR_FILE" || RC=$?
+	run_bounded "$TIMEOUT_SECONDS" sh -c "$AI_REVIEW_CMD" <"$PROMPT_FILE" >"$ANSWER_FILE" 2>"$ERR_FILE" || RC=$?
 	if [ "$RC" -ne 0 ]; then
+		if [ "$RC" -eq 124 ]; then
+			guide failed_timeout
+			dump_backend_output
+			emit_status_and_exit failed_timeout
+		fi
 		# 「後端根本跑不起來」＝沒有可用的二審後端，跟沒裝 codex 是同一件事，
 		# 必須走 skipped（exit 0）。之前它會落進 failed_unknown → exit 2，
 		# 在 set -e／$(…) 裡直接把上層流程炸掉 —— 正是本工具的核心硬需求所禁止的。
@@ -362,7 +434,16 @@ else
 	#    同理裸的 `*401*`／`*"401 "*` 都不行 —— "session expires in 401 seconds" 會命中。
 	#    只認帶語境的寫法：http 401／status 401／401 unauthorized。
 	LOGIN_OUT="$TMPD/login.txt"
-	"$CODEX" login status >"$LOGIN_OUT" 2>&1 || true
+	LOGIN_TIMEOUT=$TIMEOUT_SECONDS
+	[ "$LOGIN_TIMEOUT" -le 15 ] || LOGIN_TIMEOUT=15
+	LOGIN_RC=0
+	run_bounded "$LOGIN_TIMEOUT" "$CODEX" login status >"$LOGIN_OUT" 2>&1 || LOGIN_RC=$?
+	if [ "$LOGIN_RC" -eq 124 ]; then
+		guide failed_timeout
+		printf '── codex login status ──\n' >&2
+		cat "$LOGIN_OUT" >&2
+		emit_status_and_exit failed_timeout
+	fi
 	LOGIN_TXT=$(tr '[:upper:]' '[:lower:]' <"$LOGIN_OUT" | tr '\n' ' ')
 	case "$LOGIN_TXT" in
 	*"not logged in"* | *"logged out"* | *"no credentials"* | *"not authenticated"* | *"token expired"* | *"credentials expired"* | *"please sign in"* | *"please log in"* | *unauthorized* | *"http 401"* | *"status 401"* | *"error 401"* | *"code 401"* | *"401 unauthorized"*)
@@ -379,8 +460,13 @@ else
 	if [ -n "$MODEL" ]; then set -- "$@" -m "$MODEL"; fi
 	if [ -n "$EFFORT" ]; then set -- "$@" -c "model_reasoning_effort=\"$EFFORT\""; fi
 	set -- "$@" -
-	"$CODEX" "$@" <"$PROMPT_FILE" >/dev/null 2>"$ERR_FILE" || RC=$?
+	run_bounded "$TIMEOUT_SECONDS" "$CODEX" "$@" <"$PROMPT_FILE" >/dev/null 2>"$ERR_FILE" || RC=$?
 	if [ "$RC" -ne 0 ]; then
+		if [ "$RC" -eq 124 ]; then
+			guide failed_timeout
+			dump_backend_output
+			emit_status_and_exit failed_timeout
+		fi
 		cat "$ERR_FILE" "$ANSWER_FILE" >"$TMPD/combined.txt" 2>/dev/null
 		STATUS=$(classify_error "$TMPD/combined.txt")
 		guide "$STATUS"
