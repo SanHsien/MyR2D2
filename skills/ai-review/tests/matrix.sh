@@ -11,7 +11,7 @@
 # - **不弄髒你的目錄**：所有產出寫在 mktemp 暫存區，跑完自動清掉。
 # - 退出碼 0＝全過，1＝有失敗（可直接放進 CI）。
 #
-# MIT License — part of MyR2D2 (github.com/tingyulu/MyR2D2)
+# MIT License — part of MyR2D2 (github.com/SanHsien/MyR2D2 maintained fork)
 
 set -u
 
@@ -201,7 +201,14 @@ env PATH=/usr/bin:/bin AI_REVIEW_DIR="$COLL" AI_REVIEW_CMD='cat' $SH "$S" "$W/sa
 N=$(ls "$COLL" 2>/dev/null | wc -l | tr -d ' ')
 [ "$N" = "2" ] && ok_ "同秒兩次不互相覆蓋" || no_ "同秒兩次不互相覆蓋（只剩 $N 份）"
 PERM=$(ls -l "$COLL"/*.md 2>/dev/null | head -1 | cut -c1-10)
-[ "$PERM" = "-rw-------" ] && ok_ "落檔權限 600" || no_ "落檔權限 600（實際 $PERM）"
+if [ "$PERM" = "-rw-------" ]; then
+	ok_ "落檔權限 600"
+else
+	case "$(uname -s 2>/dev/null || printf unknown)" in
+		MINGW*|MSYS*) skip_ "落檔權限 600（NTFS/Git Bash 不提供 POSIX mode-bit 證據；Linux CI 必驗）" ;;
+		*) no_ "落檔權限 600（實際 $PERM）" ;;
+	esac
+fi
 LEFT=$(ls -a "$COLL" 2>/dev/null | grep '^\.ai-review\.' | wc -l | tr -d ' ')
 [ "$LEFT" = "0" ] && ok_ "不留暫存殘檔" || no_ "不留暫存殘檔（$LEFT 個）"
 VIC="$W/victim.txt"; printf 'DO_NOT_TOUCH\n' >"$VIC"

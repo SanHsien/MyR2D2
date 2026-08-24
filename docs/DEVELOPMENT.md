@@ -1,0 +1,52 @@
+# 開發環境
+
+MyR2D2 的產品本體是 Markdown、POSIX shell 與一個標準庫 Python 收割器。開發環境的目標是重現公開契約，不建立不必要的套件層。
+
+## Windows 11
+
+必要工具：
+
+- PowerShell 7
+- Git for Windows（含 Git Bash）
+- Python 3.11+
+- Node.js 22.20+／npm（lockfile 釘住 `skills` 與 `skills-ref`）
+
+在 repo 根目錄執行：
+
+```powershell
+pwsh -NoProfile -File tools\dev_check.ps1
+```
+
+PowerShell gate 會執行 repo contract、upstream checker tests、兩個可用 shell 的 `ai-review` 矩陣、mission-log 測試、skills validator、隔離式 Codex／Claude Code Windows Desktop／TUI／CLI package smoke 與 Git whitespace 檢查。
+
+Git Bash 位於 NTFS 時不具 POSIX mode-bit 語義，因此 `0600` 顯示檢查會明確標成一項平台 skip；其他案例仍須通過。Linux CI 會執行沒有 skip 的完整 5-shell 矩陣。
+
+## Linux／macOS
+
+需要 `python3`、Node.js／npm、Ruby，以及 `sh`、`bash`、`dash`、`ksh`、`zsh`：
+
+```bash
+sh tools/dev_check.sh
+```
+
+缺少必要 shell 時 gate 會失敗並列出缺項，不會把未執行宣稱為成功。
+
+## 常用聚焦檢查
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py' -v
+python skills/mission-log/tests/harvest_test.py
+SH=bash sh skills/ai-review/tests/matrix.sh
+npm ci --ignore-scripts --no-audit --no-fund
+for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
+```
+
+## 修改連動
+
+改任何 skill 前先讀 `CLAUDE.md` 的連動清單。README 雙語行數、plugin metadata、adapter、測試計畫與 skill 計數都屬公開契約。
+
+## 遠端驗證
+
+推送後以 exact SHA 核對 GitHub Actions；不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
+
+各 Windows AI Desktop／TUI／CLI 的能力與抽測邊界見 [`WINDOWS-AI-ENVIRONMENTS.md`](WINDOWS-AI-ENVIRONMENTS.md)。

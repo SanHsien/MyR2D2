@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # harvest_test.py — mission-log 收割器的合成 fixture 測試(純標準庫,零依賴)
 # 跑法: python3 skills/mission-log/tests/harvest_test.py
-# 全部走子行程實跑(測的是真實 CLI 行為),TZ 固定 Asia/Taipei 讓日界線判斷可重現;
+# 全部走子行程實跑(測的是真實 CLI 行為),明確 +08:00 讓日界線判斷跨平台可重現;
 # LC_ALL=C 那條驗的是「ssh 到 C locale 機器」情境下中文不得變 ? 或替換字元。
 import json, os, subprocess, sys, tempfile, unittest
 
@@ -42,9 +42,10 @@ class HarvestTest(unittest.TestCase):
                 fh.write('\n')
 
     def run_harvest(self, date=DAY, fmt='jsonl', env_extra=None):
-        env = dict(os.environ, TZ='Asia/Taipei')
+        env = dict(os.environ)
         env.update(env_extra or {})
-        return subprocess.run([sys.executable, HARVEST, '--date', date, '--dir', self.root, '--format', fmt],
+        return subprocess.run([sys.executable, HARVEST, '--date', date, '--dir', self.root,
+                               '--format', fmt, '--timezone', '+08:00'],
                               capture_output=True, env=env)
 
     def rows(self, p):
@@ -137,6 +138,13 @@ class HarvestTest(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         err = p.stderr.decode('utf-8')
         self.assertIn('1 行時間戳無法解析已略過', err)
+
+    def test_invalid_timezone_is_rejected(self):
+        p = subprocess.run([sys.executable, HARVEST, '--date', DAY, '--dir', self.root,
+                            '--timezone', 'Asia/Taipei'], capture_output=True)
+        self.assertNotEqual(p.returncode, 0)
+        self.assertIn('timezone must be local, Z, or an offset',
+                      p.stderr.decode('utf-8', 'replace'))
 
 
 if __name__ == '__main__':

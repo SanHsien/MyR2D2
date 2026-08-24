@@ -1,5 +1,7 @@
 # MyR2D2 🤖
 
+> 這是 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 Windows-first 維護型 fork；差異、歸屬與同步方式見 [FORK.md](FORK.md)，開發入口見 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
+
 ### 你的隨行 astromech droid — Claude skillset（繁中本體、中英雙語觸發）
 
 **繁體中文（本頁）| [English](README.en.md)**
@@ -47,7 +49,7 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 ¹ 五鐵則通用、模型名自行對換；§1「進階兜底」（settings.json／env）僅 Claude Code 生效，其他工具跳過。
 ² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
 ³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
-⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。腳本已在 macOS 的 `sh`／`dash`／`bash`／`ksh`／`zsh` 實測，Linux 由 CI（ubuntu-latest）每次 push 實跑；**Windows 與免費方案帳號仍未實測**。
+⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。macOS 與 Linux 會驗完整 POSIX 權限；Windows 11 Git Bash 驗其餘行為並明確略過 NTFS 無法證明的 mode bit。**免費方案帳號仍未實測**。
 
 - **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
 - **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
@@ -61,11 +63,11 @@ ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入�
 
 ### skills.sh（`npx skills`）——推薦，一行裝完
 
-[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) [![CI](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml)
+[![skills.sh](https://skills.sh/b/SanHsien/MyR2D2)](https://skills.sh/SanHsien/MyR2D2) [![CI](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml)
 （skills.sh badge 的數字＝累計安裝次數，不是 skill 支數。）
 
 ```bash
-npx skills add tingyulu/MyR2D2
+npx skills add SanHsien/MyR2D2
 ```
 
 [`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 與其他多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 gemini-cli／codex 的安裝層（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)），其餘目標未實測。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
@@ -73,7 +75,7 @@ npx skills add tingyulu/MyR2D2
 ### Claude Code CLI — Plugin（深度整合）
 
 ```
-/plugin marketplace add tingyulu/MyR2D2
+/plugin marketplace add SanHsien/MyR2D2
 /plugin install myr2d2@myr2d2
 ```
 
@@ -82,7 +84,7 @@ skill 掛在 `myr2d2:` 命名空間下（`/myr2d2:dropoff`…）——與你機�
 ### Claude Code CLI — 手動複製
 
 ```bash
-git clone https://github.com/tingyulu/MyR2D2.git
+git clone https://github.com/SanHsien/MyR2D2.git
 cp -rn MyR2D2/skills/* ~/.claude/skills/
 ```
 

@@ -26,7 +26,7 @@ The SKILL.md files are plain Markdown instructions — any instruction-following
 **Preferred: recent Codex CLI has native skill support** (verified on 0.145, 2026-07; ships `~/.codex/skills/.system/`) — just install:
 
 ```bash
-npx skills add tingyulu/MyR2D2 --agent codex
+npx skills add SanHsien/MyR2D2 --agent codex
 ```
 
 裝進 `.agents/skills/` 後,skill 的 name+description 會注入 Codex 的 model prompt(用 `codex debug prompt-input "test"` 可驗證),觸發詞自動路由,毋須手動搬運。

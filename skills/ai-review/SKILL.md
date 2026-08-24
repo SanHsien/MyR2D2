@@ -165,4 +165,4 @@ sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 sh
 （狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
 路徑含空白、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
 並以真實 Codex CLI 驗過 `ok` 路徑。
-Linux 由 CI（ubuntu-latest）跑同一份矩陣；**Windows 未實測**，**免費方案帳號也未實測** —— 沒驗過的一律別當保證。
+Linux 由 CI（ubuntu-latest）跑同一份矩陣；Windows 11 的 Git Bash 會跑完整行為案例，但 NTFS 無法提供 POSIX `0600` mode-bit 證據，因此該一項明確略過並由 Linux CI 權威驗證。**免費方案帳號未實測** —— 沒驗過的一律別當保證。

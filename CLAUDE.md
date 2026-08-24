@@ -1,5 +1,7 @@
 # MyR2D2 — 開發約定
 
+> **Fork overlay：** 本 checkout 的 `origin` 是 `SanHsien/MyR2D2`、`upstream` 是 `tingyulu/MyR2D2`。先讀 [`AGENTS.md`](AGENTS.md) 的 Windows-first gate、upstream 水位與對外寫入邊界；下列上游產品規則仍完整適用。
+
 MyR2D2 是**公開開源**的 Claude skillset repo（繁中本體、中英雙語觸發詞）。任何 session 在本目錄工作時，必須遵守以下約定。
 
 > 若本機存在 `.claude/local-rules.md`（不進 repo），開工前一併讀 —— 那裡放的是不適合公開的本機守門規則。
@@ -183,7 +185,7 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 ### 要 dogfood repo 版時，走 plugin 路徑
 
 ```
-/plugin marketplace add tingyulu/MyR2D2
+/plugin marketplace add SanHsien/MyR2D2
 /plugin install myr2d2@myr2d2
 ```
 

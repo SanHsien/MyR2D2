@@ -6,11 +6,25 @@
 # 語意約定:
 # - tokens = 新增 tokens(input+output+cache_creation),不含 cache 讀取——與生態通用口徑一致。
 # - 查詢日 = 本機時區的日曆日;session 在該日 00:00-24:00 間有任何活動即計入。
-import json, sys, os, glob, argparse, datetime
+import json, sys, os, glob, argparse, datetime, platform, re
 
-def parse_ts(s):
+def parse_timezone(value):
+    if value == 'local':
+        return None
+    if value in ('Z', '+00:00', '-00:00'):
+        return datetime.timezone.utc
+    match = re.fullmatch(r'([+-])(\d{2}):(\d{2})', value)
+    if not match or int(match.group(2)) > 23 or int(match.group(3)) > 59:
+        raise argparse.ArgumentTypeError('timezone must be local, Z, or an offset such as +08:00')
+    minutes = int(match.group(2)) * 60 + int(match.group(3))
+    if match.group(1) == '-':
+        minutes = -minutes
+    return datetime.timezone(datetime.timedelta(minutes=minutes))
+
+def parse_ts(s, timezone=None):
     try:
-        return datetime.datetime.fromisoformat(s.replace('Z', '+00:00')).astimezone()
+        value = datetime.datetime.fromisoformat(s.replace('Z', '+00:00'))
+        return value.astimezone(timezone) if timezone else value.astimezone()
     except Exception:
         return None
 
@@ -28,15 +42,19 @@ def user_text(msg):
             return t
     return None
 
-def harvest(projects_dir, day):
-    day_start = datetime.datetime.combine(day, datetime.time.min).astimezone()
+def harvest(projects_dir, day, timezone=None):
+    if timezone:
+        day_start = datetime.datetime.combine(day, datetime.time.min, tzinfo=timezone)
+    else:
+        day_start = datetime.datetime.combine(day, datetime.time.min).astimezone()
     day_end = day_start + datetime.timedelta(days=1)
     sessions = {}
     bad_ts = 0
     # mtime 粗篩:整檔最後修改早於當天開始的不可能含當天資料
     for tx in glob.glob(os.path.join(projects_dir, '*', '*.jsonl')):
         try:
-            if datetime.datetime.fromtimestamp(os.path.getmtime(tx)).astimezone() < day_start:
+            modified = datetime.datetime.fromtimestamp(os.path.getmtime(tx), tz=timezone)
+            if (modified if timezone else modified.astimezone()) < day_start:
                 continue
         except OSError:
             continue
@@ -50,7 +68,7 @@ def harvest(projects_dir, day):
                 except Exception:
                     continue
                 raw = obj.get('timestamp')
-                ts = parse_ts(raw) if raw else None
+                ts = parse_ts(raw, timezone) if raw else None
                 if raw and ts is None:
                     bad_ts += 1  # 有時間戳但解析不了:計數;解析失敗不可觸發下面的提早停止
                     continue
@@ -92,16 +110,25 @@ def harvest(projects_dir, day):
     return sorted(sessions.values(), key=lambda s: s['first']), bad_ts
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8', errors='backslashreplace')
     ap = argparse.ArgumentParser()
     ap.add_argument('--date', default=None)
     ap.add_argument('--dir', default=os.path.expanduser('~/.claude/projects'))
     ap.add_argument('--format', choices=['md', 'jsonl'], default='md')
+    ap.add_argument('--timezone', type=parse_timezone, default=None,
+                    metavar='local|Z|+08:00', help='calendar-day timezone (default: system local)')
     a = ap.parse_args()
-    day = datetime.date.fromisoformat(a.date) if a.date else (datetime.date.today() - datetime.timedelta(days=1))
-    rows, bad_ts = harvest(a.dir, day)
+    if a.date:
+        day = datetime.date.fromisoformat(a.date)
+    else:
+        today = datetime.datetime.now(a.timezone).date() if a.timezone else datetime.date.today()
+        day = today - datetime.timedelta(days=1)
+    rows, bad_ts = harvest(a.dir, day, a.timezone)
     if bad_ts:
         print(f"⚠️ {bad_ts} 行時間戳無法解析已略過", file=sys.stderr)
-    host = os.uname().nodename.split('.')[0]
+    host = platform.node().split('.')[0]
     if a.format == 'jsonl':
         for s in rows:
             out = dict(s, first=s['first'].strftime('%H:%M'), last=s['last'].strftime('%H:%M'),

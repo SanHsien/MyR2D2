@@ -22,6 +22,8 @@ description: '零 token 的 session 活動收割器。從 Claude Code 本來就�
    python3 <本skill目錄>/scripts/harvest.py --date <日期>
    ```
 
+   Windows 可用 `python` 執行同一支標準庫腳本；主機名由跨平台 API 取得，不需要 WSL。要固定跨機器日界線時加 `--timezone +08:00`（預設使用系統本地時區）。
+
    輸出每個活躍 session 的:時間段、專案@分支、turns、token 消耗、模型、工具直方圖、使用者原話(前 5 句)。機器可讀版加 `--format jsonl`。
 
 2. **呈現**:把骨架整理給使用者看;若使用者追問某個 session 細節,再視需要深讀該 transcript(骨架裡有 session id 前綴可定位),**深讀前先告知會消耗較多 context**。

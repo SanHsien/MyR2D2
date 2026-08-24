@@ -145,6 +145,8 @@ README 相容性矩陣與 adapters 上的每個 ✅／⚠️／❌，都要能�
 
 ## J. 日誌三支（mission-log／daily-debrief／weekly-debrief，v0.3.0 起）
 
+Windows 回歸：`harvest.py` 必須使用跨平台主機名 API、固定 UTF-8 輸出，並以 `--timezone +08:00` 讓日界線不依賴 POSIX `TZ`；Windows Python 執行 9 項 synthetic fixture tests 全過，禁止重新引入 `os.uname()`。
+
 ### J-01 🟢 收割器零 token 實跑
 
 ```bash
@@ -246,7 +248,7 @@ for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-re
 ```
 
 **通過**：語法全過；每個 shell 皆 41/41（缺 `python3`+`pyyaml` 時 40 過 1 略過）。
-狀態（2026-08-21）：✅ 已實測，macOS 27 上 5 shell 皆 41/41；外部 `export AI_REVIEW_CMD` 污染下結果不變（隔離生效）；`npx skills add` 後 `tests/` 隨 skill 一起裝出（2026-08-20 驗）。
+狀態：macOS 27 上 5 shell 皆 41/41；Windows 11 Git Bash 為 40 過、0 失敗、1 項 NTFS mode-bit 明確略過，Linux CI 仍須 41/41。外部 `export AI_REVIEW_CMD` 污染下結果不變；`npx skills add` 後 `tests/` 隨 skill 一起裝出。
 
 ### E-02 🟡 真實後端 ok 路徑
 
@@ -346,7 +348,7 @@ skill 層三項行為皆正確、damage-report 整合節可達）。
 
 **通過**：README 宣稱支援的平台與帳號方案都實跑過。
 狀態（2026-08-21）：✅ **Linux 經 CI（ubuntu-latest）**——矩陣 5 shell × 41 項與 harvest 測試隨每次 push 實跑；
-❌ **Windows 未實測**；❌ **免費方案帳號未實測** ——
+✅ **Windows 11 Git Bash 已納入 canonical gate，但 POSIX `0600` 由 Linux CI 驗證**；❌ **免費方案帳號未實測** ——
 官方用量限制表不含免費方案（見 `AI_REVIEW_SOURCES.md`），因此無法宣稱免費帳號開箱即用。
 README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
 

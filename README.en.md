@@ -1,5 +1,7 @@
 # MyR2D2 🤖
 
+> This is a Windows-first maintained fork of [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2). See [FORK.md](FORK.md) for attribution and synchronization, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the development entrypoints.
+
 ### Your everyday astromech droid — a Claude skillset (zh-TW body, bilingual triggers)
 
 **[繁體中文 (primary)](README.md) | English (this page)**
@@ -47,7 +49,7 @@ Start here — check which skills your tool can run:
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 ³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
-⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model (pinned names go stale); if the backend's default model is outside your plan, pass `--model`. Verified on macOS under `sh`/`dash`/`bash`/`ksh`/`zsh`, and on Linux via CI (ubuntu-latest) on every push; **Windows and free-tier accounts remain untested**.
+⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -61,11 +63,11 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 
 ### skills.sh (`npx skills`) — recommended, one command
 
-[![skills.sh](https://skills.sh/b/tingyulu/MyR2D2)](https://skills.sh/tingyulu/MyR2D2) [![CI](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/tingyulu/MyR2D2/actions/workflows/ci.yml)
+[![skills.sh](https://skills.sh/b/SanHsien/MyR2D2)](https://skills.sh/SanHsien/MyR2D2) [![CI](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml)
 (The skills.sh badge counts cumulative installs, not the number of skills.)
 
 ```bash
-npx skills add tingyulu/MyR2D2
+npx skills add SanHsien/MyR2D2
 ```
 
 [`npx skills`](https://github.com/vercel-labs/skills) supports Claude Code and many other agents (`gemini-cli`, `codex`, `cursor`, … — full list in the upstream README). This repo has verified the install layer for gemini-cli / codex (method & evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md)); other targets are untested. It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
@@ -73,7 +75,7 @@ npx skills add tingyulu/MyR2D2
 ### Claude Code CLI — Plugin (deep integration)
 
 ```
-/plugin marketplace add tingyulu/MyR2D2
+/plugin marketplace add SanHsien/MyR2D2
 /plugin install myr2d2@myr2d2
 ```
 
@@ -82,7 +84,7 @@ Skills land under the `myr2d2:` namespace (`/myr2d2:dropoff`, …) — structura
 ### Claude Code CLI — manual copy
 
 ```bash
-git clone https://github.com/tingyulu/MyR2D2.git
+git clone https://github.com/SanHsien/MyR2D2.git
 cp -rn MyR2D2/skills/* ~/.claude/skills/
 ```
 
