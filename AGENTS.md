@@ -28,6 +28,7 @@
 ## 開發方式
 
 - 所有變更使用 branch → `SanHsien/MyR2D2` PR → required checks → merge；branch protection 對管理者同樣生效。
+- **合併任何 PR（含 Dependabot）前先讀完整 diff**：`gh pr diff <編號>`。CI 綠燈證明的是「測試沒紅」，不是「改了什麼、該不該進 `main`」——lockfile 的連鎖升級、跨出宣告範圍的變更，只有讀 diff 看得到。核准或合併訊息要寫出讀到什麼、為什麼可接受。
 - commit 使用 Conventional Commits，例如 `chore: add Windows development gate`。
 - 修 bug 先建立可重現測試，再做最小修正。
 - 改 skill 時必須同步檢查兩份 README、plugin metadata、adapter 與 `docs/TEST_PLAN.md`。
@@ -42,6 +43,12 @@
 5. 跑完整 gate 後才更新 `tools/upstream_baseline.json`。
 
 Baseline 只表示「已審查」，不表示「全部已合併」。
+
+## 依賴新鮮度
+
+`dependency-freshness` 每月 1 日跑一次（可手動觸發），比對 `package.json` 宣告與 npm registry，並帶 `npm audit`。它只讀，不安裝也不改 manifest；有落後或漏洞就讓 run 紅燈並把報告寫進 step summary，與 `upstream-check` 同一條通知路線。
+
+已評估但這次不升的，寫進 `.github/dependency-deferrals.json`：記下**當時判斷的版本**與理由。上游一發佈更新的版本，deferral 自動失效、項目回到報告裡。**不准用調高版本宣告來消音**——那是把相容性宣告當關掉警報的開關。
 
 ## 對外邊界
 
