@@ -40,7 +40,7 @@ Start here — check which skills your tool can run:
 | save-all | ✅ | ✅ (token-count step auto-skips) | ✅\* (same) | ✅\* (drop the token-count step) | ⚠️ checklist only |
 | dropoff / pickup³ | ✅ | ✅ | ✅\* | ✅\* | ❌ (no shared disk) |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
-| damage-report | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a wrap-up checklist |
+| damage-report | ⚠️⁵ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (Windows CLI runtime tested) | ⚠️ paste as a wrap-up checklist |
 | ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
@@ -49,7 +49,7 @@ Start here — check which skills your tool can run:
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 ³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
-⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**.
+⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**. ⁵ Claude Code 2.1.231 on Windows did not produce the complete five-question contract in non-interactive `-p` mode, so package success is not treated as runtime proof; interactive TUI needs a separate test.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).

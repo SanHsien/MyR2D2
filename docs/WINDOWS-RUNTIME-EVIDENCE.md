@@ -20,14 +20,21 @@ runtime 腳本使用 pinned `skills` CLI，只安裝 `damage-report` 到唯一�
 
 ## 最近一次實證
 
-尚待本次修復 candidate 建立 exact commit 後執行並填入。此段若仍為「尚待」，不得宣稱 Windows runtime 已通過。
+日期：2026-08-24（Windows 11 原生 PowerShell 7）。送測內容是合成的 `damage-report` 題頭，不含 repo 私密資料、帳號資料或客戶內容。
+
+| 宿主 | 版本 | exact candidate | package | discovery | runtime | 判定 |
+|---|---|---|---|---|---|---|
+| Codex Windows CLI | 0.146.0 | `b9d7a13e86d4e5e5790d4f0e39fa1725125010ff` | passed | passed；JSON tool event 含 `damage-report/SKILL.md` | passed；read-only、五項輸出 | 支援 CLI runtime |
+| Claude Code Windows CLI | 2.1.231 | `1474f81dcfdbd1504a87f3ce21b57b5d95e7ca28` | passed | partial；原生 `/damage-report` 有回應 | failed；未涵蓋完整五問契約 | 不宣稱非互動 runtime 支援 |
+
+抽測過程也抓到三個驗證器問題並已修進工具：Codex skills 是 lazy search，不能用靜態 prompt dump 判斷；Codex 與 Claude 的明確觸發字分別是 `$damage-report`／`/damage-report`；Claude 原生 slash 輸出不能強迫沿用外層 sentinel。Claude 的失敗保留為 fail-closed，不靠放寬成「有文字就算過」消除紅燈。
 
 ## 介面邊界
 
 | 宿主 | package | model-visible discovery | runtime engine | Desktop／TUI UI |
 |---|---|---|---|---|
-| Codex Windows CLI | 待本次實證 | 待本次實證 | 待本次實證 | 不適用 |
-| Claude Code Windows CLI | 待本次實證 | 待本次實證 | 待本次實證 | 不適用 |
+| Codex Windows CLI | passed | passed | passed | 不適用 |
+| Claude Code Windows CLI | passed | partial | failed | 不適用 |
 | Codex Desktop | 共用 `.agents/skills` 格式 | 未在獨立 Desktop task 驗證 | 不以 CLI 證據替代 | unknown |
 | Codex Windows TUI | 共用 `.agents/skills` 格式 | 未在互動 TUI 驗證 | 不以 print/exec 證據替代 UI | unknown |
 | Claude Desktop／Cowork | plugin/prompt 路徑另見環境文件 | 未在獨立 Desktop task 驗證 | 不以 Claude Code CLI 證據替代 | unknown |

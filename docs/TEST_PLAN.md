@@ -357,9 +357,9 @@ README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
 
 | 工具 | 安裝層 | 發現層 | 執行層 |
 |---|---|---|---|
-| Claude Code CLI | ✅ 實測（npx／plugin 雙路徑） | ✅ | ✅（日常使用） |
+| Claude Code CLI 2.1.231 | ✅ Windows package 實測 | ⚠️ 非互動 `/damage-report` 有觸發但未產出完整五問 | ❌ Windows `-p` runtime 抽測未通過；互動 TUI 另測 |
 | Gemini CLI 0.40.0 | ✅ 實測 10/10（2026-08-21） | ⚠️ 需先信任資料夾（無聲關卡） | ❓ 未測 |
-| Codex CLI 0.148.0 | ✅ 實測 10/10（2026-08-21） | ✅ 實測（原生注入 prompt；於 0.145.0 實測） | ❓ 未測 |
+| Codex CLI 0.146.0 | ✅ Windows package 實測 | ✅ `exec --json` 證明讀取 `damage-report/SKILL.md`（2026-08-24） | ✅ Windows read-only runtime 實測 |
 | ChatGPT 消費版 | ❌ 無安裝路徑（產品限制） | ❌ 無 skill 概念 | 僅手動貼入，網頁端人工驗 |
 | Cursor／Copilot 等 | ❓ `npx skills` 支援但未實測 | ❓ | ❓ |
 
