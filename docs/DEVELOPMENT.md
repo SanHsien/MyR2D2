@@ -50,3 +50,4 @@ for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
 推送後以 exact SHA 核對 GitHub Actions；不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
 
 各 Windows AI Desktop／TUI／CLI 的能力與抽測邊界見 [`WINDOWS-AI-ENVIRONMENTS.md`](WINDOWS-AI-ENVIRONMENTS.md)。
+最近一次完整 repository review、finding 與殘餘風險見 [`REVIEW.md`](REVIEW.md)。

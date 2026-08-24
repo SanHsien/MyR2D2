@@ -51,6 +51,19 @@ class RepoContractTests(unittest.TestCase):
             path.write_text(json.dumps(baseline), encoding="utf-8")
             self.assertEqual(MODULE.validate(copy), [])
 
+    def test_unpinned_workflow_action_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / "repo"
+            shutil.copytree(ROOT, copy, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+            path = copy / ".github" / "workflows" / "unpinned.yaml"
+            path.write_text(
+                "jobs:\n  check:\n    steps:\n      - uses: actions/checkout@v5\n",
+                encoding="utf-8",
+            )
+            self.assertTrue(
+                any("workflow action must pin" in item for item in MODULE.validate(copy))
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

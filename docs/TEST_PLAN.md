@@ -14,30 +14,14 @@
 
 ## A. 發布前回歸（每次 release tag 前必跑，全綠才可 push）
 
-> **一鍵版**（與 CI `.github/workflows/ci.yml` 等價的機械關卡；兩邊漂移時以 ci.yml 為準）：
+> **一鍵版**（canonical gate；不要在本段複製一份容易漂移的 CI 內容）：
+>
+> ```powershell
+> pwsh -NoProfile -File tools\dev_check.ps1
+> ```
 >
 > ```bash
-> set -e
-> python3 - <<'PY'
-> import yaml, glob, re, sys
-> fails = 0
-> files = sorted(glob.glob('skills/*/SKILL.md'))
-> assert len(files) == 10, f'skill 數 {len(files)} != 10'
-> for f in files:
->     m = re.match(r'^---\n(.*?)\n---\n', open(f, encoding='utf-8').read(), re.S)
->     try: yaml.safe_load(m.group(1))
->     except Exception as e: print('FAIL', f, type(e).__name__); fails += 1
-> try:
->     yaml.safe_load('description: bad: colon'); print('FAIL 陽性對照'); fails += 1
-> except yaml.YAMLError: pass
-> sys.exit(1 if fails else 0)
-> PY
-> for d in skills/*/; do npx --yes skills-ref validate "$d"; done
-> # 守門 grep：照 CLAUDE.md 鐵則 1 那條跑（CI 版含白名單，見 ci.yml 第 3 步；不在此重抄一份）
-> test "$(wc -l < README.md)" -eq "$(wc -l < README.en.md)"
-> for s in sh dash bash ksh zsh; do SH=$s sh skills/ai-review/tests/matrix.sh; done
-> python3 skills/mission-log/tests/harvest_test.py
-> LC_ALL=C python3 skills/mission-log/tests/harvest_test.py
+> sh tools/dev_check.sh
 > ```
 
 ### REG-01 🟢 YAML frontmatter 雙 parser 驗證
@@ -58,7 +42,8 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 ### REG-02 🟢 agentskills.io 官方 validator
 
 ```bash
-for d in skills/*/; do npx --yes skills-ref validate "$d"; done
+npm ci --ignore-scripts --no-audit --no-fund
+for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
 ```
 
 **通過**：全數（現為 10 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
@@ -66,7 +51,11 @@ for d in skills/*/; do npx --yes skills-ref validate "$d"; done
 ### REG-03 🟢 本地安裝煙霧測試
 
 ```bash
-cd "$(mktemp -d)" && git init -q . && npx --yes skills@latest add <repo根目錄> -y
+npm ci --ignore-scripts --no-audit --no-fund
+REPO_ROOT=$PWD
+TARGET=$(mktemp -d)
+git -C "$TARGET" init -q
+(cd "$TARGET" && "$REPO_ROOT/node_modules/.bin/skills" add "$REPO_ROOT" --copy -y)
 ```
 
 **通過**：回報 `Installed 10 skills`（與 repo 現有支數一致）、0 個 Skipped。
@@ -86,8 +75,12 @@ cd "$(mktemp -d)" && git init -q . && npx --yes skills@latest add <repo根目錄
 ### CROSS-01 🟢 多 agent 安裝層矩陣
 
 ```bash
+REPO_ROOT=$PWD
+SKILLS="$REPO_ROOT/node_modules/.bin/skills"
 for a in gemini-cli codex cursor github-copilot; do
-  (cd "$(mktemp -d)" && git init -q . && npx --yes skills@latest add <repo根目錄> --agent $a -y)
+  TARGET=$(mktemp -d)
+  git -C "$TARGET" init -q
+  (cd "$TARGET" && "$SKILLS" add "$REPO_ROOT" --agent "$a" --copy -y)
 done
 ```
 
@@ -117,7 +110,7 @@ codex debug prompt-input "test" | grep -E "dropoff|pickup|save-all|token-optimiz
 ### CROSS-04 🟢 ChatGPT 消費版陰性對照
 
 ```bash
-npx --yes skills@latest add <repo根目錄> --agent chatgpt -y
+./node_modules/.bin/skills add "$PWD" --agent chatgpt --copy -y
 ```
 
 **通過**：CLI 回報 `Invalid agents: chatgpt`（**預期失敗**）。ChatGPT 消費版無檔案系統／無 CLI，唯一路徑是 `adapters/openai/` 的手動貼入法。此項用來持續確認該定位仍準確。
@@ -145,7 +138,7 @@ README 相容性矩陣與 adapters 上的每個 ✅／⚠️／❌，都要能�
 
 ## J. 日誌三支（mission-log／daily-debrief／weekly-debrief，v0.3.0 起）
 
-Windows 回歸：`harvest.py` 必須使用跨平台主機名 API、固定 UTF-8 輸出，並以 `--timezone +08:00` 讓日界線不依賴 POSIX `TZ`；Windows Python 執行 9 項 synthetic fixture tests 全過，禁止重新引入 `os.uname()`。
+Windows 回歸：`harvest.py` 必須使用跨平台主機名 API、固定 UTF-8 輸出，並以 `--timezone +08:00` 讓日界線不依賴 POSIX `TZ`；Windows Python 執行 16 項 synthetic fixture tests 全過，禁止重新引入 `os.uname()`。
 
 ### J-01 🟢 收割器零 token 實跑
 

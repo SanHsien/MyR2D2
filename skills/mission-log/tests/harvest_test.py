@@ -36,10 +36,12 @@ class HarvestTest(unittest.TestCase):
     def write_session(self, proj, name, lines):
         d = os.path.join(self.root, proj)
         os.makedirs(d, exist_ok=True)
-        with open(os.path.join(d, name + '.jsonl'), 'w', encoding='utf-8') as fh:
+        path = os.path.join(d, name + '.jsonl')
+        with open(path, 'w', encoding='utf-8') as fh:
             for ln in lines:
                 fh.write(ln if isinstance(ln, str) else json.dumps(ln, ensure_ascii=False))
                 fh.write('\n')
+        return path
 
     def run_harvest(self, date=DAY, fmt='jsonl', env_extra=None):
         env = dict(os.environ)
@@ -145,6 +147,63 @@ class HarvestTest(unittest.TestCase):
         self.assertNotEqual(p.returncode, 0)
         self.assertIn('timezone must be local, Z, or an offset',
                       p.stderr.decode('utf-8', 'replace'))
+
+    def test_old_mtime_does_not_hide_matching_activity(self):
+        path = self.write_session('proj-a', 'jjjj0000', [asst_line('2026-01-05T04:00:00Z')])
+        os.utime(path, (0, 0))
+        self.assertEqual(len(self.rows(self.run_harvest())), 1)
+
+    def test_out_of_order_timestamp_does_not_stop_scan(self):
+        self.write_session('proj-a', 'kkkk1111', [
+            asst_line('2026-01-06T04:00:00Z'),
+            asst_line('2026-01-05T04:00:00Z'),
+        ])
+        rows = self.rows(self.run_harvest())
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]['turns'], 1)
+
+    def test_valid_non_object_json_is_ignored(self):
+        self.write_session('proj-a', 'llll2222', [
+            [],
+            asst_line('2026-01-05T04:00:00Z'),
+        ])
+        self.assertEqual(len(self.rows(self.run_harvest())), 1)
+
+    def test_model_without_hyphen_renders_in_markdown(self):
+        self.write_session('proj-a', 'mmmm3333', [
+            asst_line('2026-01-05T04:00:00Z', model='opus'),
+        ])
+        p = self.run_harvest(fmt='md')
+        self.assertEqual(p.returncode, 0, p.stderr.decode('utf-8', 'replace'))
+        self.assertIn('opus', p.stdout.decode('utf-8'))
+
+    def test_same_eight_character_prefix_stays_separate(self):
+        self.write_session('proj-a', 'same0000-one', [asst_line('2026-01-05T04:00:00Z')])
+        self.write_session('proj-a', 'same0000-two', [asst_line('2026-01-05T05:00:00Z')])
+        rows = self.rows(self.run_harvest())
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len({row['session'] for row in rows}), 2)
+
+    def test_malformed_optional_fields_do_not_crash(self):
+        line = asst_line(
+            '2026-01-05T04:00:00Z',
+            usage={'input_tokens': None, 'output_tokens': '5'},
+            tools=[{'type': 'tool_use', 'name': []}],
+            model={'unexpected': 'object'},
+        )
+        line.update(cwd=[], gitBranch={})
+        self.write_session('proj-a', 'nnnn4444', [line])
+        rows = self.rows(self.run_harvest())
+        self.assertEqual(rows[0]['tokens'], 0)
+        self.assertEqual(rows[0]['tools'], {'?': 1})
+        self.assertEqual(rows[0]['models'], [])
+
+    def test_windows_cwd_separator_is_portable(self):
+        self.write_session('encoded-dir-name', 'oooo5555', [
+            user_line('2026-01-05T04:00:00Z', 'Windows path', cwd=r'C:\work\中文專案'),
+        ])
+        rows = self.rows(self.run_harvest())
+        self.assertEqual(rows[0]['project'], '中文專案')
 
 
 if __name__ == '__main__':

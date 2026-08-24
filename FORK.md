@@ -12,6 +12,7 @@
 - repo contract 與 upstream checker 的自動化測試。
 - GitHub Actions、CodeQL、Dependabot、issue／PR 模板。
 - `AGENTS.md`、貢獻、安全、開發、決策與 upstream ledger。
+- 可追溯的 repository review ledger（[`docs/REVIEW.md`](docs/REVIEW.md)）。
 - Windows／NTFS 與 POSIX 權限語義的明確邊界。
 - `mission-log` 在 Windows 的 UTF-8、主機名稱與時區邊界修正。
 

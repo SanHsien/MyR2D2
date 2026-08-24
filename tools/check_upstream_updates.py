@@ -110,14 +110,6 @@ def evaluate(baseline: dict[str, Any], get_json: Callable[[str], Any]) -> Result
     )
     if not isinstance(compare, dict) or not isinstance(compare.get("commits"), list):
         raise CheckError("compare response is missing commits")
-    head = compare.get("merge_base_commit", {}).get("sha")
-    if compare.get("status") == "identical":
-        upstream_head = baseline["reviewed_through"]
-    else:
-        commits = compare["commits"]
-        upstream_head = commits[-1].get("sha") if commits else head
-    if not isinstance(upstream_head, str) or not SHA_RE.fullmatch(upstream_head):
-        raise CheckError("compare response is missing a valid upstream head")
     new_commits = tuple(
         item["sha"]
         for item in compare["commits"]
@@ -163,6 +155,9 @@ def evaluate(baseline: dict[str, Any], get_json: Callable[[str], Any]) -> Result
         if not isinstance(name, str) or not SHA_RE.fullmatch(str(sha)):
             raise CheckError("branch response contains an invalid name or SHA")
         current_branches[name] = sha
+    upstream_head = current_branches.get(branch)
+    if not isinstance(upstream_head, str) or not SHA_RE.fullmatch(upstream_head):
+        raise CheckError("branch response is missing a valid upstream head")
     changed = tuple(
         sorted(
             name

@@ -42,6 +42,23 @@ def user_text(msg):
             return t
     return None
 
+def session_prefix(project, session_id, keys):
+    peers = [other for peer_project, other in keys if peer_project == project and other != session_id]
+    length = min(8, len(session_id))
+    while length < len(session_id) and any(other.startswith(session_id[:length]) for other in peers):
+        length += 1
+    return session_id[:length]
+
+def token_count(usage, key):
+    value = usage.get(key, 0)
+    return value if isinstance(value, int) and not isinstance(value, bool) else 0
+
+def path_leaf(value):
+    if not isinstance(value, str) or not value:
+        return ''
+    parts = re.split(r'[/\\]+', value.rstrip('/\\'))
+    return parts[-1] if parts else ''
+
 def harvest(projects_dir, day, timezone=None):
     if timezone:
         day_start = datetime.datetime.combine(day, datetime.time.min, tzinfo=timezone)
@@ -50,22 +67,21 @@ def harvest(projects_dir, day, timezone=None):
     day_end = day_start + datetime.timedelta(days=1)
     sessions = {}
     bad_ts = 0
-    # mtime 粗篩:整檔最後修改早於當天開始的不可能含當天資料
     for tx in glob.glob(os.path.join(projects_dir, '*', '*.jsonl')):
         try:
-            modified = datetime.datetime.fromtimestamp(os.path.getmtime(tx), tz=timezone)
-            if (modified if timezone else modified.astimezone()) < day_start:
-                continue
+            fh = open(tx, encoding='utf-8', errors='replace')
         except OSError:
             continue
         proj = os.path.basename(os.path.dirname(tx))
-        sid = os.path.basename(tx)[:8]
-        key = (proj, sid)
-        with open(tx, encoding='utf-8', errors='replace') as fh:
+        full_sid = os.path.splitext(os.path.basename(tx))[0]
+        key = (proj, full_sid)
+        with fh:
             for line in fh:
                 try:
                     obj = json.loads(line)
                 except Exception:
+                    continue
+                if not isinstance(obj, dict):
                     continue
                 raw = obj.get('timestamp')
                 ts = parse_ts(raw, timezone) if raw else None
@@ -74,20 +90,20 @@ def harvest(projects_dir, day, timezone=None):
                     continue
                 if not ts:
                     continue
-                if ts >= day_end:
-                    break  # transcript 是 append-only 時序檔,過了查詢日終點即可停(跨日長檔有感)
-                if ts < day_start:
+                if ts < day_start or ts >= day_end:
                     continue
                 s = sessions.setdefault(key, {
-                    'project': proj.split('-')[-1] or proj, 'session': sid,
+                    'project': proj.split('-')[-1] or proj, 'session': full_sid,
                     'first': ts, 'last': ts, 'turns': 0, 'tokens': 0,
                     'tools': {}, 'models': set(), 'prompts': [], 'branch': None, '_cwd': None})
                 s['first'] = min(s['first'], ts); s['last'] = max(s['last'], ts)
-                if obj.get('cwd') and not s['_cwd']:
-                    s['_cwd'] = obj['cwd']
-                    s['project'] = os.path.basename(obj['cwd'].rstrip('/')) or s['project']
-                if obj.get('gitBranch') and not s['branch']:
-                    s['branch'] = obj['gitBranch']
+                cwd = obj.get('cwd')
+                if isinstance(cwd, str) and cwd and not s['_cwd']:
+                    s['_cwd'] = cwd
+                    s['project'] = path_leaf(cwd) or s['project']
+                branch = obj.get('gitBranch')
+                if isinstance(branch, str) and branch and not s['branch']:
+                    s['branch'] = branch
                 m = obj.get('message')
                 if not isinstance(m, dict):
                     continue
@@ -98,15 +114,21 @@ def harvest(projects_dir, day, timezone=None):
                 u = m.get('usage')
                 if isinstance(u, dict):
                     s['turns'] += 1
-                    s['tokens'] += u.get('input_tokens', 0) + u.get('output_tokens', 0) + u.get('cache_creation_input_tokens', 0)
-                if m.get('model') and m['model'] != '<synthetic>':
-                    s['models'].add(m['model'])
+                    s['tokens'] += sum(token_count(u, key) for key in (
+                        'input_tokens', 'output_tokens', 'cache_creation_input_tokens'))
+                model = m.get('model')
+                if isinstance(model, str) and model and model != '<synthetic>':
+                    s['models'].add(model)
                 c = m.get('content')
                 if isinstance(c, list):
                     for b in c:
                         if isinstance(b, dict) and b.get('type') == 'tool_use':
-                            n = b.get('name', '?')
+                            n = b.get('name')
+                            if not isinstance(n, str) or not n:
+                                n = '?'
                             s['tools'][n] = s['tools'].get(n, 0) + 1
+    for (project, full_sid), session in sessions.items():
+        session['session'] = session_prefix(project, full_sid, sessions.keys())
     return sorted(sessions.values(), key=lambda s: s['first']), bad_ts
 
 def main():
@@ -140,7 +162,7 @@ def main():
     print(f"## {day} @ {host} — {len(rows)} 個活躍 session (tok=新增 in+out+cache_creation, 不含 cache 讀取)")
     for s in rows:
         tools = ' '.join(f"{k}×{v}" for k, v in sorted(s['tools'].items(), key=lambda x: -x[1])[:4])
-        models = ','.join(m.split('-')[1] for m in sorted(s['models']))
+        models = ','.join(m.split('-', 1)[1] if '-' in m else m for m in sorted(s['models']))
         print(f"\n### {s['first'].strftime('%H:%M')}–{s['last'].strftime('%H:%M')}  {s['project']}"
               f"{'@' + s['branch'] if s['branch'] else ''}  ({s['turns']} turns, {s['tokens']:,} tok, {models})")
         print(f"  工具: {tools or '（無）'}")

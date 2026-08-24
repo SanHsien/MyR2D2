@@ -30,6 +30,7 @@ REQUIRED = (
     "SECURITY.md",
     "docs/DECISIONS.md",
     "docs/DEVELOPMENT.md",
+    "docs/REVIEW.md",
     "docs/UPSTREAM.md",
     "docs/WINDOWS-AI-ENVIRONMENTS.md",
     "tools/dev_check.ps1",
@@ -146,6 +147,27 @@ def validate(root: Path) -> list[str]:
     attributes = root / ".gitattributes"
     if attributes.is_file() and "* text=auto eol=lf" not in attributes.read_text(encoding="utf-8"):
         errors.append(".gitattributes must normalize text to LF")
+
+    action_use = re.compile(r"^\s*(?:-\s*)?uses:\s*([^\s#]+)")
+    workflows = root / ".github" / "workflows"
+    if workflows.is_dir():
+        workflow_files = [*workflows.glob("*.yml"), *workflows.glob("*.yaml")]
+        for workflow in sorted(workflow_files):
+            for line_number, line in enumerate(
+                workflow.read_text(encoding="utf-8").splitlines(), 1
+            ):
+                match = action_use.match(line)
+                if not match:
+                    continue
+                action = match.group(1)
+                if action.startswith("./") or action.startswith("docker://"):
+                    continue
+                ref = action.rsplit("@", 1)[-1] if "@" in action else ""
+                if not SHA_RE.fullmatch(ref):
+                    errors.append(
+                        f"workflow action must pin a full commit SHA: "
+                        f"{workflow.relative_to(root)}:{line_number}"
+                    )
     return errors
 
 

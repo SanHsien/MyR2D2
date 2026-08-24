@@ -10,7 +10,7 @@ Windows 使用 PowerShell 作 canonical entrypoint，產品 shell 測試由 Git 
 
 ## 2026-08-24：不建立 Python 套件
 
-維護工具只使用 Python 標準庫與 `gh`，不新增 `pyproject.toml`、requirements 或 lockfile。repo 的交付物是 Agent Skills，不是 Python library。
+Python 維護工具只使用標準庫與 `gh`，不新增 `pyproject.toml` 或 requirements；`package-lock.json` 僅固定 `skills`／`skills-ref` 維護工具及其 integrity。repo 的交付物是 Agent Skills，不是 Python library。
 
 ## 2026-08-24：upstream 水位分離
 

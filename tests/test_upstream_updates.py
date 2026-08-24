@@ -84,6 +84,25 @@ class UpstreamCheckerTests(unittest.TestCase):
         with self.assertRaises(MODULE.CheckError):
             MODULE.evaluate(baseline(), fail)
 
+    def test_rewritten_default_branch_reports_authoritative_branch_head(self) -> None:
+        merge_base = "2" * 40
+
+        def get(endpoint: str):
+            if "compare" in endpoint:
+                return {
+                    "status": "diverged",
+                    "merge_base_commit": {"sha": merge_base},
+                    "commits": [],
+                }
+            if "/pulls?" in endpoint or "/issues?" in endpoint:
+                return []
+            return [{"name": "main", "commit": {"sha": NEW_SHA}}]
+
+        result = MODULE.evaluate(baseline(), get)
+        self.assertTrue(result.needs_attention)
+        self.assertEqual(result.upstream_head, NEW_SHA)
+        self.assertEqual(result.changed_branches, ("main",))
+
 
 if __name__ == "__main__":
     unittest.main()
