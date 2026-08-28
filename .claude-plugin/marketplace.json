@@ -1,0 +1,14 @@
+{
+  "name": "myr2d2",
+  "owner": {
+    "name": "Eric Lu (tingyulu)",
+    "url": "https://github.com/tingyulu"
+  },
+  "plugins": [
+    {
+      "name": "myr2d2",
+      "source": "./",
+      "description": "MyR2D2 — save-all / dropoff / pickup / mission-log / daily-debrief / weekly-debrief / damage-report / ai-review / token-optimizer / flight-to-calendar。繁中本體、中英雙語觸發 (zh-TW body, bilingual triggers)."
+    }
+  ]
+}

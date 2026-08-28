@@ -1,0 +1,14 @@
+{
+  "name": "myr2d2-maintainer-tools",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Pinned maintainer tooling for MyR2D2",
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "packageManager": "npm@11.8.0",
+  "devDependencies": {
+    "skills": "1.5.23",
+    "skills-ref": "0.1.5"
+  }
+}
