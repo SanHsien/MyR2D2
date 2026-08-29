@@ -10,17 +10,19 @@
 
 R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
 
-That's MyR2D2's job description — 10 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's MyR2D2's job description — 12 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
 | **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in R2, escape pod away |
 | **dropoff** | Write a task + full context into a handoff card for another session; rings the doorbell if the target session is live | Leia recording "Help me, Obi-Wan" |
 | **pickup** | New session fetches the cards (or gets doorbell-woken), reads in full, claims, starts, reports back when done | R2 finds Obi-Wan, plays the hologram |
+| **recap** | When too many parallel sessions blur together: refresh whatever may have gone stale, then report goal / evidence / blocker / next steps | The hologram isn't a memory — it's the current coordinates, read live off the system |
 | **mission-log** | Zero-token harvest of any day's session activity (the transcripts were always recording — you just need a reader) | The flight recorder never sleeps |
 | **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
 | **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
 | **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, R2 runs its own diagnostics and beeps the damage report — without waiting for Luke to ask |
+| **blind-review** | Hand the change to a subagent that **never saw the conversation** to attack it; the main agent adds the assumptions and design decisions, and out comes a briefing for a human | Plugged into the port with no mission briefing — R2 reads the light that is actually lit |
 | **ai-review** | Send the work to **another model** for a second opinion, digest it, then write the report; says "self-review only" when no backend is there | R2 and C-3PO bicker for six films — each covering the other's blind half |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
@@ -39,8 +41,10 @@ Start here — check which skills your tool can run:
 |---|---|---|---|---|---|
 | save-all | ✅ | ✅ (token-count step auto-skips) | ✅\* (same) | ✅\* (drop the token-count step) | ⚠️ checklist only |
 | dropoff / pickup³ | ✅ | ✅ | ✅\* | ✅\* | ❌ (no shared disk) |
+| recap⁶ | ✅ | ✅ (rules-only; which items refresh depends on your tools) | ✅ (same) | ✅ (same) | ⚠️ report format only, nothing to refresh |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
 | damage-report | ⚠️⁵ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (Windows CLI runtime tested) | ⚠️ paste as a wrap-up checklist |
+| blind-review⁶ | ✅ (needs subagent dispatch) | ⚠️ no subagents → open a clean chat by hand | ⚠️ same | ⚠️ same | ⚠️ use a blank chat as the attacker |
 | ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
@@ -49,7 +53,7 @@ Start here — check which skills your tool can run:
 ¹ The five iron rules port; swap model names for your vendor's tiers. §1's "advanced backstop" (settings.json / env) only works in Claude Code — skip it elsewhere.
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 ³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
-⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**. ⁵ Claude Code 2.1.231 on Windows did not produce the complete five-question contract in non-interactive `-p` mode, so package success is not treated as runtime proof; interactive TUI needs a separate test.
+⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**. ⁵ Claude Code 2.1.231 on Windows did not produce the complete five-question contract in non-interactive `-p` mode, so package success is not treated as runtime proof; interactive TUI needs a separate test. ⁶ `recap` and `blind-review` were added in v0.7.0 and are **untested on every tool**: the ratings above are inferred from "rules-only" / "needs subagents", not measured.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -98,7 +102,7 @@ No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions f
 
 First get the repo via the manual-copy `git clone` (or **Code → Download ZIP** on the GitHub page), then add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/daily-debrief`, `/damage-report`, `/ai-review`, etc., or natural language in either language.
+Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/recap`, `/daily-debrief`, `/damage-report`, `/blind-review`, `/ai-review`, etc., or natural language in either language.
 
 ## Updating
 
@@ -125,10 +129,12 @@ Claude follows the zh-TW instructions and replies in whatever language you speak
 |---|---|
 | save-all | None (the token-count step is Claude Code CLI-only and optional) |
 | dropoff / pickup | None — cards are Markdown files under the project's `.claude/handoffs/`; the instant doorbell is an optional enhancement (Claude Code v2.1.224+), auto-skipped where unavailable |
+| recap | None (pure rules) — but **the refresh step uses tools**: version control, PR, CI and background jobs each get re-queried; whatever your environment lacks is labelled "unverified" instead of reusing the stale value from the conversation |
 | mission-log | None — the harvester is a stdlib-only python3 script, zero tokens. Ships tests (`tests/harvest_test.py`, synthetic fixtures — never reads your real data) |
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
 | damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
+| blind-review | **An environment that can dispatch a read-only subagent** (the attacker not having the conversation is the whole premise; with no subagents, open a clean chat by hand instead). Complementary to `ai-review`, not overlapping: this one swaps context, that one swaps model family |
 | ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. A built-in 600-second wall-clock timeout is adjustable with `--timeout`. No extra packages: no npm module, no brew formula, no API key of your own. Ships 45 regression tests (`tests/matrix.sh`, no quota burned) |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool — Workflow is Claude Code's multi-agent orchestration feature; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
@@ -149,11 +155,11 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
 ├── .github/workflows/                 ← CI (YAML validation, content gate, behavior matrix, harvest tests)
-├── skills/                            ← 10 skills (zh-TW body, bilingual triggers)
-│   ├── save-all/  ├── dropoff/  ├── pickup/
+├── skills/                            ← 12 skills (zh-TW body, bilingual triggers)
+│   ├── save-all/  ├── dropoff/  ├── pickup/  ├── recap/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
-│   ├── damage-report/  ├── ai-review/  ├── token-optimizer/
-│   └── flight-to-calendar/
+│   ├── damage-report/  ├── blind-review/  ├── ai-review/
+│   └── token-optimizer/  └── flight-to-calendar/
 ├── prompts/                           ← no-install lite prompts (paste into any chat)
 ├── docs/                              ← test plan + verification notes for external claims
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit

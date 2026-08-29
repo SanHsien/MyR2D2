@@ -63,8 +63,8 @@ def validate(root: Path) -> list[str]:
                 errors.append(f"{path.name} does not identify the maintained fork")
 
     skills = sorted((root / "skills").glob("*/SKILL.md"))
-    if len(skills) != 10:
-        errors.append(f"expected 10 skills, found {len(skills)}")
+    if len(skills) != 12:
+        errors.append(f"expected 12 skills, found {len(skills)}")
     frontmatter = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
     for skill in skills:
         match = frontmatter.match(skill.read_text(encoding="utf-8"))
