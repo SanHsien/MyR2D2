@@ -1,6 +1,12 @@
 [CmdletBinding()]
 param(
-    [string]$BaseRef
+    [string]$BaseRef,
+    # Skip the cross-shell ai-review matrix, which is 27 seconds per shell and
+    # over half the total runtime. Everything else still runs. Meant for the
+    # end-of-turn Stop hook, which has a 90 second budget and silently skips the
+    # gate when it is exceeded -- a gate that never finishes protects nothing.
+    # CI and pre-commit runs should stay on the full check.
+    [switch]$Quick
 )
 
 $ErrorActionPreference = 'Stop'
@@ -17,9 +23,21 @@ function Invoke-Gate {
 
 $python = (Get-Command python -ErrorAction Stop).Source
 $git = (Get-Command git -ErrorAction Stop).Source
-$gitRoot = Split-Path -Parent (Split-Path -Parent $git)
-$bash = Join-Path $gitRoot 'bin\bash.exe'
-if (-not (Test-Path -LiteralPath $bash)) {
+
+# Walk up from wherever git.exe was found until bin\bash.exe turns up.
+# Which git.exe resolves depends on who launched this script: a plain
+# PowerShell finds <Git>\cmd\git.exe, but one launched from Git Bash finds
+# <Git>\mingw64\bin\git.exe, because Git Bash puts mingw64\bin first on PATH.
+# Assuming a fixed depth works in the first case and fails in the second --
+# which is the case that matters, since the Stop hook runs from Bash.
+$bash = $null
+$probe = Split-Path -Parent $git
+while ($probe) {
+    $candidate = Join-Path $probe 'bin\bash.exe'
+    if (Test-Path -LiteralPath $candidate) { $bash = $candidate; break }
+    $probe = Split-Path -Parent $probe
+}
+if (-not $bash) {
     throw 'Git for Windows Bash was not found. Install Git for Windows.'
 }
 $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
@@ -38,13 +56,17 @@ try {
     Invoke-Gate 'mission-log harvest tests' {
         & $python skills/mission-log/tests/harvest_test.py
     }
-    foreach ($shell in @('sh', 'bash')) {
-        Invoke-Gate "ai-review matrix ($shell on Git Bash/NTFS)" {
-            $env:SH = $shell
-            & $bash skills/ai-review/tests/matrix.sh
+    if ($Quick) {
+        Write-Host '==> ai-review matrix -- SKIPPED (-Quick)'
+    } else {
+        foreach ($shell in @('sh', 'bash')) {
+            Invoke-Gate "ai-review matrix ($shell on Git Bash/NTFS)" {
+                $env:SH = $shell
+                & $bash skills/ai-review/tests/matrix.sh
+            }
         }
+        Remove-Item Env:SH -ErrorAction SilentlyContinue
     }
-    Remove-Item Env:SH -ErrorAction SilentlyContinue
     foreach ($skill in Get-ChildItem -LiteralPath skills -Directory | Sort-Object Name) {
         Invoke-Gate "skills-ref validate $($skill.Name)" {
             & $skillsRef validate $skill.FullName
