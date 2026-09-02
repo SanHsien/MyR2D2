@@ -118,14 +118,14 @@ jobs:
             || { echo "FAIL README.md 與 README.en.md 行數不等"; exit 1; }
           echo "OK $(wc -l < README.md) 行對齊"
 
-      - name: ai-review 行為矩陣(5 shell × 45 項)
+      - name: ai-review 行為矩陣(5 shell × 46 項)
         run: |
           for s in sh dash bash ksh zsh; do
             echo "== $s =="
             SH=$s sh skills/ai-review/tests/matrix.sh || exit 1
           done
 
-      - name: ai-search 行為矩陣(5 shell × 43 項)
+      - name: ai-search 行為矩陣(5 shell × 44 項)
         run: |
           for s in sh dash bash ksh zsh; do
             echo "== $s =="

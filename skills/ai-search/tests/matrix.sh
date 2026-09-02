@@ -165,6 +165,35 @@ RO="$W/ro"; mkdir -p "$RO"; chmod 500 "$RO"
 run env PATH=/usr/bin:/bin AI_SEARCH_DIR="$RO/nested" AI_SEARCH_CMD='cat' $SH "$S" "$Q"
 chk "落檔目錄不可寫仍 ok" ok 0 "$ST" "$RC"
 chmod 700 "$RO"
+# 傳給後端的路徑格式（Windows 迴歸）。上面每一項的 stub 都是 sh 腳本，POSIX 路徑照吃，
+# 所以整份矩陣看不見「真實 codex 是原生 Windows exe、看不懂 /tmp/xxx」這個缺陷
+# （實錯：-C 收到 POSIX 路徑 → `os error 2` → 被歸成 failed_unknown）。
+# 這一項改成攔截 argv：不看後端做了什麼，只看它收到的 -C／-o 長什麼樣。
+cat >"$STUB/codex" <<'EOF'
+#!/bin/sh
+[ "$1 $2" = "login status" ] && { echo "Logged in"; exit 0; }
+for a in "$@"; do printf '%s\n' "$a"; done >"$ARGV_OUT"
+exit 1
+EOF
+chmod +x "$STUB/codex"
+ARGV="$W/argv.txt"
+env PATH="$STUB:/usr/bin:/bin" ARGV_OUT="$ARGV" $SH "$S" "$Q" >/dev/null 2>&1
+CDIR=$(grep -A1 -x -e '-C' "$ARGV" 2>/dev/null | tail -1)
+case "$(uname -s 2>/dev/null || printf unknown)" in
+MINGW* | MSYS* | CYGWIN*)
+	case "$CDIR" in
+	/*) no_ "傳給後端的 -C 已轉成 Windows 路徑（實得 POSIX：$CDIR）" ;;
+	?:\\*) ok_ "傳給後端的 -C 已轉成 Windows 路徑" ;;
+	*) no_ "傳給後端的 -C 形式無法辨識（實得：$CDIR）" ;;
+	esac
+	;;
+*)
+	case "$CDIR" in
+	/*) ok_ "傳給後端的 -C 在 POSIX 平台維持 POSIX 路徑" ;;
+	*) no_ "傳給後端的 -C 在 POSIX 平台被動到了（實得：$CDIR）" ;;
+	esac
+	;;
+esac
 
 echo "-- G. 用法錯誤（全部 exit 1，不印狀態）--"
 run env PATH=/usr/bin:/bin $SH "$S"
@@ -230,12 +259,20 @@ YF=$(ls "$YD"/*.md 2>/dev/null | head -1)
 if [ -z "$YF" ]; then
 	no_ "特殊問題字元仍落得了檔"
 elif command -v python3 >/dev/null 2>&1 && python3 -c "import yaml" >/dev/null 2>&1; then
+	# 兩個 Windows 坑，兩個都會讓一份**其實合法**的 frontmatter 被誤判成壞掉：
+	# ① 路徑：Git Bash 上的 python3 常是原生 Windows 直譯器（如 Windows Store 版），
+	#    讀不懂 `/tmp/xxx`，開檔直接 FileNotFoundError → 改用 stdin 餵內容。
+	# ② 編碼：Windows 的 `sys.stdin.read()` 依 locale 預設編碼解碼（cp950…），
+	#    會把 UTF-8 中文解成代理字元，PyYAML 報 `unacceptable character #xdce5`
+	#    → 改讀 `stdin.buffer` 自己指定 utf-8，不看環境臉色。
+	# 🔴 別退回 `sys.stdin.read()`：它在有設 PYTHONIOENCODING 的 shell 會過、
+	#    沒設的會紅，是那種「跑起來時好時壞、看起來像 flaky」的假訊號（實錯）。
 	if python3 -c "
 import sys,yaml,re
-s=open(sys.argv[1],encoding='utf-8').read()
+s=sys.stdin.buffer.read().decode('utf-8')
 m=re.match(r'^---\n(.*?)\n---\n',s,re.S)
 yaml.safe_load(m.group(1))
-" "$YF" >/dev/null 2>&1; then
+" <"$YF" >/dev/null 2>&1; then
 		ok_ "含冒號引號的問題 frontmatter 仍是合法 YAML"
 	else
 		no_ "含冒號引號的問題 frontmatter 壞了"

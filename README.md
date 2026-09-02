@@ -33,7 +33,7 @@ MyR2D2 就是這個定位 —— 14 支 skills，管的都是「不做不會死�
 
 Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全部蒸發。這套 skills 的共同主題就是對抗失憶——上表每一支，管的都是失憶鏈上的一段。全部是在真實日常使用中踩坑迭代出來的，不是理論設計。
 
-開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，45 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，fork 每一版修了什麼見 [Releases](https://github.com/SanHsien/MyR2D2/releases)。
+開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，46 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，fork 每一版修了什麼見 [Releases](https://github.com/SanHsien/MyR2D2/releases)。
 
 ## 相容性矩陣
 
@@ -58,7 +58,7 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 ² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
 ³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
 ⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。macOS 與 Linux 會驗完整 POSIX 權限；Windows 11 Git Bash 驗其餘行為並明確略過 NTFS 無法證明的 mode bit。**免費方案帳號仍未實測**。⁵ Claude Code 2.1.231 的 Windows 非互動 `-p` 抽測未產出完整五問，故不以 package 成功替 runtime 背書；互動 TUI 需另測。⁶ `recap` 與 `blind-review` 於 v0.7.0 新增，**跨工具皆未實測**：表中評級是依「規則類／需子代理」推論的，不是量過的。
-⁷ `new-mission` 與 `ai-search` 於 v0.8.0 自上游 `tingyulu/MyR2D2` v0.7.3 採納。上兩列的評級**分兩種來源，不可混談**：**量過的只有安裝層與腳本行為**——上游在 gemini-cli／codex 各跑過 12/12 安裝發現（那是**上游 12 支**的 working tree，不是本 fork 的 14 支），`ai-search` 的 43 項行為矩陣由上游 CI 與本 fork 的 CI／Windows canonical gate 每次實跑；**其餘各格（Cowork／Gemini／Codex／ChatGPT 的執行層）與 ⁶ 同性質，是依「規則類／零工具依賴」推論的，不是量過的**。`ai-search` 需要一個**會上網搜尋**的後端（預設 Codex CLI 內建的 `web_search`，可用 `AI_SEARCH_CMD` 換掉——但換的後端也得會搜尋，純 LLM 只會拿舊知識填答），其真實後端 ok 路徑僅上游單次實測、**本 fork 未實測**。`ai-search` 需要一個**會上網搜尋**的後端（預設 Codex CLI 內建的 `web_search`，可用 `AI_SEARCH_CMD` 換掉——但換的後端也得會搜尋，純 LLM 只會拿舊知識填答）。沒有後端／沒登入回 `skipped_*` 並回 0，自動化只看退出碼會把「本次沒查證」當成功，要分辨就解析 stdout 末行的 `AI_SEARCH_STATUS:`。逐項證據與來源分野見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) F 段。
+⁷ `new-mission` 與 `ai-search` 於 v0.8.0 自上游 `tingyulu/MyR2D2` v0.7.3 採納，v0.8.1 補上 Windows 修復與實測。上兩列的評級**分三種來源，不可混談**：①**本 fork 自己量過的**——安裝層 `codex`／`claude-code`／`gemini-cli` 三個目標各 **14/14、0 Skipped**（Windows 隔離專案，`tools/windows_agent_smoke.ps1`，每次 gate 實跑）；`ai-search` 44 項行為矩陣在 Windows Git Bash 與 Linux CI 每次 push 實跑；真實 Codex 後端的 `failed_quota` 路徑在 Windows 實測（狀態分類正確）。②**未量到的**——真實後端的 `ok` 路徑：本機帳號在測試當下已達用量上限，故**本 fork 沒驗過成功查證**，上游有單次實測記錄。③**推論的**——其餘各格（Cowork／Gemini／Codex／ChatGPT 的**執行層**）與 ⁶ 同性質，依「規則類／零工具依賴」推得，不是量過的；Gemini 的**發現層**同樣未驗（本機沒裝 Gemini CLI，安裝層是 `npx skills` 安裝器的行為，與該 CLI 在不在場無關）。`ai-search` 需要一個**會上網搜尋**的後端（預設 Codex CLI 內建的 `web_search`，可用 `AI_SEARCH_CMD` 換掉——但換的後端也得會搜尋，純 LLM 只會拿舊知識填答）；沒有後端／沒登入回 `skipped_*` 並回 0，自動化只看退出碼會把「本次沒查證」當成功，要分辨就解析 stdout 末行的 `AI_SEARCH_STATUS:`。逐項證據與來源分野見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) F 段。
 
 - **Gemini CLI／Codex CLI**：安裝與發現層已實測——含 Gemini 的 trusted-folder 關卡（skill 沒出現時，先信任專案資料夾）；執行層未實測。
 - **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
@@ -141,8 +141,8 @@ Claude 讀繁中指令、照樣用你的對話語言回覆 —— 英文使用�
 | new-mission | 無（純規則;第 3 步進階節的 `ai-review` 送審是選用交叉引用） |
 | damage-report | 無（純規則;第 5 問提到的 `/dropoff`、進階節的 `ai-review` 都是選用交叉引用） |
 | blind-review | **能派唯讀子代理的環境**（子代理拿不到對話是本 skill 的前提；派不出來就人工另開一個乾淨對話代替）。與 `ai-review` 互補不重疊：這支換脈絡，那支換模型家族 |
-| ai-review | **二審後端**(預設 Codex CLI;`AI_REVIEW_CMD` 可換任何讀 stdin／吐 stdout 的命令)＋POSIX shell。內建 600 秒 wall-clock timeout，可用 `--timeout` 調整。無額外套件依賴:不需 npm 套件、brew formula 或自備 API key。附 45 項回歸測試(`tests/matrix.sh`,不燒額度) |
-| ai-search | **會上網搜尋的後端**(預設 Codex CLI 內建 `web_search`;`AI_SEARCH_CMD` 可換,但換的後端也得會搜尋)＋POSIX shell。無額外套件依賴。附 43 項回歸測試(`tests/matrix.sh`,不燒額度、不連網) |
+| ai-review | **二審後端**(預設 Codex CLI;`AI_REVIEW_CMD` 可換任何讀 stdin／吐 stdout 的命令)＋POSIX shell。內建 600 秒 wall-clock timeout，可用 `--timeout` 調整。無額外套件依賴:不需 npm 套件、brew formula 或自備 API key。附 46 項回歸測試(`tests/matrix.sh`,不燒額度) |
+| ai-search | **會上網搜尋的後端**(預設 Codex CLI 內建 `web_search`;`AI_SEARCH_CMD` 可換,但換的後端也得會搜尋)＋POSIX shell。無額外套件依賴。附 44 項回歸測試(`tests/matrix.sh`,不燒額度、不連網) |
 | token-optimizer | 無（規則類 skill;Workflow 相關條目需要有 Workflow tool 的環境——Workflow＝Claude Code 的多代理編排功能;§1「進階兜底」僅 Claude Code CLI 生效） |
 | flight-to-calendar | **Google Calendar MCP connector**（硬依賴） |
 

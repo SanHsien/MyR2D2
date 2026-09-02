@@ -34,9 +34,20 @@ Upstream：[`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2)
 |---|---|---|
 | `skills/ai-search/tests/matrix.sh` | 落檔權限 `0600` 一項補上 `MINGW*\|MSYS*` → `skip_` 分支（與 `ai-review/tests/matrix.sh` 同形） | 上游只有單行 `ok_ \|\| no_`，在 Windows Git Bash 上必紅（NTFS 不提供 POSIX mode-bit 證據）。這是本 fork 既有的平台邊界，不是放水：Linux CI 仍必驗該項 |
 | `skills/ai-search/SKILL.md` | ① 第 116 行去尾隨空白 ② 測試段的平台宣稱改寫 | ① 上游該行帶尾隨空白，本 repo 的 `git diff --check` 關卡會擋 ② 上游寫「Windows 未實測」，但本 fork 已把矩陣接進 Windows canonical gate 並實測 42 過 1 略，照抄會與 `docs/TEST_PLAN.md` F-01 打架；順帶依鐵則 1 拿掉本機實測的日期戳 |
-| `skills/ai-review/SKILL.md` | 上游 `455517d` 的兩處措辭手動併入，未整檔覆蓋 | fork 端有 `--timeout`／45 項測試等客製，整檔取上游會清掉 |
+| `skills/ai-review/SKILL.md` | 上游 `455517d` 的兩處措辭手動併入，未整檔覆蓋 | fork 端有 `--timeout`／測項數等客製，整檔取上游會清掉 |
 
-其餘採納檔案（`new-mission/SKILL.md`、`ai-search/scripts/ai-search.sh`、`damage-report`、`save-all`、四份 prompts）與上游逐位元組相同。
+v0.8.1 又多了四處（都是 Windows 實跑才浮出來的真缺陷，見 `docs/TEST_PLAN.md` F-05）：
+
+| 檔案 | 差異 | 為什麼 |
+|---|---|---|
+| `skills/ai-search/scripts/ai-search.sh`、`skills/ai-review/scripts/ai-review.sh` | 新增 `winpath()`，傳給 codex 的 `-C`／`-o` 在 MSYS 上經 `cygpath -w` 轉換 | 原生 Windows 的 `codex.exe` 讀不懂 POSIX 路徑，回 `os error 2` 並被歸成 `failed_unknown`。**兩支腳本在 Windows 上從來沒真正碰到過真實後端**，而矩陣看不見（stub 是 sh 腳本、POSIX 路徑照吃） |
+| `skills/ai-search/tests/matrix.sh`、`skills/ai-review/tests/matrix.sh` | 新增「傳給後端的 `-C` 路徑格式」測項（攔截 argv） | 上一格那個缺陷沒有任何測試守得住；附陽性對照確認會轉紅 |
+| 同上兩份矩陣 | frontmatter YAML 驗證改走 stdin＋`stdin.buffer.decode('utf-8')` | 原寫法把 POSIX 路徑交給原生 Windows `python3`（FileNotFoundError），改 stdin 後又依 locale 解碼（cp950 → `unacceptable character #xdce5`）。兩者都把合法 frontmatter 誤判成壞掉，且有沒有設 `PYTHONIOENCODING` 結果不同＝假 flaky |
+| `skills/new-mission/SKILL.md`、`skills/save-all/SKILL.md` | 取時區的退路由 `%Z` 縮寫改為 `UTC±hhmm`（有縮寫才附上） | Git Bash 沒有 `/etc/localtime` 也沒有 `/usr/share/zoneinfo/`，`date +%Z` 回空白字串——上游寫法在本 fork 的主平台上 100% 印出空的時區標籤，等於那一行的存在理由（讓人讀得出是哪裡的幾點）被抹掉。實測改後為 `UTC+0800（非 IANA 名稱）` |
+
+其餘採納檔案（`ai-search/scripts/ai-search.sh` 的其餘部分、`damage-report`、四份 prompts）與上游逐位元組相同。
+
+🔁 **這四處都值得回貢上游**（同樣的缺陷在上游 repo 也在）。依 fork 規則，回貢要維護者在當次對話明確同意，**本次未提 PR**。
 
 fork 端的連動改動（同一批）：兩份 README 計數 12→14＋新增列＋新註⁷、`docs/cheatsheet.md`、`CLAUDE.md` 連動表行號與 H3 慣例、`AGENTS.md`／`FORK.md` 支數敘述、`.claude-plugin/` 兩檔、`.github/workflows/ci.yml`（計數 12→14＋ai-search 矩陣關卡）、`tools/check_repo_contract.py`（12→14）、`tools/dev_check.sh`／`dev_check.ps1`（接上 ai-search 矩陣）、`.gitignore`（`.ai-searches/`）、`docs/TEST_PLAN.md`（計數、F 段、C 段 v0.8.0 註）。
 

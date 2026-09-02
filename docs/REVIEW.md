@@ -20,7 +20,7 @@
 | R-05 | P2 | 測試計畫仍複製舊 gate、使用浮動 npm 指令；README 行數與 lockfile 決策文件也已漂移。 | 測試計畫改指向 canonical scripts 與 locked CLIs；同步 180 行與 Node lockfile 決策。 |
 | R-06 | P2 | Dependabot 設定引用 `dependencies`、`github-actions`、`npm` labels，但遠端 repo 尚未建立。 | 在 `SanHsien/MyR2D2` 建立三個 labels；不對 upstream 寫入。 |
 | R-07 | P3 | Actions 現在雖已釘 full SHA，repo contract 沒有阻止未來退回 major tag。 | contract 新增 workflow action full-SHA 規則與反例測試。 |
-| R-08 | P1 | `ai-review` 後端沒有 wall-clock 上限，CLI 或自訂命令卡住會無界等待。 | 新增預設 600 秒的 `--timeout`／`AI_REVIEW_TIMEOUT_SECONDS`，涵蓋自訂後端、Codex 登入檢查與 review；三條逾時路徑及非法值納入 45 項矩陣。 |
+| R-08 | P1 | `ai-review` 後端沒有 wall-clock 上限，CLI 或自訂命令卡住會無界等待。 | 新增預設 600 秒的 `--timeout`／`AI_REVIEW_TIMEOUT_SECONDS`，涵蓋自訂後端、Codex 登入檢查與 review；三條逾時路徑及非法值納入矩陣（現為 46 項）。 |
 | R-09 | P1 | Windows package smoke 被誤當成 Desktop／TUI／CLI runtime 證據。 | 新增需明確 `-AllowModelUse` 的有界 runtime smoke 與 evidence ledger；Codex CLI 三層通過，Claude Code 非互動 runtime 失敗並降級 README 宣稱，Desktop／TUI 保持 `unknown`。 |
 | R-10 | P2 | `main` 可直接 push，canonical gates 只能靠操作者自律。 | 交付後啟用 admin 也不得 bypass 的 branch protection，要求 PR、strict required checks、conversation resolution、linear history，禁 force push／delete。 |
 | R-11 | P2 | fork README 保留上游作者第一人稱自介與社群連結，會讓讀者誤認 repo owner 身分。 | 繁中／英文 README 同步刪除作者自介段；歸屬仍保留在 fork banner、`FORK.md`、`NOTICE.md` 與 `LICENSE`。 |
@@ -32,7 +32,7 @@
 - `python -X utf8 skills/mission-log/tests/harvest_test.py`：16 項 fixtures 全過。
 - `python -X utf8 -m unittest discover -s tests -p "test_*.py" -v`：repo contract 與 upstream checker 全過。
 - `pwsh -NoProfile -File tools\dev_check.ps1`：Windows canonical gate 必須全過。
-- Linux CI：5 shell × 45 項、mission-log C locale、repo contract 必須全過。
+- Linux CI：ai-review 5 shell × 46 項、ai-search 5 shell × 44 項、mission-log C locale、repo contract 必須全過。
 - CodeQL（Actions／Python）、Upstream check、npm audit：必須全綠／0 vulnerabilities。
 - local `HEAD`、`origin/main`、GitHub API main SHA：必須完全相同，worktree 必須 clean。
 

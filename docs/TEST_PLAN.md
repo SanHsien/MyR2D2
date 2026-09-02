@@ -85,7 +85,13 @@ done
 ```
 
 **通過**：每個 agent 都回報 Installed 支數=repo 現有支數、0 Skipped。
-狀態（2026-07-30）：gemini-cli／codex 已實測通過；cursor／github-copilot 未實測。
+狀態（2026-09-02，本 fork 自量）：`codex`／`claude-code`／`gemini-cli` 三個目標各自乾淨的 Windows
+隔離專案逐一 `--agent` 安裝，皆 **Installed 14、0 Skipped、磁碟實數 14**；`chatgpt` 為陰性對照，
+照文件所述被 `Invalid agents: chatgpt` 擋下。由 `tools/windows_agent_smoke.ps1` 執行，已接進
+canonical gate，每次跑 gate 都會重量一次。
+⚠️ **`gemini-cli` 這格只證明安裝層**：本機沒有裝 Gemini CLI，而 `skills add --agent <名>` 是**安裝器**
+的行為、寫進統一的 `.agents/skills/`，與目標 CLI 在不在場無關。**發現層仍未驗**（要驗得有那支 CLI，
+見 CROSS-02 的 trusted-folder 關卡）。cursor／github-copilot 未實測。
 
 ### CROSS-02 🟡 Gemini CLI 發現層（trusted-folder 關卡）
 
@@ -233,7 +239,7 @@ dropoff 篩目標專案候選（新鮮＝7 天內活躍）的三種情況，逐�
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-review/scripts/ai-review.sh; done
 ```
 
-行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（45 項，stub 後端不燒額度、
+行為矩陣**已隨 skill 出貨**＝`skills/ai-review/tests/matrix.sh`（46 項，stub 後端不燒額度、
 產出寫暫存區不弄髒目錄、開頭自動 `unset` 外部 `AI_REVIEW_*` 變數以隔離環境、全過回 0 可進 CI）：
 
 ```bash
@@ -339,14 +345,14 @@ skill 層三項行為皆正確、damage-report 整合節可達）。
 
 `--timeout <正整數秒>`／`AI_REVIEW_TIMEOUT_SECONDS` 對自訂後端、Codex 登入前置檢查與實際 review 呼叫都生效；預設 600 秒。Linux／Windows Git Bash 使用 GNU coreutils `timeout`，其他 POSIX 環境使用內建 watchdog，逾時先 TERM、兩秒後仍存活才 KILL。
 
-**通過**：自訂後端、Codex 登入檢查與 Codex review 三條 stub 路徑睡眠超過一秒時皆回 `failed_timeout`＋exit 2；timeout 非正整數在後端啟動前回 exit 1。狀態（2026-08-24）：✅ Windows Git Bash 已納入 45 項矩陣；Linux 5-shell 由 exact-SHA CI 驗證。
+**通過**：自訂後端、Codex 登入檢查與 Codex review 三條 stub 路徑睡眠超過一秒時皆回 `failed_timeout`＋exit 2；timeout 非正整數在後端啟動前回 exit 1。狀態（2026-08-24）：✅ Windows Git Bash 已納入矩陣（現為 46 項）；Linux 5-shell 由 exact-SHA CI 驗證。
 
 ### E-05 ✋ 平台與方案覆蓋
 
 >（編號跳序＝歷史演進痕跡，刻意保留：E-05 性質是收尾總查，物理位置固定在 E-09 之後，編號不重排。）
 
 **通過**：README 宣稱支援的平台與帳號方案都實跑過。
-狀態（2026-08-24）：✅ **Linux 經 CI（ubuntu-latest）**——矩陣 5 shell × 45 項與 harvest 測試隨每次 push 實跑；
+狀態（2026-08-24）：✅ **Linux 經 CI（ubuntu-latest）**——ai-review 矩陣 5 shell × 46 項、ai-search 5 shell × 44 項與 harvest 測試隨每次 push 實跑；
 ✅ **Windows 11 Git Bash 已納入 canonical gate，但 POSIX `0600` 由 Linux CI 驗證**；❌ **免費方案帳號未實測** ——
 官方用量限制表不含免費方案（見 `AI_REVIEW_SOURCES.md`），因此無法宣稱免費帳號開箱即用。
 README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
@@ -369,18 +375,23 @@ for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-searc
 for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-search/tests/matrix.sh; done
 ```
 
-行為矩陣隨 skill 出貨＝`skills/ai-search/tests/matrix.sh`（43 項，stub 後端**不燒額度、不連網**、
+行為矩陣隨 skill 出貨＝`skills/ai-search/tests/matrix.sh`（44 項，stub 後端**不燒額度、不連網**、
 產出寫暫存區、開頭自動 `unset` 外部 `AI_SEARCH_*` 變數以隔離環境）。涵蓋：後端錯誤分類、
 `--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)` 呼叫鏈（含負對照：真失敗必須中斷上層）、
 問題輸入多形式（位置參數接句／stdin `-`／`--` 之後當文字）、分類器不把真失敗吞成 skipped、
 落檔不覆蓋／600／防 symlink、含冒號引號的問題 frontmatter 仍是合法 YAML、非 UTF-8 locale 長中文落檔。
 **通過**：語法全過；每個 shell 皆 43/43（缺 `python3`+`pyyaml` 時 42 過 1 略過）。
 狀態：上游於 macOS 五 shell 實測 42 過 1 略（2026-08-24）。**本 fork 已在 Windows 11 Git Bash 實測**
-（2026-09-02，`SH=sh` 與 `SH=bash` 各 **42 過 / 0 失敗 / 1 略過**，exit 0）——該 1 略＝落檔權限 `0600`，
+（2026-09-02，`sh`／`dash`／`bash` 各 **43 過 / 0 失敗 / 1 略過**，exit 0）——該 1 略＝落檔權限 `0600`，
 NTFS 不提供 POSIX mode-bit 證據，比照 ai-review 由 Linux CI 權威驗證（本 fork 為此在
 `tests/matrix.sh` 補上與 ai-review 同形的 `MINGW*|MSYS*` 略過分支，上游無此分支）。
 矩陣已接進兩個 canonical gate（`tools/dev_check.sh`、`tools/dev_check.ps1` 的 `sh`／`bash`）
 與 CI（ubuntu-latest 五 shell），隨每次 push 實跑。
+v0.8.1 新增第 44 項「傳給後端的 `-C` 路徑格式」（見 F-05），並修掉兩個讓本段長期不可信的
+測試自身缺陷：① frontmatter 驗證把 POSIX 路徑交給原生 Windows `python3` → `FileNotFoundError`
+誤判成 YAML 壞掉；② 改走 stdin 後仍依 locale 解碼，cp950 把 UTF-8 中文解成代理字元 →
+PyYAML 報 `unacceptable character #xdce5`。兩者都讓一份**合法**的 frontmatter 假紅，且
+在有設 `PYTHONIOENCODING` 的 shell 會過、沒設的會紅——典型的「看起來像 flaky」假訊號。
 
 ### F-02 🟡 真實後端 ok 路徑
 
@@ -391,7 +402,32 @@ skills/ai-search/scripts/ai-search.sh "某個需要查證現況的問題"
 **通過**：回 `AI_SEARCH_STATUS: ok`、退出碼 0、答案結論先行且附**可點的來源連結**（不是錯誤頁），
 內容反映當前網路資訊而非訓練知識填答。
 狀態：上游單次實測通過（Codex CLI 真實 `web_search` 後端，2026-08-24，答出當日 release 版本＝確實查了即時網路）。
-❌ **本 fork 未實測**——本機 Codex CLI 的登入與額度狀態未查證，不拿上游的單次陽性替本機背書。
+❌ **本 fork 仍未驗到 `ok`**——2026-09-02 在 Windows 對真實 Codex CLI（v0.150.0、`Logged in using ChatGPT`）
+實跑兩次：修掉 F-05 的路徑缺陷前回 `failed_unknown`，修掉後回 **`failed_quota`**＋exit 2，
+後端訊息為 `You've hit your usage limit ... try again at Sep 7th`。**帳號額度用盡是外部阻礙，不是缺陷**；
+本項要等額度恢復後重跑。已取得的正面結論只有一條且限於此：**真實後端的失敗分類在 Windows 上正確**。
+🚫 不拿上游的單次陽性替本機背書。
+
+### F-05 🟢 傳給後端的路徑格式（Windows 迴歸）
+
+```bash
+for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # 內含本項
+```
+
+**背景（實錯，v0.8.1 修）**：Git Bash 上的 `codex` 是**原生 Windows 執行檔**，
+腳本把 `-C "$TMPD"`／`-o "$ANSWER_FILE"` 以 POSIX 路徑交給它 → `Error: 系統找不到指定的檔案。 (os error 2)`
+→ 分類器歸成 `failed_unknown`。使用者看到的是「無法歸類的錯誤」，不是「路徑格式不對」，
+且 **`ai-review` 有完全相同的缺陷**——意即這個 fork 宣稱支援的 Windows 平台上，
+兩支腳本從來沒有真正碰到過真實後端。
+**為什麼矩陣抓不到**：矩陣的 stub 後端是 `sh` 腳本，POSIX 路徑照吃；只有真實的原生 exe 會踩到。
+**修法**：`winpath()` 在 `MINGW*|MSYS*|CYGWIN*` 上用 `cygpath -w` 轉換傳給後端的路徑，
+本腳本自己仍用 POSIX 路徑讀同一個檔案。
+**測法**：改成攔截 argv——stub 把 `"$@"` 寫進檔案，測項只斷言 `-C` 的值在 MSYS 上是 `?:\…`、
+在 POSIX 平台維持 `/…`。
+**通過**：三個 shell 皆 ok。狀態（2026-09-02）：✅ Windows 實測通過；
+✅ **陽性對照**——把 `winpath` 還原成上游寫法後本項確實轉紅
+（`FAIL 傳給後端的 -C 已轉成 Windows 路徑（實得 POSIX：/tmp/…）`），證明它不是永遠說 OK 的空轉測試。
+`ai-review` 的矩陣有同形測項（第 46 項）。
 
 ### F-03 ✋ 降級不中斷上層
 

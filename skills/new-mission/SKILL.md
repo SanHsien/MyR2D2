@@ -32,18 +32,20 @@ Claude 接到任務的預設行為是**直接開始做**。做到一半才發現
 `⏰ <YYYY-MM-DD（週幾）HH:MM> <IANA 時區>` —— 例 `⏰ 2026-03-09（一）10:12 Europe/Berlin`
 
 - **時區不可省**。人與機器不在同一個時區、或使用者正在外地時，一個沒有時區的時間讀不出來是哪裡的幾點。印的是**這台機器的時區**，不要假裝知道使用者人在哪。
-- **從機器取，不要憑印象拼**。零依賴取法（macOS／Linux 通用，不需 python）：
+- **從機器取，不要憑印象拼**。零依賴取法（macOS／Linux／Windows Git Bash 通用，不需 python）：
 
   ```bash
   set -- $(date '+%Y-%m-%d %u %H:%M')
   case $2 in 1) w=一;; 2) w=二;; 3) w=三;; 4) w=四;; 5) w=五;; 6) w=六;; 7) w=日;; *) w=;; esac
   tz=${TZ:-$(readlink -f /etc/localtime 2>/dev/null || readlink /etc/localtime 2>/dev/null)}
   tz=${tz#:}; tz=${tz##*/zoneinfo/}
-  [ -f "/usr/share/zoneinfo/$tz" ] || [ -f "/var/db/timezone/zoneinfo/$tz" ] || tz="$(date +%Z)（非 IANA 名稱）"
+  if [ ! -f "/usr/share/zoneinfo/$tz" ] && [ ! -f "/var/db/timezone/zoneinfo/$tz" ]; then
+  abbr=$(date +%Z | tr -d '[:space:]'); tz="UTC$(date +%z)${abbr:+（$abbr）}（非 IANA 名稱）"
+  fi
   [ -n "$1" ] && [ -n "$w" ] && printf '⏰ %s（%s）%s %s\n' "$1" "$w" "$3" "$tz" || echo '時間取不到完整值'
   ```
 
-  三個地方別省：① 星期用 `%u`（1–7）對照表——`date '+%A'` 給的是 locale 決定的 `Tuesday`／`星期二`，都不是規格要的「（二）」。② **一次 `date` 取齊所有欄位**，分開呼叫會在跨午夜時湊出「新日期＋舊星期」這種看不出破綻的錯。③ **最後那行的驗證是整段的重點**：把切出來的名字拿回時區資料庫對，對不上就退成 `%Z` 縮寫並標「非 IANA」。所有「看起來合格、其實是錯的」路徑都在這裡被擋下——多層符號連結的中繼目標、連結指向非時區檔、`$TZ` 裝的是 `PST8PDT`／`:Asia/Taipei` 這類 POSIX 寫法。🚫 寧可標「非 IANA」，也不要印一個猜出來的名字。
+  三個地方別省：① 星期用 `%u`（1–7）對照表——`date '+%A'` 給的是 locale 決定的 `Tuesday`／`星期二`，都不是規格要的「（二）」。② **一次 `date` 取齊所有欄位**，分開呼叫會在跨午夜時湊出「新日期＋舊星期」這種看不出破綻的錯。③ **最後那段的驗證是整段的重點**：把切出來的名字拿回時區資料庫對，對不上就退成 `UTC±hhmm`（有 `%Z` 縮寫就一併附上）並標「非 IANA」。所有「看起來合格、其實是錯的」路徑都在這裡被擋下——多層符號連結的中繼目標、連結指向非時區檔、`$TZ` 裝的是 `PST8PDT`／`:Asia/Taipei` 這類 POSIX 寫法。🚫 寧可標「非 IANA」，也不要印一個猜出來的名字。⚠️ 退路給的是 **`UTC±hhmm` 偏移不是縮寫**，因為縮寫可能根本取不到：Windows 的 Git Bash 沒有 `/etc/localtime` 也沒有 `/usr/share/zoneinfo/`，`date +%Z` 回的是**空白字串**——只印 `%Z` 的話那一格會是空的，讀者連「哪裡的幾點」都答不出來，而偏移永遠答得出來（實測 `UTC+0800（非 IANA 名稱）`）。
 - **回覆語言不是中文**時，週幾寫該語言的慣用形式即可（`⏰ 2026-03-09（Mon）10:12 Europe/Berlin`）；不可省的是時區，不是格式的中文外觀。
 - **跑不了 shell 的環境**（網頁版、無終端機）：用當回合系統給的時刻，自己補上時區標籤；連完整值都拿不到就直接寫「時間取不到完整值」，🚫 不要包裝成一個看起來合格的時間行。
 

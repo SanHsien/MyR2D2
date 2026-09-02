@@ -157,13 +157,21 @@ AI_REVIEW_CMD='ollama run llama3' ./scripts/ai-review.sh draft.md --rubric copy
 sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 shell 跑受測腳本
 ```
 
-45 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
+46 項行為測試，**不燒任何額度**（後端全用 stub 模擬）、**不弄髒你的目錄**（產出寫在暫存區、
 跑完自動清掉），全過回 exit 0，可直接放進 CI。缺 `python3`+`pyyaml` 時只會略過其中一項。
 矩陣開頭會自動 `unset` 外層可能 export 過的 `AI_REVIEW_CMD` 等變數——你平常把後端指到別處
 也不會污染測試結果。
 
 腳本本體在 macOS 上以 `sh`／`dash`／`bash`／`ksh`／`zsh` 各跑過這份矩陣
 （狀態分類、`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)`＋wrapper 呼叫鏈、
-路徑含空白、後端 wall-clock timeout、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名），
-並以真實 Codex CLI 驗過 `ok` 路徑。
-Linux 由 CI（ubuntu-latest）跑同一份矩陣；Windows 11 的 Git Bash 會跑完整行為案例，但 NTFS 無法提供 POSIX `0600` mode-bit 證據，因此該一項明確略過並由 Linux CI 權威驗證。**免費方案帳號未實測** —— 沒驗過的一律別當保證。
+路徑含空白、後端 wall-clock timeout、落檔目錄不可寫、stdin 來源、用法錯誤、同秒並發落檔、特殊檔名、**傳給後端的路徑格式**），
+並以真實 Codex CLI 驗過 `ok` 路徑（**macOS 環境**）。
+Linux 由 CI（ubuntu-latest）跑同一份矩陣；Windows 11 的 Git Bash 會跑完整行為案例，但 NTFS 無法提供 POSIX `0600` mode-bit 證據，因此該一項明確略過並由 Linux CI 權威驗證。**Windows 上的真實後端只驗到 `failed_quota` 被正確分類，`ok` 路徑未驗**（測試當下帳號已達用量上限）。**免費方案帳號未實測** —— 沒驗過的一律別當保證。
+
+🪟 **Windows 專屬前提**：Git Bash 上的 `codex` 是**原生 Windows 執行檔**，看不懂 `/tmp/xxx`
+這種 POSIX 路徑。腳本會自動用 `cygpath` 把傳給後端的 `-C`／`-o` 轉成 Windows 形式；
+沒有這道轉換的話後端會回 `os error 2`，而那個訊息不像任何已知失敗，會被歸成
+`failed_unknown`（看起來像「後端壞了」，其實是路徑格式）。⚠️ 這個缺陷**行為矩陣抓不到**——
+矩陣的 stub 後端是 sh 腳本、POSIX 路徑照吃；矩陣現在改用攔截 argv 的方式守住這一項。
+換自訂後端（`AI_REVIEW_CMD`）時請注意：那條命令走 `sh -c`，路徑由**你自己**負責，
+指到原生 Windows 程式時同樣要自己轉。

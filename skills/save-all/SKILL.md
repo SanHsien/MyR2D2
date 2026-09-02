@@ -22,19 +22,21 @@ description: '重開機／關機／收工前的「落地同步」收尾檢查。
 
 **⏰ 回覆的第一行固定是** `⏰ <YYYY-MM-DD（週幾）HH:MM> <IANA 時區>` —— 例 `⏰ 2026-03-09（一）10:12 Europe/Berlin`。落地紀錄的時間別憑印象寫；時區也不可省，人與機器不在同一時區時，沒有時區的時間讀不出是哪裡的幾點。
 
-零依賴取法（macOS／Linux 通用，不需 python），順手把**起點**落成檔案 —— 第 5 步要讀它算耗時：
+零依賴取法（macOS／Linux／Windows Git Bash 通用，不需 python），順手把**起點**落成檔案 —— 第 5 步要讀它算耗時：
 
 ```bash
 set -- $(date '+%Y-%m-%d %u %H:%M')
 case $2 in 1) w=一;; 2) w=二;; 3) w=三;; 4) w=四;; 5) w=五;; 6) w=六;; 7) w=日;; *) w=;; esac
 tz=${TZ:-$(readlink -f /etc/localtime 2>/dev/null || readlink /etc/localtime 2>/dev/null)}
 tz=${tz#:}; tz=${tz##*/zoneinfo/}
-[ -f "/usr/share/zoneinfo/$tz" ] || [ -f "/var/db/timezone/zoneinfo/$tz" ] || tz="$(date +%Z)（非 IANA 名稱）"
+if [ ! -f "/usr/share/zoneinfo/$tz" ] && [ ! -f "/var/db/timezone/zoneinfo/$tz" ]; then
+  abbr=$(date +%Z | tr -d '[:space:]'); tz="UTC$(date +%z)${abbr:+（$abbr）}（非 IANA 名稱）"
+fi
 [ -n "$1" ] && [ -n "$w" ] && printf '⏰ %s（%s）%s %s\n' "$1" "$w" "$3" "$tz" || echo '時間取不到完整值'
 M=$(mktemp "${TMPDIR:-/tmp}/save-all-XXXXXX") && date +%s > "$M" && echo "起點檔=$M" || echo '起點檔沒建成——第 5 步的耗時寫「未知」'
 ```
 
-三個地方別省：① 星期用 `%u`（1–7）對照表——`date '+%A'` 給的是 locale 決定的 `Tuesday`／`星期二`，都不是「（二）」。② **一次 `date` 取齊所有欄位**，分開呼叫會在跨午夜時湊出「新日期＋舊星期」這種看不出破綻的錯。③ **最後那行驗證是整段的重點**：把切出來的名字拿回時區資料庫對，對不上就退成 `%Z` 縮寫並標「非 IANA」——多層符號連結的中繼目標、連結指向非時區檔、`$TZ` 裝的是 `PST8PDT`／`:Asia/Taipei` 這類 POSIX 寫法，全在這裡被擋下。🚫 寧可標「非 IANA」，也不要印一個猜出來的名字。
+三個地方別省：① 星期用 `%u`（1–7）對照表——`date '+%A'` 給的是 locale 決定的 `Tuesday`／`星期二`，都不是「（二）」。② **一次 `date` 取齊所有欄位**，分開呼叫會在跨午夜時湊出「新日期＋舊星期」這種看不出破綻的錯。③ **最後那段驗證是整段的重點**：把切出來的名字拿回時區資料庫對，對不上就退成 `UTC±hhmm`（有 `%Z` 縮寫就一併附上）並標「非 IANA」——多層符號連結的中繼目標、連結指向非時區檔、`$TZ` 裝的是 `PST8PDT`／`:Asia/Taipei` 這類 POSIX 寫法，全在這裡被擋下。🚫 寧可標「非 IANA」，也不要印一個猜出來的名字。⚠️ 退路給的是 **`UTC±hhmm` 偏移不是縮寫**，因為縮寫可能根本取不到：Windows 的 Git Bash 沒有 `/etc/localtime` 也沒有 `/usr/share/zoneinfo/`，`date +%Z` 回的是**空白字串**——只印 `%Z` 的話那一格會是空的，讀者連「哪裡的幾點」都答不出來，而偏移永遠答得出來（實測 `UTC+0800（非 IANA 名稱）`）。
 
 起點檔用 `mktemp` 不用寫死路徑：寫死的 `/tmp/<可預測名>` 在多人共用的機器上可以被別人先擺一條符號連結，`>` 就會以你的權限截斷別的檔案；同一秒起兩個 session 也會互相蓋掉。`&&` 串起來是為了**建不成就不准說建成了**。**記住輸出的起點檔路徑**，第 5 步要用。回覆語言不是中文時，週幾寫該語言慣用形式即可，不可省的是時區。
 
@@ -106,7 +108,9 @@ set -- $(date '+%Y-%m-%d %u %H:%M'); n=$(date +%s)
 case $2 in 1) w=一;; 2) w=二;; 3) w=三;; 4) w=四;; 5) w=五;; 6) w=六;; 7) w=日;; *) w=;; esac
 tz=${TZ:-$(readlink -f /etc/localtime 2>/dev/null || readlink /etc/localtime 2>/dev/null)}
 tz=${tz#:}; tz=${tz##*/zoneinfo/}
-[ -f "/usr/share/zoneinfo/$tz" ] || [ -f "/var/db/timezone/zoneinfo/$tz" ] || tz="$(date +%Z)（非 IANA 名稱）"
+if [ ! -f "/usr/share/zoneinfo/$tz" ] && [ ! -f "/var/db/timezone/zoneinfo/$tz" ]; then
+  abbr=$(date +%Z | tr -d '[:space:]'); tz="UTC$(date +%z)${abbr:+（$abbr）}（非 IANA 名稱）"
+fi
 s=$(cat "$M" 2>/dev/null)
 case $s in ''|*[!0-9]*) e=耗時未知 ;; *) [ "$s" -le "$n" ] && e="距起點 $(( (n - s) / 60 )) 分" || e=耗時未知 ;; esac
 printf '⏰ %s（%s）%s %s（%s）\n' "$1" "$w" "$3" "$tz" "$e"

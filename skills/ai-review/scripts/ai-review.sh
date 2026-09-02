@@ -366,6 +366,22 @@ dump_backend_output() {
 	fi
 }
 
+winpath() {
+	# Git Bash／MSYS 上的 codex 是**原生 Windows 執行檔**，看不懂 `/tmp/xxx` 這種
+	# POSIX 路徑：`-C`／`-o` 收到就直接 `Error: 系統找不到指定的檔案。 (os error 2)`，
+	# 而那個訊息不像任何已知失敗，會被 classify_error 歸成 failed_unknown ——
+	# 使用者看到的是「無法歸類的錯誤」，不是「路徑格式不對」。
+	# 🔴 行為矩陣抓不到這個：矩陣的 stub 後端是 sh 腳本、吃得下 POSIX 路徑，
+	#    只有真實的原生 exe 會踩到。所以這裡不能靠測試守，要靠這個轉換。
+	# 傳給後端的路徑一律轉成 Windows 形式；本腳本自己仍用 POSIX 路徑讀同一個檔案。
+	case "$(uname -s 2>/dev/null || printf unknown)" in
+	MINGW* | MSYS* | CYGWIN*)
+		command -v cygpath >/dev/null 2>&1 && cygpath -w "$1" || printf '%s' "$1"
+		;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
 emit_status_and_exit() {
 	# $1=status。狀態一律走 stdout（機器可讀），退出碼只分「真失敗」。
 	printf 'AI_REVIEW_STATUS: %s\n' "$1"
@@ -456,7 +472,7 @@ else
 	esac
 	# -s read-only：唯讀沙箱；--ephemeral：不留工作狀態；
 	# --skip-git-repo-check + -C "$TMPD"：不碰你的 repo，也不要求身處 git 專案內。
-	set -- exec -s read-only --skip-git-repo-check --ephemeral -C "$TMPD" -o "$ANSWER_FILE"
+	set -- exec -s read-only --skip-git-repo-check --ephemeral -C "$(winpath "$TMPD")" -o "$(winpath "$ANSWER_FILE")"
 	if [ -n "$MODEL" ]; then set -- "$@" -m "$MODEL"; fi
 	if [ -n "$EFFORT" ]; then set -- "$@" -c "model_reasoning_effort=\"$EFFORT\""; fi
 	set -- "$@" -

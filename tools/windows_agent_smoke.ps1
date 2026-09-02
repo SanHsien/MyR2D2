@@ -1,6 +1,12 @@
 [CmdletBinding()]
 param(
-    [string[]]$Agents = @('codex', 'claude-code')
+    # gemini-cli is installed here even though the Gemini CLI itself is not on the
+    # box: `skills add --agent <name>` is the *installer's* per-agent behaviour, and
+    # it writes to the same unified .agents/skills/ target regardless of whether the
+    # target CLI exists. That makes this a real per-agent install-layer measurement
+    # (TEST_PLAN CROSS-01) rather than a claim carried over from upstream. It does
+    # NOT measure the discovery layer -- that still needs the CLI and stays untested.
+    [string[]]$Agents = @('codex', 'claude-code', 'gemini-cli')
 )
 
 $ErrorActionPreference = 'Stop'
