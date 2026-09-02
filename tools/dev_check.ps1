@@ -1,8 +1,9 @@
 [CmdletBinding()]
 param(
     [string]$BaseRef,
-    # Skip the cross-shell ai-review matrix, which is 27 seconds per shell and
-    # over half the total runtime. Everything else still runs. Meant for the
+    # Skip the cross-shell ai-review/ai-search matrices, which dominate the
+    # total runtime (ai-review alone is 27 seconds per shell). Everything else
+    # still runs. Meant for the
     # end-of-turn Stop hook, which has a 90 second budget and silently skips the
     # gate when it is exceeded -- a gate that never finishes protects nothing.
     # CI and pre-commit runs should stay on the full check.
@@ -57,12 +58,16 @@ try {
         & $python skills/mission-log/tests/harvest_test.py
     }
     if ($Quick) {
-        Write-Host '==> ai-review matrix -- SKIPPED (-Quick)'
+        Write-Host '==> ai-review/ai-search matrices -- SKIPPED (-Quick)'
     } else {
         foreach ($shell in @('sh', 'bash')) {
             Invoke-Gate "ai-review matrix ($shell on Git Bash/NTFS)" {
                 $env:SH = $shell
                 & $bash skills/ai-review/tests/matrix.sh
+            }
+            Invoke-Gate "ai-search matrix ($shell on Git Bash/NTFS)" {
+                $env:SH = $shell
+                & $bash skills/ai-search/tests/matrix.sh
             }
         }
         Remove-Item Env:SH -ErrorAction SilentlyContinue

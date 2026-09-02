@@ -6,6 +6,7 @@
 # 執行殘留：不進 repo
 __pycache__/
 .ai-reviews/
+.ai-searches/
 
 # 維護工具本機產物
 node_modules/

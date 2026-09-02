@@ -19,7 +19,7 @@
 ## 不改變的內容
 
 - MyR2D2 名稱與 `myr2d2` plugin identifier。
-- 10 支 skill 的既有指令；`mission-log` 只新增可選的 `--timezone`，舊用法維持有效。
+- 上游 12 支 skill 的既有指令；`mission-log` 只新增可選的 `--timezone`，舊用法維持有效。
 - 上游作者歸屬與 MIT License。
 - `CLAUDE.md` 規定的雙語連動、去識別化與發布原則。
 

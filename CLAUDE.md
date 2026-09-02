@@ -112,7 +112,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 ### 行文慣例
 
 - **標點**：敘事／文稿類內容用全形（，。、：「」（））；指令／log／程式導向的 skill（如日誌三支）可用半形。判準＝內容性質；單檔內部一致即可。既有檔不回溯改。反引號一律半形包指令
-- 步驟**預設用 markdown 有序清單**（`1. 2. 3.`）掛在 `## 動作`／`## 步驟` 底下（`dropoff`、`pickup`、`flight-to-calendar` 都是）。只有步驟多到需要拆前置動作、或想讓每步能被單獨引用時，才升級成 H3 依序編號並從 `### 0.` 開始（目前只有 `save-all`）
+- 步驟**預設用 markdown 有序清單**（`1. 2. 3.`）掛在 `## 動作`／`## 步驟` 底下（`dropoff`、`pickup`、`flight-to-calendar` 都是）。只有步驟多到需要拆前置動作、或想讓每步能被單獨引用時，才升級成 H3 依序編號並從 `### 0.` 開始（目前有 `save-all`、`new-mission`）
 - 子項目用圈碼 ①②③④⑤，後續步驟用同一組圈碼回頭對應，不重打項目名
 - emoji 語意固定：⚠️ 風險／🚫 禁止／✅ 完成條件／🔁 重複性規則／📝 紀律／🔴 絕對規則／🔒 資料界線／安全／🤖 彩蛋
 - **「驗證優先於宣告」是全 repo 的主題句**：凡是寫入動作，一律配上具體驗證指令（`wc -l`／`stat`／`grep`／`cat` 回讀）＋明講「別信工具回的『成功』字面」
@@ -128,30 +128,31 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 
 | 位置（錨點） | 行號快照 | 內容 |
 |---|---|---|
-| `README.md` 開頭定位句 | L11 | 「**10 支** skills」計數字串 |
-| `README.md` skill 總表 | L13–24 | 一句話＋R2-D2 對應 |
-| `README.md` `## 這套東西怎麼開發的` | L26–30 | 失憶引言＋自我修正敘事（二審缺陷數、測項數——測試計數一變這裡也要動） |
-| `README.md` `## 相容性矩陣` | L32–56 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 ✅\* 分級註、trusted-folder、日誌三支資料來源、門鈴註³、ai-review 後端註⁴、未實測範圍註記 |
-| `README.md` `## 安裝` 末句「裝完打…」 | L99 | 逐一點名可觸發的斜線命令 |
-| `README.md` `## 更新` | L101–109 | `npx skills update`／plugin 更新法／Watch Releases 通知 |
-| `README.md` `## 一組 skill、兩種語言習慣` | L111–118 | **逐字引用各 skill description 的中英觸發詞例句**，改觸發詞必同步 |
-| `README.md` `## 各 skill 的依賴` | L120–134 | 依賴表（日誌三支的相依關係、門鈴選用增強、ai-review 的後端需求在此宣告；ai-review 格含**測項數**——測試計數一變這裡也要動） |
-| `README.md` `## Repo 結構` tree | L144–160 | skill 目錄名＋「10 支 skill」計數＋`prompts/`／`docs/`／`.github/` 列 |
-| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 180 行**，改完要複驗仍對齊） |
+| `README.md` 開頭定位句 | L13 | 「**14 支** skills」計數字串 |
+| `README.md` skill 總表 | L15–30 | 一句話＋R2-D2 對應 |
+| `README.md` `## 這套東西怎麼開發的` | L32–36 | 失憶引言＋自我修正敘事（二審缺陷數、測項數——測試計數一變這裡也要動） |
+| `README.md` `## 相容性矩陣` | L38–67 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 ✅\* 分級註、trusted-folder、日誌三支資料來源、門鈴註³、ai-review 後端註⁴、fork 新增支數的未實測註⁶⁷ |
+| `README.md` `## 安裝` 末句「裝完打…」 | L110 | 逐一點名可觸發的斜線命令 |
+| `README.md` `## 更新` | L112–120 | `npx skills update`／plugin 更新法／Watch Releases 通知 |
+| `README.md` `## 一組 skill、兩種語言習慣` | L122–129 | **逐字引用各 skill description 的中英觸發詞例句**，改觸發詞必同步 |
+| `README.md` `## 各 skill 的依賴` | L131–149 | 依賴表（日誌三支的相依關係、門鈴選用增強、ai-review／ai-search 的後端需求在此宣告；兩格各含**測項數**——測試計數一變這裡也要動） |
+| `README.md` `## Repo 結構` tree | L159–177 | skill 目錄名＋「14 支 skill」計數＋`prompts/`／`docs/`／`.github/` 列 |
+| `README.en.md` | 同上各項 | 對應英文列（**兩檔行號目前完全對齊，各 187 行**，改完要複驗仍對齊；CI 有「README 雙語行數對齊」關卡） |
+| `docs/cheatsheet.md` | 全檔 | 14 支速查表：四群分組＋逐字引自 description 的觸發詞節選——新增／刪除 skill 或改觸發詞要同步 |
 | `prompts/<skill>.md`＋`.en.md` | — | **免安裝簡版**（規則類 skill 適用，damage-report 首例）：skill 的五問／規則本體一改，簡版兩檔要同步改寫，別讓簡版變舊版 |
 | `docs/TEST_PLAN.md` C 段快照 | 文末表格 | 相容性結論快照——README 矩陣評級一動，這裡要同步（反之亦然，見 TEST_PLAN CROSS-07） |
 | `docs/TEST_PLAN.md` D 段 | C 段之前 | 交接門鈴測項 D-01～06——dropoff/pickup 的門鈴行為一改要同步 |
 | `docs/TEST_PLAN.md` E 段＋`docs/AI_REVIEW_SOURCES.md` | D 段之後 | ai-review 測項 E-01～09 與**外部前提的查證原文**（方案涵蓋、安裝／登入指令）——腳本行為或引導文字一改要同步；查證超過兩週視為過期 |
 | `.claude-plugin/plugin.json` | L3 | `description` 逐一點名各 skill |
 | `.claude-plugin/marketplace.json` | L11 | `plugins[0].description` 同上 |
-| `adapters/openai/README.md` 可移植性總表 | L12–17 | 四列對應四組 skill |
-| `adapters/openai/README.md` Codex 安裝腳本 | L40 | 備援法 `for s in ...` 的 skill 清單 |
+| `adapters/openai/README.md` 可移植性總表 | L12–24 | 逐列對應各組 skill |
+| `adapters/openai/README.md` Codex 安裝腳本 | L47 | 備援法 `for s in ...` 的 skill 清單 |
 
 ⚠️ `adapters/openai/README.md` 的矩陣是**獨立撰寫、非複製貼上**（用字與判斷邏輯都跟 README 不同）—— 要人工比對邏輯是否仍成立，不能只靠 diff 對照。
 
 📌 `plugin.json` 的 `keywords` 是**代表性關鍵字，不是 skill 清單**（現況本來就沒窮舉 5 支），不必逐 skill 同步 —— 別誤判成遺漏。
 
-新增／刪除 skill 時額外要改：兩份 README 的計數字串；若可移植到 Codex，`adapters/openai/README.md` L28 的迴圈清單要加名；若有硬依賴（如需 MCP connector）而搬不動，在 adapters 矩陣標 ❌ 並寫原因（比照 `flight-to-calendar` 先例）。
+新增／刪除 skill 時額外要改：兩份 README 的計數字串；若可移植到 Codex，`adapters/openai/README.md` 的 `for s in ...` 迴圈清單要加名（行號見上表）；若有硬依賴（如需 MCP connector）而搬不動，在 adapters 矩陣標 ❌ 並寫原因（比照 `flight-to-calendar` 先例）。
 
 ---
 

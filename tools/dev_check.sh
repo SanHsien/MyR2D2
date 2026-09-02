@@ -33,6 +33,8 @@ for shell_name in $shells; do
     }
     echo "==> ai-review matrix ($shell_name)"
     SH=$shell_name sh skills/ai-review/tests/matrix.sh
+    echo "==> ai-search matrix ($shell_name)"
+    SH=$shell_name sh skills/ai-search/tests/matrix.sh
 done
 
 for skill in skills/*/; do

@@ -34,8 +34,8 @@ try {
             Pop-Location
         }
         $count = @(Get-ChildItem -LiteralPath $project -Recurse -File -Filter SKILL.md).Count
-        if ($count -ne 12) { throw "$agent installed $count SKILL.md files; expected 12" }
-        Write-Host "OK $agent installed 12 skills in isolated Windows project"
+        if ($count -ne 14) { throw "$agent installed $count SKILL.md files; expected 14" }
+        Write-Host "OK $agent installed 14 skills in isolated Windows project"
     }
 
     $negative = Join-Path $resolvedSmoke 'chatgpt-negative'

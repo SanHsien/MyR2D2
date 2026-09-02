@@ -36,7 +36,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 "
 ```
 
-**通過**：全部 skill（v0.5.0 起為 10 支）全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
+**通過**：全部 skill（v0.8.0 起為 14 支）全 `OK`。有第二個 parser（ruby psych／js-yaml）就交叉驗。這是 v0.1.1 事故的直接回歸項。
 ⚠️ 驗證器自己也要驗：跑一次**故意壞掉的 YAML**（如 `description: bad: colon`）確認它真的會 FAIL，否則你可能在看一個永遠說 OK 的空轉腳本。
 
 ### REG-02 🟢 agentskills.io 官方 validator
@@ -46,7 +46,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
 ```
 
-**通過**：全數（現為 10 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
+**通過**：全數（現為 14 支）全過。驗 name 格式（小寫/連字號/=目錄名）、description ≤1024 字等規格硬約束。
 
 ### REG-03 🟢 本地安裝煙霧測試
 
@@ -58,7 +58,7 @@ git -C "$TARGET" init -q
 (cd "$TARGET" && "$REPO_ROOT/node_modules/.bin/skills" add "$REPO_ROOT" --copy -y)
 ```
 
-**通過**：回報 `Installed 10 skills`（與 repo 現有支數一致）、0 個 Skipped。
+**通過**：回報 `Installed 14 skills`（與 repo 現有支數一致）、0 個 Skipped。
 
 ### REG-04 🟢 公開內容守門
 
@@ -353,6 +353,60 @@ README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
 
 ---
 
+## F. ai-search（帶引用即時查證，v0.8.0 自上游採納）
+
+> 腳本＝`skills/ai-search/scripts/ai-search.sh`（單檔 POSIX shell，與 ai-review 同架構）。
+> 設計原則相同：**狀態走 stdout、退出碼只分真失敗**，沒裝後端是預期降級、不得中斷上層。
+> 🔴 誠實註記：本段的「已測」欄位**分兩種來源，不可混談**——
+> ① 上游 `tingyulu/MyR2D2` 在 macOS 與其 CI 上量到的結果（採納時原樣轉錄，本 fork 未複製其環境）；
+> ② 本 fork 自己在 Windows／Linux CI 上跑出來的結果。凡標「上游」者，本 fork 未重驗。
+> ai-search 尚未經過 ai-review 那樣的多輪跨模型家族二審。
+
+### F-01 🟢 多 shell 語法與行為矩陣
+
+```bash
+for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do $s -n skills/ai-search/scripts/ai-search.sh; done
+for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-search/tests/matrix.sh; done
+```
+
+行為矩陣隨 skill 出貨＝`skills/ai-search/tests/matrix.sh`（43 項，stub 後端**不燒額度、不連網**、
+產出寫暫存區、開頭自動 `unset` 外部 `AI_SEARCH_*` 變數以隔離環境）。涵蓋：後端錯誤分類、
+`--strict`／`--soft-fail`、可插拔後端、`set -e`＋`$(…)` 呼叫鏈（含負對照：真失敗必須中斷上層）、
+問題輸入多形式（位置參數接句／stdin `-`／`--` 之後當文字）、分類器不把真失敗吞成 skipped、
+落檔不覆蓋／600／防 symlink、含冒號引號的問題 frontmatter 仍是合法 YAML、非 UTF-8 locale 長中文落檔。
+**通過**：語法全過；每個 shell 皆 43/43（缺 `python3`+`pyyaml` 時 42 過 1 略過）。
+狀態：上游於 macOS 五 shell 實測 42 過 1 略（2026-08-24）。**本 fork 已在 Windows 11 Git Bash 實測**
+（2026-09-02，`SH=sh` 與 `SH=bash` 各 **42 過 / 0 失敗 / 1 略過**，exit 0）——該 1 略＝落檔權限 `0600`，
+NTFS 不提供 POSIX mode-bit 證據，比照 ai-review 由 Linux CI 權威驗證（本 fork 為此在
+`tests/matrix.sh` 補上與 ai-review 同形的 `MINGW*|MSYS*` 略過分支，上游無此分支）。
+矩陣已接進兩個 canonical gate（`tools/dev_check.sh`、`tools/dev_check.ps1` 的 `sh`／`bash`）
+與 CI（ubuntu-latest 五 shell），隨每次 push 實跑。
+
+### F-02 🟡 真實後端 ok 路徑
+
+```bash
+skills/ai-search/scripts/ai-search.sh "某個需要查證現況的問題"
+```
+
+**通過**：回 `AI_SEARCH_STATUS: ok`、退出碼 0、答案結論先行且附**可點的來源連結**（不是錯誤頁），
+內容反映當前網路資訊而非訓練知識填答。
+狀態：上游單次實測通過（Codex CLI 真實 `web_search` 後端，2026-08-24，答出當日 release 版本＝確實查了即時網路）。
+❌ **本 fork 未實測**——本機 Codex CLI 的登入與額度狀態未查證，不拿上游的單次陽性替本機背書。
+
+### F-03 ✋ 降級不中斷上層
+
+在 `set -e` 的 wrapper 內、輸出被 `$(…)` 捕捉時，對「沒有後端」的環境呼叫。
+**通過**：wrapper 繼續往下跑、退出碼 0、狀態 `skipped_not_installed`；`--strict` 反向確認回 3。
+狀態：由矩陣涵蓋（stub 實測），本 fork 的 gate 與 CI 每次跑到。
+
+### F-04 🟡 web_search 旗標實際生效
+
+真實後端下，確認腳本送的 `-c tools.web_search=true` 真的讓後端上網（而非拿舊知識答）。
+**通過**：答案含**當下**才查得到的事實與來源連結。
+狀態：上游以 F-02 同一次 run 取得**間接證據**；⚠️ 單次陽性、未做「移除旗標」的負對照，「是這個旗標使然」屬推論。❌ 本 fork 未實測。
+
+---
+
 ## C. 相容性結論快照（安裝層 2026-08-21 重驗；發現層仍為 2026-07-30 快照，過期重驗）
 
 | 工具 | 安裝層 | 發現層 | 執行層 |
@@ -366,3 +420,5 @@ README 與 SKILL.md 均未作此宣稱。要宣稱前先補這兩格。
 註（2026-08-09）：v0.4.0 的交接門鈴（D 段）為 Claude Code 限定的選用增強，各工具評級不因此變動——非 Claude Code 環境自動降級純檔案交接（見 README 矩陣註³）。
 
 註（v0.7.0）：新增 `recap` 與 `blind-review` 兩支，repo 現有支數由 10 變 12。上表 Gemini CLI 那格的「實測 10/10」是 2026-08-21 當下的數字，**不要改寫成 12/12**——那不是量出來的。CROSS-01 的通過標準本來就寫成「支數＝repo 現有支數」，重跑一次即可更新；在重跑之前，README 矩陣的這兩列掛註⁶（未實測、評級為推論）。兩支都無新的外部依賴：`recap` 純規則，`blind-review` 需要環境能派唯讀子代理，派不出來時的降級路徑（人工另開乾淨對話）寫在 skill 與 adapters 矩陣裡。
+
+註（v0.8.0）：自上游 v0.7.3 採納 `new-mission` 與 `ai-search`，repo 現有支數由 12 變 14。上表各格的實測數字**一律不改寫成 14/14**——那不是本 fork 量出來的。上游在 2026-08-29 對 gemini-cli／codex 逐一 `--agent` 重驗過 12/12（0 Skipped，skills CLI 1.5.23），但那是**上游 12 支**的 working tree，不含本 fork 的 `recap`／`blind-review`，兩者不可相加。CROSS-01 與 REG-03 的通過標準本來就寫成「支數＝repo 現有支數」，重跑一次即可更新；在重跑之前，README 矩陣的這兩列掛註⁷（評級沿用上游實測、本 fork 未重驗）。新增依賴只有一項：`ai-search` 需要一個**會上網搜尋**的後端，沒有時回 `skipped_*` 並回 0（降級不中斷，見 F-03）。

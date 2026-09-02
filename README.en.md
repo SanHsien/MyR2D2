@@ -10,7 +10,7 @@
 
 R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
 
-That's MyR2D2's job description — 12 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's MyR2D2's job description — 14 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
 | Skill | One-liner | R2-D2 parallel |
 |---|---|---|
@@ -21,9 +21,11 @@ That's MyR2D2's job description — 12 skills covering things that "won't kill y
 | **mission-log** | Zero-token harvest of any day's session activity (the transcripts were always recording — you just need a reader) | The flight recorder never sleeps |
 | **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
 | **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
+| **new-mission** | Kickoff brief: look first, ask at most five questions, draft the plan, review it, wait for an explicit "go" — mint a reusable task prompt on the way, and close with a wrap-up report against the plan | R2 projects the Death Star plans; the squadron flies the trench only after the briefing |
 | **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, R2 runs its own diagnostics and beeps the damage report — without waiting for Luke to ask |
 | **blind-review** | Hand the change to a subagent that **never saw the conversation** to attack it; the main agent adds the assumptions and design decisions, and out comes a briefing for a human | Plugged into the port with no mission briefing — R2 reads the light that is actually lit |
 | **ai-review** | Send the work to **another model** for a second opinion, digest it, then write the report; says "self-review only" when no backend is there | R2 and C-3PO bicker for six films — each covering the other's blind half |
+| **ai-search** | Ask once, get a **cited, checkable** live answer; says "not found" instead of filling from stale training data | R2 jacks into an Imperial terminal — reading live station data, not stale intel from memory |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
 
@@ -43,9 +45,11 @@ Start here — check which skills your tool can run:
 | dropoff / pickup³ | ✅ | ✅ | ✅\* | ✅\* | ❌ (no shared disk) |
 | recap⁶ | ✅ | ✅ (rules-only; which items refresh depends on your tools) | ✅ (same) | ✅ (same) | ⚠️ report format only, nothing to refresh |
 | mission-log / daily-debrief / weekly-debrief | ✅ | ❌ (no local transcripts) | ❌² | ❌² | ❌² |
+| new-mission⁷ | ✅ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (rules-only) | ⚠️ paste as a kickoff protocol |
 | damage-report | ⚠️⁵ | ✅ (rules-only, zero tool deps) | ✅ (rules-only) | ✅ (Windows CLI runtime tested) | ⚠️ paste as a wrap-up checklist |
 | blind-review⁶ | ✅ (needs subagent dispatch) | ⚠️ no subagents → open a clean chat by hand | ⚠️ same | ⚠️ same | ⚠️ use a blank chat as the attacker |
 | ai-review | ✅ (needs a review backend⁴) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ in another AI |
+| ai-search⁷ | ✅ (needs a search backend) | ⚠️ rules work; the script needs a shell | ⚠️ same | ⚠️ same | ⚠️ use prompts/ with built-in browsing |
 | token-optimizer | ✅ | ✅ (rules-only, no tool deps) | ⚠️ principles port¹ | ⚠️ principles port¹ | ⚠️ principles port¹ |
 | flight-to-calendar | ✅ (needs Calendar connector) | ✅ (needs Calendar connector) | ⚠️ bring your own Calendar MCP (untested) | ❌ no Calendar tool | ⚠️ needs an Action |
 
@@ -54,6 +58,7 @@ Start here — check which skills your tool can run:
 ² The journal trio reads **Claude Code's own transcripts** (`~/.claude/projects/`) — the skill format installs elsewhere, but the data isn't there, hence ❌.
 ³ The "instant doorbell" (messaging the target session right after a dropoff) is an optional enhancement that needs Claude Code v2.1.224+ cross-session messaging (officially macOS/Linux; messages to bypass-permissions sessions are held for manual approval); other tools skip it automatically — file-based handoff is unaffected.
 ⁴ `ai-review` needs a review backend (Codex CLI by default, swappable via `AI_REVIEW_CMD`) plus a POSIX shell. No backend or not signed in → `skipped_*` and it still **exits 0**, so it never breaks your flow; quota/network failures exit 2 by default, and `--soft-fail` makes those exit 0 too. It deliberately pins no model. macOS and Linux verify full POSIX permissions; Windows 11 Git Bash verifies the remaining behavior and explicitly skips the mode bit that NTFS cannot prove. **Free-tier accounts remain untested**. ⁵ Claude Code 2.1.231 on Windows did not produce the complete five-question contract in non-interactive `-p` mode, so package success is not treated as runtime proof; interactive TUI needs a separate test. ⁶ `recap` and `blind-review` were added in v0.7.0 and are **untested on every tool**: the ratings above are inferred from "rules-only" / "needs subagents", not measured.
+⁷ `new-mission` and `ai-search` were adopted in v0.8.0 from upstream `tingyulu/MyR2D2` v0.7.3. The ratings above come from **two different kinds of source and must not be conflated**: **what was actually measured is the install layer and script behavior** — upstream ran 12/12 install-discovery on gemini-cli and codex (on an **upstream 12-skill** tree, not this fork's 14), and `ai-search`'s 43-item behavior matrix runs on every push in upstream's CI, in this fork's CI, and in this fork's Windows canonical gate; **every remaining cell (the Cowork / Gemini / Codex / ChatGPT execution layer) is the same kind of claim as ⁶ — inferred from "rules-only, zero tool deps", not measured**. `ai-search` needs a backend that **actually searches the web** (Codex CLI's built-in `web_search` by default, swappable via `AI_SEARCH_CMD` — but the replacement must also search; a plain LLM just fills from stale knowledge), and its real-backend ok path was tested once by upstream and **not at all by this fork**. No backend or not signed in → `skipped_*` and exit 0, so automation that only checks exit codes reads "skipped" as success; parse the final `AI_SEARCH_STATUS:` line on stdout to tell them apart. Per-item evidence and provenance: [docs/TEST_PLAN.md](docs/TEST_PLAN.md) section F.
 
 - **Gemini CLI / Codex CLI**: install & discovery layers verified — including Gemini's trusted-folder gate (if skills don't show up, trust the project folder first); execution layer untested.
 - **ChatGPT**: no CLI / no filesystem — manual paste is the only path (see adapters).
@@ -96,13 +101,13 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### Chat-only? No-install lite prompts
 
-No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a 1,260-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free) and `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review).
+No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `new-mission` ([zh-TW](prompts/new-mission.md) | [EN](prompts/new-mission.en.md) — paste into persistent instructions so it **asks, plans, waits for your go — then closes with a wrap-up report**), `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a 1,260-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free), `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review) and `ai-search` ([zh-TW](prompts/ai-search.md) | [EN](prompts/ai-search.en.md) — paste into an AI **with browsing** for cited, real-time verification).
 
 ### Cowork / claude.ai
 
 First get the repo via the manual-copy `git clone` (or **Code → Download ZIP** on the GitHub page), then add the skill folders you want (`skills/<name>/`) to your Cowork project skills (or the project's `.claude/skills/`).
 
-Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/recap`, `/daily-debrief`, `/damage-report`, `/blind-review`, `/ai-review`, etc., or natural language in either language.
+Then trigger with `/save-all`, `/dropoff`, `/pickup`, `/recap`, `/daily-debrief`, `/new-mission`, `/damage-report`, `/blind-review`, `/ai-review`, `/ai-search`, etc., or natural language in either language.
 
 ## Updating
 
@@ -133,9 +138,11 @@ Claude follows the zh-TW instructions and replies in whatever language you speak
 | mission-log | None — the harvester is a stdlib-only python3 script, zero tokens. Ships tests (`tests/harvest_test.py`, synthetic fixtures — never reads your real data) |
 | daily-debrief | **Requires mission-log** (the harvester lives there) |
 | weekly-debrief | **Requires daily-debrief and mission-log** (missing dailies are auto-backfilled) |
+| new-mission | None (pure rules; the `ai-review` hookup in step 3's advanced section is an optional cross-reference) |
 | damage-report | None (pure rules; the `/dropoff` mention in Q5 and the `ai-review` upgrade section are optional cross-references) |
 | blind-review | **An environment that can dispatch a read-only subagent** (the attacker not having the conversation is the whole premise; with no subagents, open a clean chat by hand instead). Complementary to `ai-review`, not overlapping: this one swaps context, that one swaps model family |
 | ai-review | **A review backend** (Codex CLI by default; `AI_REVIEW_CMD` swaps in any command that reads stdin and writes stdout) plus a POSIX shell. A built-in 600-second wall-clock timeout is adjustable with `--timeout`. No extra packages: no npm module, no brew formula, no API key of your own. Ships 45 regression tests (`tests/matrix.sh`, no quota burned) |
+| ai-search | **A web-searching backend** (Codex CLI's built-in `web_search` by default; `AI_SEARCH_CMD` swaps it, but the replacement must also search) plus a POSIX shell. No extra packages. Ships 43 regression tests (`tests/matrix.sh`, no quota burned, no network) |
 | token-optimizer | None (rules-only; Workflow-specific items need the Workflow tool — Workflow is Claude Code's multi-agent orchestration feature; §1's advanced backstop is Claude Code CLI-only) |
 | flight-to-calendar | **Google Calendar MCP connector** (hard dependency) |
 
@@ -155,13 +162,15 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 MyR2D2/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
 ├── .github/workflows/                 ← CI (YAML validation, content gate, behavior matrix, harvest tests)
-├── skills/                            ← 12 skills (zh-TW body, bilingual triggers)
+├── skills/                            ← 14 skills (zh-TW body, bilingual triggers)
 │   ├── save-all/  ├── dropoff/  ├── pickup/  ├── recap/
 │   ├── mission-log/  ├── daily-debrief/  ├── weekly-debrief/
-│   ├── damage-report/  ├── blind-review/  ├── ai-review/
+│   ├── new-mission/  ├── damage-report/  ├── blind-review/
+│   ├── ai-review/  ├── ai-search/
 │   └── token-optimizer/  └── flight-to-calendar/
 ├── prompts/                           ← no-install lite prompts (paste into any chat)
 ├── docs/                              ← test plan + verification notes for external claims
+│   └── cheatsheet.md                  ← 14-skill cheat sheet
 ├── adapters/openai/                   ← ChatGPT / Codex porting kit
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page
