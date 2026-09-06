@@ -152,6 +152,7 @@ codex exec "觸發 dropoff：幫示範任務寫一張交接卡"     # 或 gemini
 |---|---|---|---|
 | **Codex CLI 0.150.0** | `.claude/handoffs/20260906-1059-*.md` | `status: pending`／`from`／`to`／`created: 2026-09-06 10:59`／`priority: normal` 全中，格式與規格逐欄相符；選填的 `from-session`／`notify` 依規定省略 | ✅ 過 |
 | **Claude Code CLI**（非互動 `-p`） | `.claude/handoffs/20260906-1110-*.md`，86 行 | 同上五欄全中，另正確使用選填的 `notify: silent` | ✅ 過 |
+| **Gemini CLI 0.58.0**（`-p --yolo`，隔離 `HOME`＋已信任） | `.claude/handoffs/20260906-2029-*.md`，18 行 | 五欄全中、YAML 可解析、`status` 正確解析為 `pending`；章節（要做什麼／脈絡／相關檔案／完成的定義）齊 | ✅ 過（附兩個小瑕疵，見下） |
 
 兩者都**不只是產出檔案**：Codex 主動回報「目前沒有其他可通知的 session，因此未按即時門鈴」，
 Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對「無門鈴能力時降級」的要求，
@@ -163,21 +164,23 @@ Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對�
 📌 附帶修正既有敘述：README 註⁵ 說「Claude Code 2.1.231 的 Windows 非互動 `-p` 抽測未產出完整五問」
 ——那是對 `damage-report` 的觀察；本次同一個非互動 `-p` 模式**成功**跑完 `dropoff` 並落檔，
 所以該限制是**特定 skill 的**，不是「非互動模式不能跑 skill」。
-❓ **gemini-cli 的執行層仍未驗，但阻礙已量到、不是推測**（2026-09-06）：
-隔離專案＋隔離 `HOME`＋`trustedFolders.json` 全部照 CROSS-02 那套架好、14 支已就位，
-`npx --yes @google/gemini-cli`（0.58.0）也跑得起來；帶 `-p` 觸發時它**在呼叫模型前就拒跑**：
+✅ **gemini-cli 執行層已於 2026-09-06 補驗通過**（維護者當日提供 `GEMINI_API_KEY` 後解除阻礙）。
+做法沿用 CROSS-02 那套隔離：`mktemp` 隔離專案＋隔離 `HOME`＋`trustedFolders.json`，
+金鑰**從登錄檔讀進子行程、全程未列印**，跑完即清除；事後確認真實 `~/.gemini/` 未被動到
+（仍無 `trustedFolders.json`）、暫存目錄 0 殘留。
 
-```
-Please set an Auth method in your <HOME>\.gemini\settings.json or specify one of the
-following environment variables before running:
-GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA
-```
+⚠️ 兩個小瑕疵（**不影響判定，但值得記**）：
+1. **模板註解外洩**：卡上寫成 `status: pending          # pending → picked → done`——
+   那串 `#` 註解是 `dropoff/SKILL.md` 模板裡給人看的說明，被原樣抄進產物。
+   YAML 會把它當註解剝掉（故 `status` 仍正確解析為 `pending`），屬美觀問題不是格式錯誤。
+2. **`to` 欄語意偏差**：規格是 `to: <目標專案>`，它填了 `gemini-cli`（工具名而非專案名）。
+   三個 agent 裡只有它這樣填，Codex 填 `SanHsien/MyR2D2`、Claude Code 填「MyR2D2（同專案未來 session）」。
 
-本機三條路都查過皆無（環境變數未設、無 `~/.gemini/oauth_creds.json`、無 gcloud ADC）。
-**憑證屬於帳號歸屬與花費的決定，未代為設定**——這是刻意停在這裡。
-解除條件與可直接照跑的步驟寫在交接卡（維護者本機 `workspace/notes/handoffs/`，不進本 repo）。
-📌 對照組：Codex 與 Claude Code 兩格能驗，正是因為它們的憑證本來就在這台機器上；
-所以這一格不是「Gemini 比較難測」，只是**還沒有人給它鑰匙**。
+📌 **三個 agent 的橫向對照才是本項真正的收穫**：同一份 SKILL.md、同一個觸發語句，
+Codex／Claude Code／Gemini 都產出結構正確的卡並各自獨立走到「無門鈴能力→降級不通知」，
+但**詳盡度差距很大**（86 行 vs 18 行）。這說明 skill 的規格約束住了**結構**，
+沒有、也不該約束**內容深度**——驗收標準寫成「frontmatter 齊、章節符合」是對的，
+若寫成「要有多少行」就會變成不可移植的宣稱。
 
 ### CROSS-06 🟢 事故回歸（YAML × 真實安裝）
 
@@ -290,11 +293,15 @@ ssh <主機> "python3 - --date <日期>" < skills/mission-log/scripts/harvest.py
 **通過**：同 D-01/D-02。
 狀態（2026-08-09）：✅ 已實測（首次真實交接即驗證）——發送端為 headless `-p` session，`ListAgents` 以名稱定址找到 tmux 內的互動 session、`SendMessage` 送達（回執含 msg_id）；接收端互動 session 無人工介入即開工跑 pickup 流程。附帶發現：headless `-p` **能發不能收**（官方文件僅載明不能收）；名稱定址有時要求帶短識別碼（裸名被拒、`名稱 [ref]` 成功）。後續同日：互動 terminal 當發送端亦經真實回訊驗證，且該回訊**跨機**送達另一台機器的桌面 session（經雲端 bridge 定址；單次觀察、機制歸因未確認，勿當保證）。
 
-### D-04 ✋ 靜默檔（「不用即時通知」）
+### D-04 ✋ 靜默檔（「不用即時通知」）（**2026-09-06 已驗**）
 
 dropoff 時使用者說「不用即時通知」→ 不發訊、卡上 `notify: silent`；後續 /pickup 掃卡仍撈得到。
 **通過**：無訊息送出且卡片欄位正確。
-狀態（2026-08-09）：❓ 未實測（規則層，首次真實使用即為驗證）。
+狀態（2026-09-06）：✅ **已實測**——對 Codex CLI 下達「**不用即時通知**，排隊就好」，
+產出的卡 frontmatter 含 `notify: silent`，agent 明講「未按即時門鈴」，且卡片照常落地、欄位完整。
+兩個條件都成立：**不發訊**＋**卡仍撈得到**。
+📌 與 D-05 的差別要分清：D-05 是**環境沒有門鈴能力**時的自動降級，D-04 是**使用者主動要求**靜默；
+兩者最終都寫 `notify: silent`，但觸發原因不同，本次是分開兩次實跑各自驗到的。
 
 ### D-05 ✋ 無能力環境降級（**2026-09-06 已驗**）
 
@@ -533,21 +540,38 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 
 真實後端下，確認腳本送的 `-c tools.web_search=true` 真的讓後端上網（而非拿舊知識答）。
 **通過**：答案含**當下**才查得到的事實與來源連結。
-狀態（2026-09-06，本 fork 補做了上游沒做的負對照）：⚠️ **上游的推論被否證，結論要改寫**。
+狀態（2026-09-06，**跑了兩輪；第二輪推翻第一輪的證據，結論不變但理由換了**）：
 
-| 組別 | 指令 | 結果 |
+**第一輪（比對答案內容）—— 方法有瑕疵，保留作為教訓**
+拿掉旗標、其餘相同，它照樣答出 `0.153.4` 並附連結，於是判定「旗標非成因」。
+⚠️ 這個推論當時**站不住**：`0.153.4` 有可能本來就在模型知識內，**答得出來不等於查過**。
+用「答案對不對」證明「有沒有查」，中間隔著一個沒被排除的解釋。
+
+**第二輪（改數實際工具呼叫事件）—— 這才是證據**
+改用 `codex exec --json` 讀事件流直接數 `web_search` 事件，並換一個**本機絕對答不出**的問題
+（GitHub star 數）。先前用「現在 UTC 幾點」是壞題目：它跑本機 PowerShell 就答完了，
+事件流裡零個 `web_search`，差點被讀成「旗標無效」。
+
+| 組別 | `web_search` 工具事件 | 判讀 |
 |---|---|---|
-| A（有旗標） | 腳本預設，帶 `-c tools.web_search=true` | 答出當前版號、附來源 |
-| **B（負對照，拿掉旗標）** | 其餘參數相同，只移除該旗標 | **照樣**答出 `0.153.4` 並附 GitHub releases 連結 |
+| `-c tools.web_search=true` | **有** | 會搜 |
+| `-c tools.web_search=false` | **也有** | **關不掉** |
 
-也就是說：**在 codex 0.150.0 上，搜尋能力有沒有那個旗標都在**。
-本機 `~/.codex/config.toml` 內查無任何 `web_search` 設定，排除「是使用者自己全域開啟」的解釋。
+`--strict-config -c tools.web_search=false` 未報錯 ⇒ 這個 key **被 config schema 認得**，
+但在 codex 0.150.0 上**兩個方向都無效**。本機 `~/.codex/config.toml` 亦查無相關設定。
 
-**結論**：`-c tools.web_search=true` 在此環境是**冗餘的**，不是搜尋之所以發生的原因。
-上游「是這個旗標使然」屬單次陽性下的推論，這次的負對照把它推翻了。
-🚫 因此**不得**再把這個旗標寫成「ai-search 與 ai-review 的關鍵差異」。
-✅ 旗標保留（無害，且在預設關閉搜尋的 codex 版本／帳號上可能仍必要），但註解與文件改為據實描述。
-❓ 仍不知道的：在一個預設關閉搜尋的 codex build 上旗標是否必要——本機無法製造那個條件。
+**結論（與第一輪相同，但這次站得住）**：`-c tools.web_search=true` 在此環境**冗餘**，
+不是搜尋之所以發生的原因；搜尋能力由後端／帳號決定，不由這個旗標決定。
+🚫 不得寫成「ai-search 與 ai-review 的關鍵差異」——真正的差異是提問裡那四條要求。
+✅ 旗標保留（無害；別的 build 上可能仍必要）。
+
+📌 **順帶回答了「能不能造出預設關閉搜尋的 build 來驗旗標必要性」**：本次就是去造那個條件的，
+結果是**造不出來，因為開關是死的**。這不再是「沒去試」，而是試過並量到為什麼不行；
+要驗那件事得換一個 codex build 或帳號。
+
+📌 **方法論教訓**（已寫進 `docs/DECISIONS.md`）：要證明「某機制有沒有發生」，就看該機制的
+**直接證據**（工具呼叫事件、log），不要用產出內容回推——產出對不對有太多其他解釋。
+本項第一輪差點以錯誤理由發布出去。
 
 ---
 
@@ -556,7 +580,7 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 | 工具 | 安裝層 | 發現層 | 執行層 |
 |---|---|---|---|
 | Claude Code CLI 2.1.231 | ✅ Windows package 實測 | ⚠️ 非互動 `/damage-report` 有觸發但未產出完整五問 | ✅ `dropoff` 於非互動 `-p` 實測通過、卡片 frontmatter 逐欄符合規格（2026-09-06，CROSS-05）；`damage-report` 仍未通過＝**特定 skill 的限制** |
-| Gemini CLI 0.58.0 | ✅ 實測 14/14（2026-09-06） | ✅ 實測 14/14 `[Enabled]`——但**需先信任資料夾**（無聲關卡，未信任時 0/14，見 CROSS-02） | ❓ 未測 |
+| Gemini CLI 0.58.0 | ✅ 實測 14/14（2026-09-06） | ✅ 實測 14/14 `[Enabled]`——但**需先信任資料夾**（無聲關卡，未信任時 0/14，見 CROSS-02） | ✅ `dropoff` 實測通過（2026-09-06，CROSS-05；模板註解外洩與 `to` 欄語意兩個小瑕疵） |
 | Codex CLI 0.150.0 | ✅ Windows package 實測 | ✅ `exec --json` 證明讀取 `damage-report/SKILL.md`（2026-08-24） | ✅ `dropoff` 端到端實測、卡片 frontmatter 逐欄符合規格（2026-09-06，CROSS-05） |
 | ChatGPT 消費版 | ❌ 無安裝路徑（產品限制） | ❌ 無 skill 概念 | 僅手動貼入，網頁端人工驗 |
 | Cursor／Copilot 等 | ✅ 實測 14/14（2026-09-06，安裝器行為） | ❓ 未測（本機無此二工具） | ❓ 未測 |

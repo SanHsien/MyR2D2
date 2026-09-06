@@ -58,11 +58,11 @@ Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全
 ² 日誌三支的資料來源是 **Claude Code 自家的 transcript**（`~/.claude/projects/`）——skill 格式裝得進其他工具，但那裡沒有這份資料，故標 ❌。
 ³ 「即時門鈴」（推球後直接傳訊喚醒對面 session）為選用增強，僅 Claude Code v2.1.224+ 的 cross-session messaging 生效（官方支援 macOS／Linux；送往 bypass-permissions session 的訊息會先押著等人工核准）；其他工具偵測不到就自動跳過，純檔案交接不受影響。
 ⁴ `ai-review` 需要一個二審後端（預設 Codex CLI，可用 `AI_REVIEW_CMD` 換掉）＋能跑 POSIX shell 的環境。沒有後端／沒登入時回報 `skipped_*` 並**照常回 0**，不會中斷流程；額度或網路類失敗預設回 2，加 `--soft-fail` 可讓它也回 0。腳本刻意不釘死模型（釘了會過期），若後端預設模型不在你的方案內，用 `--model` 指定。macOS 與 Linux 會驗完整 POSIX 權限；Windows 11 Git Bash 驗其餘行為並明確略過 NTFS 無法證明的 mode bit。**免費方案帳號仍未實測**。⁵ Claude Code 2.1.231 的 Windows 非互動 `-p` 抽測**對 `damage-report`** 未產出完整五問，故該格不以 package 成功替 runtime 背書；互動 TUI 需另測。⚠️ 這是**特定 skill 的**限制，不是「非互動模式跑不了 skill」——同一個 `-p` 模式已成功跑完 `dropoff` 並落檔（見 TEST_PLAN CROSS-05）。⁶ `recap` 與 `blind-review` 於 v0.7.0 新增，**跨工具皆未實測**：表中評級是依「規則類／需子代理」推論的，不是量過的。
-⁷ `new-mission` 與 `ai-search` 於 v0.8.0 自上游 `tingyulu/MyR2D2` v0.7.3 採納，v0.8.1–v0.8.3 補上 Windows 修復與實測。上兩列的評級**現在幾乎都是量過的**：安裝層 `codex`／`claude-code`／`gemini-cli` 各 **14/14、0 Skipped**（每次 gate 實跑）；**Gemini 發現層**未信任時列出 0 支、信任後 **14 支全 `[Enabled]`**（0.58.0）；**執行層**以 `dropoff` 在 Codex CLI 與 Claude Code CLI 各實跑一次，產出的交接卡 frontmatter 逐欄符合規格（CROSS-05，此項自 repo 建立以來首次實測）；`ai-search` 44 項行為矩陣每次 push 實跑；`ai-search` 的 **`ok` 路徑兩條後端都驗過**（預設 codex 內建搜尋、以及可插拔後端；後者答出比本機安裝版更新的版號＝確實查了即時網路），失敗分類也在真實後端上驗過。**仍未量的只剩兩處**：`gemini-cli` 的執行層（要 Google 憑證，屬使用者決定）、以及執行層抽測只涵蓋 `dropoff` 一支、不自動延伸到需外部 connector 或子代理的 skill。`ai-search` 需要一個**會上網搜尋**的後端（預設 Codex CLI 內建搜尋，可用 `AI_SEARCH_CMD` 換掉——但換的後端也得會搜尋，純 LLM 只會拿舊知識填答）；沒有後端／沒登入回 `skipped_*` 並回 0，自動化只看退出碼會把「本次沒查證」當成功，要分辨就解析 stdout 末行的 `AI_SEARCH_STATUS:`。逐項證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) F 段、CROSS-02 與 CROSS-05。
+⁷ `new-mission` 與 `ai-search` 於 v0.8.0 自上游 `tingyulu/MyR2D2` v0.7.3 採納，v0.8.1–v0.8.4 補上 Windows 修復與實測。上兩列的評級**現在全部量過**：**安裝層** `codex`／`claude-code`／`gemini-cli`／`cursor`／`github-copilot` 五個目標各 **14/14、0 Skipped**；**發現層** Gemini 未信任時列出 0 支、信任後 **14 支全 `[Enabled]`**（0.58.0，trusted-folder 是無聲關卡）；**執行層**以 `dropoff` 在 **Codex CLI／Claude Code CLI／Gemini CLI 三者各實跑一次**，產出的交接卡 frontmatter 逐欄符合規格，且三者都獨立走到「無門鈴能力→降級不通知」（CROSS-05，此項自 repo 建立以來首次實測）；`ai-search` 44 項行為矩陣每次 push 實跑，**`ok` 路徑預設 codex 後端與可插拔後端都驗過**，失敗分類亦在真實後端驗過。**還沒量的**：執行層抽測只涵蓋 `dropoff` 一支，不自動延伸到需外部 connector（`flight-to-calendar`）或需子代理（`blind-review`）的 skill；`cursor`／`github-copilot` 只驗安裝層（本機無此二工具）；免費方案帳號未實測。`ai-search` 需要一個**會上網搜尋**的後端（預設 Codex CLI 內建搜尋，可用 `AI_SEARCH_CMD` 換掉——但換的後端也得會搜尋）；沒有後端／沒登入回 `skipped_*` 並回 0，自動化只看退出碼會把「本次沒查證」當成功，要分辨就解析 stdout 末行的 `AI_SEARCH_STATUS:`。逐項證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) F 段、CROSS-02 與 CROSS-05。
 
-- **Gemini CLI／Codex CLI**：安裝與發現層已實測——Gemini 於 0.58.0 兩情境實測（未信任 0/14、信任後 14/14 全 `[Enabled]`），**trusted-folder 是道無聲關卡：skill 沒出現時先信任專案資料夾**；兩者的執行層皆未實測。
+- **Gemini CLI／Codex CLI**：三層皆已實測——Gemini 於 0.58.0 兩情境驗發現層（未信任 0/14、信任後 14/14 全 `[Enabled]`），**trusted-folder 是道無聲關卡：skill 沒出現時先信任專案資料夾**；兩者的執行層均以 `dropoff` 實跑通過（見 TEST_PLAN CROSS-05）。
 - **ChatGPT**：無 CLI／無檔案系統，唯一路徑＝手動貼入（見 adapters）。
-- Cursor／Copilot 等其他 `npx skills` 目標：未實測。
+- Cursor／Copilot：**安裝層已實測**（各 14/14、0 Skipped，2026-09-06）；發現層與執行層未實測（本機無此二工具）。
 
 ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入、三個坑）見 **[adapters/openai/](adapters/openai/README.md)**。
 
@@ -79,7 +79,7 @@ ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入�
 npx skills add SanHsien/MyR2D2
 ```
 
-[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 與其他多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 gemini-cli／codex 的安裝層（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)），其餘目標未實測。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
+[`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 與其他多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 `codex`／`claude-code`／`gemini-cli`／`cursor`／`github-copilot` **五個目標的安裝層**，各 14/14、0 Skipped（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) CROSS-01）。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
 
 ### Claude Code CLI — Plugin（深度整合）
 
