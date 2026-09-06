@@ -143,7 +143,25 @@ codex exec "觸發 dropoff：幫示範任務寫一張交接卡"     # 或 gemini
 ```
 
 **通過**：真的產出交接卡檔案，frontmatter（status/from/to/created）齊全、內容符合 SKILL.md 步驟。需人工核對格式，「有產出檔案」不算過。
-狀態（2026-07-30）：未實測（gemini／codex 皆在場可測）。
+狀態（2026-09-06，本 fork 首次實測；**此項自 repo 建立以來一直是「未實測」**）：
+
+| 工具 | 產出 | frontmatter 人工核對 | 判定 |
+|---|---|---|---|
+| **Codex CLI 0.150.0** | `.claude/handoffs/20260906-1059-*.md` | `status: pending`／`from`／`to`／`created: 2026-09-06 10:59`／`priority: normal` 全中，格式與規格逐欄相符；選填的 `from-session`／`notify` 依規定省略 | ✅ 過 |
+| **Claude Code CLI**（非互動 `-p`） | `.claude/handoffs/20260906-1110-*.md`，86 行 | 同上五欄全中，另正確使用選填的 `notify: silent` | ✅ 過 |
+
+兩者都**不只是產出檔案**：Codex 主動回報「目前沒有其他可通知的 session，因此未按即時門鈴」，
+Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對「無門鈴能力時降級」的要求，
+兩個不同 agent 各自獨立走到同一個正確行為。Claude Code 那次還主動把「卡不該落在會消失的沙盒裡」
+提出來讓使用者否決，屬於 skill 要求的判斷而非幻覺。
+
+⚠️ 範圍界定：受測 skill 是 `dropoff` 一支，不是全部 14 支；`dropoff` 是規則＋檔案寫入類，
+結論不自動延伸到需要外部 connector 的 `flight-to-calendar` 或需子代理的 `blind-review`。
+📌 附帶修正既有敘述：README 註⁵ 說「Claude Code 2.1.231 的 Windows 非互動 `-p` 抽測未產出完整五問」
+——那是對 `damage-report` 的觀察；本次同一個非互動 `-p` 模式**成功**跑完 `dropoff` 並落檔，
+所以該限制是**特定 skill 的**，不是「非互動模式不能跑 skill」。
+❓ **gemini-cli 的執行層仍未驗**：`skills list`（CROSS-02）不需憑證，但真的呼叫模型要 Google 帳號／API key，
+屬於使用者才能決定的事，未代為設定。
 
 ### CROSS-06 🟢 事故回歸（YAML × 真實安裝）
 
@@ -415,22 +433,19 @@ skills/ai-search/scripts/ai-search.sh "某個需要查證現況的問題"
 **通過**：回 `AI_SEARCH_STATUS: ok`、退出碼 0、答案結論先行且附**可點的來源連結**（不是錯誤頁），
 內容反映當前網路資訊而非訓練知識填答。
 狀態：上游單次實測通過（Codex CLI 真實 `web_search` 後端，2026-08-24，答出當日 release 版本＝確實查了即時網路）。
-✅ **本 fork 已在 Windows 驗到 `ok`（2026-09-06，走可插拔後端）**——
-`AI_SEARCH_CMD='claude -p --allowedTools WebSearch'`，回 **`AI_SEARCH_STATUS: ok`**＋exit 0，
-答案結論先行、每個事實附可點來源（npm registry API 與 GitHub releases API 兩個官方來源互相印證），
-並主動標注時效風險、明講哪部分沒查（Homebrew 通道）。落檔 frontmatter 正確。
-🔑 **「確實查了即時網路」的證據**：它答出 Codex CLI `0.153.4`（2026-09-04 發布），
+✅ **本 fork 已在 Windows 驗到 `ok`，兩條後端路徑都驗了（2026-09-06）**：
+
+| 後端 | 指令 | 結果 |
+|---|---|---|
+| **預設**（Codex CLI 內建 `web_search`） | 直接跑腳本 | `AI_SEARCH_STATUS: ok`＋exit 0，答案附官方來源（台北 101 官網、臺北市政府）並自行分級官方 vs 二手 |
+| **可插拔**（`AI_SEARCH_CMD`） | `claude -p --allowedTools WebSearch` | `ok`＋exit 0，結論先行、兩個官方 API 來源互相印證、主動標時效風險、明講哪段沒查 |
+
+🔑 **「確實查了即時網路」的證據**：可插拔後端那次答出 Codex CLI `0.153.4`（2026-09-04 發布），
 而本機安裝的是 `0.150.0`——**答案比本機還新**，不可能來自舊知識或本機狀態。
 
-⚠️ 界定清楚三件事：
-① 這驗的是**可插拔後端路徑**（`AI_SEARCH_CMD`）與 skill 的四條輸出要求，
-   **不是預設的 codex `web_search` 路徑**；後者仍未驗到 `ok`（見下）。
-② 預設後端（Codex CLI v0.150.0、`Logged in using ChatGPT`）2026-09-05 實跑兩次：
-   修掉 F-05 的路徑缺陷前回 `failed_unknown`，修掉後回 **`failed_quota`**＋exit 2，
-   後端訊息為 `You've hit your usage limit ... try again at Sep 7th`。
-   **帳號額度用盡是外部阻礙，不是缺陷**；由此取得的正面結論限於
-   **真實後端的失敗分類在 Windows 上正確**。額度恢復後重跑本項的預設後端分支。
-③ 🚫 不拿上游的單次陽性替本機背書。
+📌 預設後端稍早（2026-09-05）撞到帳號用量上限，當時只驗到 `failed_quota` 被正確分類；
+額度於 2026-09-06 恢復後補驗成功。**那次失敗的觀察仍然有效且值得留著**——
+它證明了真實後端的失敗分類在 Windows 上正確，那是 stub 測不出來的。
 
 ### F-05 🟢 傳給後端的路徑格式（Windows 迴歸）
 
@@ -463,9 +478,21 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 
 真實後端下，確認腳本送的 `-c tools.web_search=true` 真的讓後端上網（而非拿舊知識答）。
 **通過**：答案含**當下**才查得到的事實與來源連結。
-狀態：上游以 F-02 同一次 run 取得**間接證據**；⚠️ 單次陽性、未做「移除旗標」的負對照，「是這個旗標使然」屬推論。
-❌ **本 fork 未實測且暫時測不了**——本項的標的是 codex 專屬的 `-c tools.web_search=true`，
-只能在預設後端上驗；F-02 用的 `claude -p` 後端不走這個旗標，證不到本項。等 codex 額度恢復。
+狀態（2026-09-06，本 fork 補做了上游沒做的負對照）：⚠️ **上游的推論被否證，結論要改寫**。
+
+| 組別 | 指令 | 結果 |
+|---|---|---|
+| A（有旗標） | 腳本預設，帶 `-c tools.web_search=true` | 答出當前版號、附來源 |
+| **B（負對照，拿掉旗標）** | 其餘參數相同，只移除該旗標 | **照樣**答出 `0.153.4` 並附 GitHub releases 連結 |
+
+也就是說：**在 codex 0.150.0 上，搜尋能力有沒有那個旗標都在**。
+本機 `~/.codex/config.toml` 內查無任何 `web_search` 設定，排除「是使用者自己全域開啟」的解釋。
+
+**結論**：`-c tools.web_search=true` 在此環境是**冗餘的**，不是搜尋之所以發生的原因。
+上游「是這個旗標使然」屬單次陽性下的推論，這次的負對照把它推翻了。
+🚫 因此**不得**再把這個旗標寫成「ai-search 與 ai-review 的關鍵差異」。
+✅ 旗標保留（無害，且在預設關閉搜尋的 codex 版本／帳號上可能仍必要），但註解與文件改為據實描述。
+❓ 仍不知道的：在一個預設關閉搜尋的 codex build 上旗標是否必要——本機無法製造那個條件。
 
 ---
 
@@ -473,9 +500,9 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 
 | 工具 | 安裝層 | 發現層 | 執行層 |
 |---|---|---|---|
-| Claude Code CLI 2.1.231 | ✅ Windows package 實測 | ⚠️ 非互動 `/damage-report` 有觸發但未產出完整五問 | ❌ Windows `-p` runtime 抽測未通過；互動 TUI 另測 |
+| Claude Code CLI 2.1.231 | ✅ Windows package 實測 | ⚠️ 非互動 `/damage-report` 有觸發但未產出完整五問 | ✅ `dropoff` 於非互動 `-p` 實測通過、卡片 frontmatter 逐欄符合規格（2026-09-06，CROSS-05）；`damage-report` 仍未通過＝**特定 skill 的限制** |
 | Gemini CLI 0.58.0 | ✅ 實測 14/14（2026-09-06） | ✅ 實測 14/14 `[Enabled]`——但**需先信任資料夾**（無聲關卡，未信任時 0/14，見 CROSS-02） | ❓ 未測 |
-| Codex CLI 0.146.0 | ✅ Windows package 實測 | ✅ `exec --json` 證明讀取 `damage-report/SKILL.md`（2026-08-24） | ✅ Windows read-only runtime 實測 |
+| Codex CLI 0.150.0 | ✅ Windows package 實測 | ✅ `exec --json` 證明讀取 `damage-report/SKILL.md`（2026-08-24） | ✅ `dropoff` 端到端實測、卡片 frontmatter 逐欄符合規格（2026-09-06，CROSS-05） |
 | ChatGPT 消費版 | ❌ 無安裝路徑（產品限制） | ❌ 無 skill 概念 | 僅手動貼入，網頁端人工驗 |
 | Cursor／Copilot 等 | ❓ `npx skills` 支援但未實測 | ❓ | ❓ |
 

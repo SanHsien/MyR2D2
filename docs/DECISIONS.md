@@ -12,6 +12,21 @@ Windows 使用 PowerShell 作 canonical entrypoint，產品 shell 測試由 Git 
 
 Python 維護工具只使用標準庫與 `gh`，不新增 `pyproject.toml` 或 requirements；`package-lock.json` 僅固定 `skills`／`skills-ref` 維護工具及其 integrity。repo 的交付物是 Agent Skills，不是 Python library。
 
+## 2026-09-06：外部阻礙會過去，「未驗」不是可以長住的狀態
+
+v0.8.2 收尾時留了兩項「未驗」，理由都成立：codex 額度用盡、本機沒裝 Gemini CLI。
+但「理由成立」跟「可以放著」是兩件事。隔天額度恢復，兩項連同一項自 repo 建立以來
+從沒跑過的 CROSS-05，全部補完。
+
+由此定為慣例：**帶外部阻礙的「未驗」要寫上解除條件與重跑方式，並在條件解除時主動回頭跑**，
+不是列進誠實帳就算處理完。誠實帳是為了不謊報，不是待辦事項的垃圾桶。
+
+補完這一輪還意外推翻了一個宣稱：`ai-search` 送給 codex 的 `-c tools.web_search=true`，
+上游文件寫成「這是 ai-search 與 ai-review 的關鍵差異」。做了上游沒做的負對照
+（拿掉旗標、其餘相同）後發現**照樣會搜**，本機 config 也查無相關設定。
+旗標保留（無害、在別的 codex build 上可能仍必要），但因果宣稱已據實改寫。
+📌 一般化：**單次陽性推不出因果**。「加了 X 就有 Y」要能成立，得有人真的把 X 拿掉試一次。
+
 ## 2026-09-06：實測記錄的日期以獨立來源為準，不是以本機時鐘為準
 
 v0.8.0／v0.8.1 兩個 commit 的 author 時間戳是 **2026-09-02**，但那批工作實際發生在 **2026-09-05**——

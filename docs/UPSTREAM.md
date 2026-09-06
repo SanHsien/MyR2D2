@@ -64,10 +64,20 @@ v0.8.1 收尾時仍掛著兩項「本 fork 未驗」。兩項都用繞道補上�
 | `ai-search` 真實後端 `ok` 路徑 | 預設後端 codex 帳號額度用盡（`try again at Sep 7th`） | 改走 skill 自己文件化的可插拔後端 `AI_SEARCH_CMD='claude -p --allowedTools WebSearch'` | ✅ `AI_SEARCH_STATUS: ok`＋exit 0，結論先行、附兩個官方來源、主動標時效與未查範圍。**答出 Codex `0.153.4`（比本機安裝的 `0.150.0` 還新）＝確實查了即時網路** |
 | Gemini CLI 發現層 | 本機沒裝 Gemini CLI | `npx --yes @google/gemini-cli`（免全域安裝）＋隔離 `HOME`／隔離專案 | ✅ 未信任時磁碟 14 支、列出 **0** 支並印關卡訊息；信任後列出 **14 支全 `[Enabled]`**（gemini-cli 0.58.0） |
 
-⚠️ 兩項都要界定範圍，別當成「全驗完了」：
-- `ok` 路徑驗的是**可插拔後端**與 skill 的四條輸出要求；**預設 codex `web_search` 路徑仍未驗到 `ok`**，
-  F-04（`web_search` 旗標是否真的生效）也只能在預設後端上驗，同樣要等額度。
-- Gemini 驗的是**發現層**（找得到、載得進去），**執行層仍未驗**（沒證明它照 SKILL.md 行事）。
+**2026-09-06 續**：上面那兩條「要等額度／範圍未及」的尾巴當天就清掉了——
+
+| 項目 | 結果 |
+|---|---|
+| 預設 codex `web_search` 路徑的 `ok` | ✅ 額度恢復後補驗通過（附官方來源、自行分級官方 vs 二手） |
+| F-04：`web_search` 旗標是否真的生效 | ⚠️ **上游推論被否證**——做了上游沒做的負對照（拿掉旗標、其餘相同），**照樣會搜**；本機 config 查無相關設定，排除「使用者自己全域開啟」。旗標保留但不再宣稱是搜尋的成因，腳本註解與 SKILL.md 同步改寫 |
+| 執行層（CROSS-05，**repo 建立以來從沒跑過**） | ✅ `dropoff` 在 **Codex CLI** 與 **Claude Code CLI** 各端到端跑一次，兩張卡的 frontmatter 逐欄符合規格；兩個 agent 還各自獨立走到「無門鈴能力就降級」的正確行為 |
+| 附帶修正 | README 註⁵ 的「Windows 非互動 `-p` 跑不出來」收窄為**特定 skill（`damage-report`）的**限制——同一個 `-p` 模式成功跑完 `dropoff` |
+
+❓ 真正還沒量的只剩兩處，都寫上了解除條件：
+- **`gemini-cli` 執行層**：`skills list` 不需憑證，真的呼叫模型要 Google 帳號／API key，
+  屬使用者才能決定的事，未代為設定。
+- **執行層抽測只涵蓋 `dropoff` 一支**，不自動延伸到需外部 connector（`flight-to-calendar`）
+  或需子代理（`blind-review`）的 skill。
 
 📌 過程中撞到第三次同款 Windows 路徑坑：`git -C "$(mktemp -d)"` 讓原生 Windows git 收 POSIX 路徑，
 靜默失敗 → 0 支裝進去 → 第一次的「未信任時看不到 skill」是**假陽性**（本來就沒東西可看）。

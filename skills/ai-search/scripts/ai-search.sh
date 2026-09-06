@@ -358,7 +358,11 @@ else
 	esac
 	# -s read-only：唯讀沙箱；--ephemeral：不留工作狀態；
 	# --skip-git-repo-check + -C "$TMPD"：不碰你的 repo，也不要求身處 git 專案內。
-	# -c tools.web_search=true：開後端內建網路搜尋 —— 這是 ai-search 與 ai-review 的關鍵差異。
+	# -c tools.web_search=true：明確要求後端開啟內建網路搜尋。
+	# ⚠️ 別把這行讀成「搜尋是靠它才發生的」：codex 0.150.0 的負對照顯示，**拿掉它照樣會搜**
+	#    （TEST_PLAN F-04）。保留它是因為在預設關閉搜尋的 codex build／帳號上它可能仍必要，
+	#    留著無害；但它不是 ai-search 與 ai-review 的因果差異，真正的差異是**提問內容**
+	#    （四條要求：結論先行、每個事實附來源、可能過時要標注、查不到就說查不到）。
 	set -- exec -s read-only --skip-git-repo-check --ephemeral -C "$(winpath "$TMPD")" -c tools.web_search=true -o "$(winpath "$ANSWER_FILE")"
 	if [ -n "$MODEL" ]; then set -- "$@" -m "$MODEL"; fi
 	if [ -n "$EFFORT" ]; then set -- "$@" -c "model_reasoning_effort=\"$EFFORT\""; fi
