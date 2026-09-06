@@ -153,9 +153,10 @@ sh <本skill目錄>/tests/matrix.sh          # 加 SH=bash 可指定用哪個 sh
 特殊問題字元、**傳給後端的路徑格式**）。Linux 由 CI（ubuntu-latest）跑同一份矩陣；
 Windows 11 的 Git Bash 會跑完整行為案例，但 NTFS 無法提供 POSIX `0600` mode-bit 證據，
 因此該一項明確略過並由 Linux CI 權威驗證。
-**免費方案帳號未實測**；**真實後端的 `ok` 路徑僅上游單次實測，本專案的 Windows 環境未驗過成功查證**
-（測試當下帳號已達用量上限；同一次實跑倒是驗到真實後端的 `failed_quota` 被正確分類）——
-沒驗過的一律別當保證。
+**免費方案帳號未實測**。真實後端的 `ok` 路徑：**已用可插拔後端在 Windows 驗過**
+（結論先行、附兩個官方來源、答出比本機安裝版還新的版號＝確實查了即時網路）；
+**預設的 codex `web_search` 路徑仍未驗到 `ok`**（測試當下帳號已達用量上限，
+同一次實跑倒是驗到真實後端的 `failed_quota` 被正確分類）—— 沒驗過的一律別當保證。
 
 🪟 **Windows 專屬前提**：Git Bash 上的 `codex` 是**原生 Windows 執行檔**，看不懂 `/tmp/xxx`
 這種 POSIX 路徑。腳本會自動用 `cygpath` 把傳給後端的 `-C`／`-o` 轉成 Windows 形式；

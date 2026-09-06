@@ -14,7 +14,7 @@ Upstream：[`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2)
 
 本次建立 fork、維護 overlay，並修正 `mission-log` 的 Windows UTF-8、主機名稱與時區邊界；沒有對 upstream 寫入，也沒有宣稱審查水位之後的未來狀態。
 
-## 2026-09-02 審查：`0f74f67` → `699b438`（15 個 commit，上游 v0.7.0–v0.7.3）
+## 2026-09-05 審查：`0f74f67` → `699b438`（15 個 commit，上游 v0.7.0–v0.7.3）
 
 上游在此區間新增第 11、12 支 skill 並對 `new-mission` 做了五輪行為修正。逐筆判斷如下——分類依據是實際 diff 與本 fork 現況，不是 commit 標題。
 
@@ -22,7 +22,7 @@ Upstream：[`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2)
 |---|---|---|---|
 | `4de53ea` | 新增 `ai-search`、`new-mission` 兩支 skill＋prompts 四檔＋連動 | `adopt` | 兩支皆與 fork 既有 skill 無衝突；`ai-search` 與 `ai-review` 同架構，測試矩陣可直接接進本 fork 的 gate |
 | `455517d` | 發版前跨模型二審的措辭修正（`ai-review`／`ai-search`／`new-mission`／README／TEST_PLAN） | `adopt` | `ai-review/SKILL.md` 的兩處（用法錯誤不印狀態、`ok` 的語意界定）與 fork 的 timeout 客製不重疊，手動併入而非整檔覆蓋 |
-| `e002378` `ea27d9c` `60f5d82` `699b438` | 上游四次 `plugin.json` 版號 bump（v0.7.0／v0.7.1／v0.7.2／v0.7.3） | `skip` | 版號是 fork 自己的序列（見 `docs/DECISIONS.md` 2026-09-02）；內容改動已個別採納 |
+| `e002378` `ea27d9c` `60f5d82` `699b438` | 上游四次 `plugin.json` 版號 bump（v0.7.0／v0.7.1／v0.7.2／v0.7.3） | `skip` | 版號是 fork 自己的序列（見 `docs/DECISIONS.md` 2026-09-05）；內容改動已個別採納 |
 | `49587f1` | `new-mission` 第 7 步收尾報告五格＋`damage-report` 交叉引用 | `adopt` | `damage-report/SKILL.md` 在 fork 端未曾改動，整檔取上游版無衝突 |
 | `73d79e4` | TEST_PLAN 的 CROSS-01 per-agent 重驗記錄（gemini-cli／codex 各 12/12） | `defer` | 那是**上游 12 支** working tree 量出來的數字，與 fork 的 14 支不可相加。已在 TEST_PLAN C 段以 v0.8.0 註記明寫「不改寫成 14/14」；重查條件＝本 fork 自己重跑 CROSS-01 |
 | `ea78177` `a0148f3` `6b01129` `cee6243` `75bed90` `e3c24bc` | `new-mission` 的五輪行為修正（開場分流／候選編號化／報告附 prompt 全文／落地優先於蒸發／時間行含 IANA 時區／時區「驗過才印」）＋末兩筆連帶改 `save-all` | `adopt` | 這些改動已包含在採納的 `new-mission/SKILL.md` 最終狀態內；`save-all/SKILL.md` 在 fork 端未曾改動，整檔取上游版無衝突 |
@@ -51,9 +51,28 @@ v0.8.1 又多了四處（都是 Windows 實跑才浮出來的真缺陷，見 `do
 
 fork 端的連動改動（同一批）：兩份 README 計數 12→14＋新增列＋新註⁷、`docs/cheatsheet.md`、`CLAUDE.md` 連動表行號與 H3 慣例、`AGENTS.md`／`FORK.md` 支數敘述、`.claude-plugin/` 兩檔、`.github/workflows/ci.yml`（計數 12→14＋ai-search 矩陣關卡）、`tools/check_repo_contract.py`（12→14）、`tools/dev_check.sh`／`dev_check.ps1`（接上 ai-search 矩陣）、`.gitignore`（`.ai-searches/`）、`docs/TEST_PLAN.md`（計數、F 段、C 段 v0.8.0 註）。
 
-`defer`（本次不動、記下重查條件）：`new-mission` 與 `save-all` 第 0／5 步的零依賴取時間片段標的是 macOS／Linux，靠 `/etc/localtime` 取 IANA 時區名——**Git Bash 沒有這個檔**，在本 fork 的主平台上必然落到 `date +%Z` 退路，而 Windows 的 `%Z` 回空字串，於是印出的時區標籤是空的。這不是正確性缺陷（片段的第三道守門本來就要求「對不上就標非 IANA、不准猜」，它確實沒猜），但在 Windows-first 的 fork 裡等於那條退路 100% 觸發卻無人記載。重查／處理條件：等上游自己補 Windows 分支，或本 fork 要動這兩支時一併補；先不為此改上游檔案，避免再多一處 fetch 衝突面。
+~~`defer`：時區退路~~ → **v0.8.1 已修**（上表第四列），不再是待辦。
 
-本次沒有對 upstream 寫入。`ai-search` 的相容性評級沿用上游實測結論，本 fork **未重驗**，此事在 README 註⁷ 與 TEST_PLAN F 段各標一次。
+本次沒有對 upstream 寫入。
+
+## 2026-09-06 補驗：v0.8.0 誠實帳上最後兩項
+
+v0.8.1 收尾時仍掛著兩項「本 fork 未驗」。兩項都用繞道補上了，**繞道方式本身也是結論的一部分**：
+
+| 項目 | 阻礙 | 繞道 | 結果 |
+|---|---|---|---|
+| `ai-search` 真實後端 `ok` 路徑 | 預設後端 codex 帳號額度用盡（`try again at Sep 7th`） | 改走 skill 自己文件化的可插拔後端 `AI_SEARCH_CMD='claude -p --allowedTools WebSearch'` | ✅ `AI_SEARCH_STATUS: ok`＋exit 0，結論先行、附兩個官方來源、主動標時效與未查範圍。**答出 Codex `0.153.4`（比本機安裝的 `0.150.0` 還新）＝確實查了即時網路** |
+| Gemini CLI 發現層 | 本機沒裝 Gemini CLI | `npx --yes @google/gemini-cli`（免全域安裝）＋隔離 `HOME`／隔離專案 | ✅ 未信任時磁碟 14 支、列出 **0** 支並印關卡訊息；信任後列出 **14 支全 `[Enabled]`**（gemini-cli 0.58.0） |
+
+⚠️ 兩項都要界定範圍，別當成「全驗完了」：
+- `ok` 路徑驗的是**可插拔後端**與 skill 的四條輸出要求；**預設 codex `web_search` 路徑仍未驗到 `ok`**，
+  F-04（`web_search` 旗標是否真的生效）也只能在預設後端上驗，同樣要等額度。
+- Gemini 驗的是**發現層**（找得到、載得進去），**執行層仍未驗**（沒證明它照 SKILL.md 行事）。
+
+📌 過程中撞到第三次同款 Windows 路徑坑：`git -C "$(mktemp -d)"` 讓原生 Windows git 收 POSIX 路徑，
+靜默失敗 → 0 支裝進去 → 第一次的「未信任時看不到 skill」是**假陽性**（本來就沒東西可看）。
+改用 `cygpath -w` 重做才是真的。這已經是同一天內第三次（`codex.exe`、`python3`、`git`）——
+`docs/DECISIONS.md` 已把它升為慣例。
 
 ## 判斷規則
 

@@ -85,13 +85,13 @@ done
 ```
 
 **通過**：每個 agent 都回報 Installed 支數=repo 現有支數、0 Skipped。
-狀態（2026-09-02，本 fork 自量）：`codex`／`claude-code`／`gemini-cli` 三個目標各自乾淨的 Windows
+狀態（2026-09-05，本 fork 自量）：`codex`／`claude-code`／`gemini-cli` 三個目標各自乾淨的 Windows
 隔離專案逐一 `--agent` 安裝，皆 **Installed 14、0 Skipped、磁碟實數 14**；`chatgpt` 為陰性對照，
 照文件所述被 `Invalid agents: chatgpt` 擋下。由 `tools/windows_agent_smoke.ps1` 執行，已接進
 canonical gate，每次跑 gate 都會重量一次。
-⚠️ **`gemini-cli` 這格只證明安裝層**：本機沒有裝 Gemini CLI，而 `skills add --agent <名>` 是**安裝器**
-的行為、寫進統一的 `.agents/skills/`，與目標 CLI 在不在場無關。**發現層仍未驗**（要驗得有那支 CLI，
-見 CROSS-02 的 trusted-folder 關卡）。cursor／github-copilot 未實測。
+⚠️ **`gemini-cli` 這格只證明安裝層**：`skills add --agent <名>` 是**安裝器**的行為、寫進統一的
+`.agents/skills/`，與目標 CLI 在不在場無關。發現層是另一件事，已於 2026-09-06 補驗，見 CROSS-02。
+cursor／github-copilot 未實測。
 
 ### CROSS-02 🟡 Gemini CLI 發現層（trusted-folder 關卡）
 
@@ -101,7 +101,20 @@ gemini skills list --all   # 分別在「未信任」與「已信任」的專案
 
 **通過**：未信任時輸出含 `Skipping project agents due to untrusted folder`（skill 不出現＝**預期行為**，不是 bug）；信任該資料夾後全數 skill 列出並標 `[Enabled]`。
 ⚠️ 這道關卡是無聲的（不報錯），文件必須揭露，否則使用者會以為安裝失敗。建議用隔離 `HOME` 測「已信任」情境，避免動到真實 `~/.gemini/trustedFolders.json`。
-狀態（2026-07-30，gemini 0.40.0）：未信任情境已實測吻合；已信任情境未實測。
+狀態（2026-09-06，gemini-cli **0.58.0**，本 fork 自量，兩情境皆實測）：
+
+| 情境 | 磁碟上的 MyR2D2 skill | `skills list --all` 列出的 MyR2D2 skill | 關卡訊息 |
+|---|---|---|---|
+| 未信任 | 14 | **0** | `Skipping project agents due to untrusted folder`＋`Project hooks disabled because the folder is not trusted` |
+| 已信任 | 14 | **14，全部 `[Enabled]`** | 關卡訊息消失 |
+
+✅ 兩個方向都對上了：**未信任時 skill 完全不出現是預期行為**（磁碟上明明有 14 支），
+信任後 14 支全數列出。做法：`mktemp -d` 建隔離專案與隔離 `HOME`，用 `npx --yes @google/gemini-cli`
+免全域安裝，信任狀態靠寫入隔離 `HOME` 的 `.gemini/trustedFolders.json`
+（`{"<專案絕對路徑>": "TRUST_FOLDER"}`）切換，**沒有動到真實的 `~/.gemini/`**。
+🪟 Windows 注意：`git -C`／`python` 這類原生 Windows 程式收 Git Bash 的 `/tmp/...` 會失敗
+（首次嘗試就因此靜默裝了 0 支、讓「未信任」的結論變成假陽性），一律先 `cygpath -w`。
+❓ **執行層仍未驗**：本次只證明「Gemini 找得到、載得進去」，沒有證明它照 SKILL.md 正確行事。
 
 ### CROSS-03 🟡 Codex CLI 發現層（原生注入驗證）
 
@@ -382,7 +395,7 @@ for s in /bin/sh /bin/dash /bin/bash /bin/ksh /bin/zsh; do SH=$s sh skills/ai-se
 落檔不覆蓋／600／防 symlink、含冒號引號的問題 frontmatter 仍是合法 YAML、非 UTF-8 locale 長中文落檔。
 **通過**：語法全過；每個 shell 皆 43/43（缺 `python3`+`pyyaml` 時 42 過 1 略過）。
 狀態：上游於 macOS 五 shell 實測 42 過 1 略（2026-08-24）。**本 fork 已在 Windows 11 Git Bash 實測**
-（2026-09-02，`sh`／`dash`／`bash` 各 **43 過 / 0 失敗 / 1 略過**，exit 0）——該 1 略＝落檔權限 `0600`，
+（2026-09-05，`sh`／`dash`／`bash` 各 **43 過 / 0 失敗 / 1 略過**，exit 0）——該 1 略＝落檔權限 `0600`，
 NTFS 不提供 POSIX mode-bit 證據，比照 ai-review 由 Linux CI 權威驗證（本 fork 為此在
 `tests/matrix.sh` 補上與 ai-review 同形的 `MINGW*|MSYS*` 略過分支，上游無此分支）。
 矩陣已接進兩個 canonical gate（`tools/dev_check.sh`、`tools/dev_check.ps1` 的 `sh`／`bash`）
@@ -402,11 +415,22 @@ skills/ai-search/scripts/ai-search.sh "某個需要查證現況的問題"
 **通過**：回 `AI_SEARCH_STATUS: ok`、退出碼 0、答案結論先行且附**可點的來源連結**（不是錯誤頁），
 內容反映當前網路資訊而非訓練知識填答。
 狀態：上游單次實測通過（Codex CLI 真實 `web_search` 後端，2026-08-24，答出當日 release 版本＝確實查了即時網路）。
-❌ **本 fork 仍未驗到 `ok`**——2026-09-02 在 Windows 對真實 Codex CLI（v0.150.0、`Logged in using ChatGPT`）
-實跑兩次：修掉 F-05 的路徑缺陷前回 `failed_unknown`，修掉後回 **`failed_quota`**＋exit 2，
-後端訊息為 `You've hit your usage limit ... try again at Sep 7th`。**帳號額度用盡是外部阻礙，不是缺陷**；
-本項要等額度恢復後重跑。已取得的正面結論只有一條且限於此：**真實後端的失敗分類在 Windows 上正確**。
-🚫 不拿上游的單次陽性替本機背書。
+✅ **本 fork 已在 Windows 驗到 `ok`（2026-09-06，走可插拔後端）**——
+`AI_SEARCH_CMD='claude -p --allowedTools WebSearch'`，回 **`AI_SEARCH_STATUS: ok`**＋exit 0，
+答案結論先行、每個事實附可點來源（npm registry API 與 GitHub releases API 兩個官方來源互相印證），
+並主動標注時效風險、明講哪部分沒查（Homebrew 通道）。落檔 frontmatter 正確。
+🔑 **「確實查了即時網路」的證據**：它答出 Codex CLI `0.153.4`（2026-09-04 發布），
+而本機安裝的是 `0.150.0`——**答案比本機還新**，不可能來自舊知識或本機狀態。
+
+⚠️ 界定清楚三件事：
+① 這驗的是**可插拔後端路徑**（`AI_SEARCH_CMD`）與 skill 的四條輸出要求，
+   **不是預設的 codex `web_search` 路徑**；後者仍未驗到 `ok`（見下）。
+② 預設後端（Codex CLI v0.150.0、`Logged in using ChatGPT`）2026-09-05 實跑兩次：
+   修掉 F-05 的路徑缺陷前回 `failed_unknown`，修掉後回 **`failed_quota`**＋exit 2，
+   後端訊息為 `You've hit your usage limit ... try again at Sep 7th`。
+   **帳號額度用盡是外部阻礙，不是缺陷**；由此取得的正面結論限於
+   **真實後端的失敗分類在 Windows 上正確**。額度恢復後重跑本項的預設後端分支。
+③ 🚫 不拿上游的單次陽性替本機背書。
 
 ### F-05 🟢 傳給後端的路徑格式（Windows 迴歸）
 
@@ -424,7 +448,7 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 本腳本自己仍用 POSIX 路徑讀同一個檔案。
 **測法**：改成攔截 argv——stub 把 `"$@"` 寫進檔案，測項只斷言 `-C` 的值在 MSYS 上是 `?:\…`、
 在 POSIX 平台維持 `/…`。
-**通過**：三個 shell 皆 ok。狀態（2026-09-02）：✅ Windows 實測通過；
+**通過**：三個 shell 皆 ok。狀態（2026-09-05）：✅ Windows 實測通過；
 ✅ **陽性對照**——把 `winpath` 還原成上游寫法後本項確實轉紅
 （`FAIL 傳給後端的 -C 已轉成 Windows 路徑（實得 POSIX：/tmp/…）`），證明它不是永遠說 OK 的空轉測試。
 `ai-review` 的矩陣有同形測項（第 46 項）。
@@ -439,16 +463,18 @@ for s in sh dash bash; do SH=$s sh skills/ai-search/tests/matrix.sh; done   # �
 
 真實後端下，確認腳本送的 `-c tools.web_search=true` 真的讓後端上網（而非拿舊知識答）。
 **通過**：答案含**當下**才查得到的事實與來源連結。
-狀態：上游以 F-02 同一次 run 取得**間接證據**；⚠️ 單次陽性、未做「移除旗標」的負對照，「是這個旗標使然」屬推論。❌ 本 fork 未實測。
+狀態：上游以 F-02 同一次 run 取得**間接證據**；⚠️ 單次陽性、未做「移除旗標」的負對照，「是這個旗標使然」屬推論。
+❌ **本 fork 未實測且暫時測不了**——本項的標的是 codex 專屬的 `-c tools.web_search=true`，
+只能在預設後端上驗；F-02 用的 `claude -p` 後端不走這個旗標，證不到本項。等 codex 額度恢復。
 
 ---
 
-## C. 相容性結論快照（安裝層 2026-08-21 重驗；發現層仍為 2026-07-30 快照，過期重驗）
+## C. 相容性結論快照（Gemini 安裝層與發現層 2026-09-06 由本 fork 重驗；其餘各列日期見格內）
 
 | 工具 | 安裝層 | 發現層 | 執行層 |
 |---|---|---|---|
 | Claude Code CLI 2.1.231 | ✅ Windows package 實測 | ⚠️ 非互動 `/damage-report` 有觸發但未產出完整五問 | ❌ Windows `-p` runtime 抽測未通過；互動 TUI 另測 |
-| Gemini CLI 0.40.0 | ✅ 實測 10/10（2026-08-21） | ⚠️ 需先信任資料夾（無聲關卡） | ❓ 未測 |
+| Gemini CLI 0.58.0 | ✅ 實測 14/14（2026-09-06） | ✅ 實測 14/14 `[Enabled]`——但**需先信任資料夾**（無聲關卡，未信任時 0/14，見 CROSS-02） | ❓ 未測 |
 | Codex CLI 0.146.0 | ✅ Windows package 實測 | ✅ `exec --json` 證明讀取 `damage-report/SKILL.md`（2026-08-24） | ✅ Windows read-only runtime 實測 |
 | ChatGPT 消費版 | ❌ 無安裝路徑（產品限制） | ❌ 無 skill 概念 | 僅手動貼入，網頁端人工驗 |
 | Cursor／Copilot 等 | ❓ `npx skills` 支援但未實測 | ❓ | ❓ |
