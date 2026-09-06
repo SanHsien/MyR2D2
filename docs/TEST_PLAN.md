@@ -160,8 +160,21 @@ Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對�
 📌 附帶修正既有敘述：README 註⁵ 說「Claude Code 2.1.231 的 Windows 非互動 `-p` 抽測未產出完整五問」
 ——那是對 `damage-report` 的觀察；本次同一個非互動 `-p` 模式**成功**跑完 `dropoff` 並落檔，
 所以該限制是**特定 skill 的**，不是「非互動模式不能跑 skill」。
-❓ **gemini-cli 的執行層仍未驗**：`skills list`（CROSS-02）不需憑證，但真的呼叫模型要 Google 帳號／API key，
-屬於使用者才能決定的事，未代為設定。
+❓ **gemini-cli 的執行層仍未驗，但阻礙已量到、不是推測**（2026-09-06）：
+隔離專案＋隔離 `HOME`＋`trustedFolders.json` 全部照 CROSS-02 那套架好、14 支已就位，
+`npx --yes @google/gemini-cli`（0.58.0）也跑得起來；帶 `-p` 觸發時它**在呼叫模型前就拒跑**：
+
+```
+Please set an Auth method in your <HOME>\.gemini\settings.json or specify one of the
+following environment variables before running:
+GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA
+```
+
+本機三條路都查過皆無（環境變數未設、無 `~/.gemini/oauth_creds.json`、無 gcloud ADC）。
+**憑證屬於帳號歸屬與花費的決定，未代為設定**——這是刻意停在這裡。
+解除條件與可直接照跑的步驟寫在交接卡（維護者本機 `workspace/notes/handoffs/`，不進本 repo）。
+📌 對照組：Codex 與 Claude Code 兩格能驗，正是因為它們的憑證本來就在這台機器上；
+所以這一格不是「Gemini 比較難測」，只是**還沒有人給它鑰匙**。
 
 ### CROSS-06 🟢 事故回歸（YAML × 真實安裝）
 
