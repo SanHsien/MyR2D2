@@ -47,7 +47,10 @@ v0.8.1 又多了四處（都是 Windows 實跑才浮出來的真缺陷，見 `do
 
 其餘採納檔案（`ai-search/scripts/ai-search.sh` 的其餘部分、`damage-report`、四份 prompts）與上游逐位元組相同。
 
-🔁 **這四處都值得回貢上游**（同樣的缺陷在上游 repo 也在）。依 fork 規則，回貢要維護者在當次對話明確同意，**本次未提 PR**。
+🔁 這四處的缺陷上游 repo 同樣存在。
+🚫 **決定：不回貢（2026-09-07，維護者拍板）。** 這些修正留在本 fork。
+所以**下次 `git fetch upstream` 一定會在這幾處撞衝突**——上表就是為此存在的衝突面清單，
+合併時以本 fork 版本為準，不要被上游覆蓋回去。本項不再列為待辦。
 
 fork 端的連動改動（同一批）：兩份 README 計數 12→14＋新增列＋新註⁷、`docs/cheatsheet.md`、`CLAUDE.md` 連動表行號與 H3 慣例、`AGENTS.md`／`FORK.md` 支數敘述、`.claude-plugin/` 兩檔、`.github/workflows/ci.yml`（計數 12→14＋ai-search 矩陣關卡）、`tools/check_repo_contract.py`（12→14）、`tools/dev_check.sh`／`dev_check.ps1`（接上 ai-search 矩陣）、`.gitignore`（`.ai-searches/`）、`docs/TEST_PLAN.md`（計數、F 段、C 段 v0.8.0 註）。
 
@@ -73,16 +76,41 @@ v0.8.1 收尾時仍掛著兩項「本 fork 未驗」。兩項都用繞道補上�
 | 執行層（CROSS-05，**repo 建立以來從沒跑過**） | ✅ `dropoff` 在 **Codex CLI** 與 **Claude Code CLI** 各端到端跑一次，兩張卡的 frontmatter 逐欄符合規格；兩個 agent 還各自獨立走到「無門鈴能力就降級」的正確行為 |
 | 附帶修正 | README 註⁵ 的「Windows 非互動 `-p` 跑不出來」收窄為**特定 skill（`damage-report`）的**限制——同一個 `-p` 模式成功跑完 `dropoff` |
 
-❓ 真正還沒量的只剩兩處，都寫上了解除條件：
-- **`gemini-cli` 執行層**：`skills list` 不需憑證，真的呼叫模型要 Google 帳號／API key，
-  屬使用者才能決定的事，未代為設定。
-- **執行層抽測只涵蓋 `dropoff` 一支**，不自動延伸到需外部 connector（`flight-to-calendar`）
-  或需子代理（`blind-review`）的 skill。
+（**2026-09-07 更新**：上面兩處的第一處已解除——維護者提供 `GEMINI_API_KEY` 後，
+`gemini-cli` 執行層實測通過，見下節。第二處仍成立：執行層抽測只涵蓋 `dropoff` 一支。）
 
 📌 過程中撞到第三次同款 Windows 路徑坑：`git -C "$(mktemp -d)"` 讓原生 Windows git 收 POSIX 路徑，
 靜默失敗 → 0 支裝進去 → 第一次的「未信任時看不到 skill」是**假陽性**（本來就沒東西可看）。
 改用 `cygpath -w` 重做才是真的。這已經是同一天內第三次（`codex.exe`、`python3`、`git`）——
 `docs/DECISIONS.md` 已把它升為慣例。
+
+## 2026-09-07：清掉全部剩餘項目，並抓到兩個真缺陷
+
+維護者一次授權四件事（提供 Gemini 金鑰、授權對真實 journal 跑、不申請免費帳號、不回貢上游），
+剩餘清單就此清空。**過程中兩支 skill 被實測抓出缺陷並修掉，不只是驗過而已。**
+
+| 項目 | 結果 |
+|---|---|
+| `gemini-cli` 執行層 | ✅ 通過，但抓到 **2 個產出瑕疵並修掉 skill 模板**（見下） |
+| D-06 誤喚醒防呆 | ❌→✅ **跑三輪才過，抓到 2 個真缺陷**（見下） |
+| J-05 weekly 缺口自癒 | ✅ 兩個分支都過（7 份日報全數補生成；保留期外正確標無記錄不假造） |
+| 免費方案帳號 | 🚫 **刻意不驗、結案**——維護者不為此申請，借帳號不具代表性 |
+| `web_search` 旗標必要性 | 🚫 **造不出條件、結案**——開關在 0.150.0 上是死的，旗標保留但文件據實描述 |
+| `winpath` 等四項回貢上游 | 🚫 **不回貢**——修正留在 fork，衝突面清單見上 |
+
+**修掉的 skill 缺陷（`skills/dropoff/SKILL.md`，都是實測才浮出來的）**
+
+1. **模板鷹架外洩**：frontmatter 範例把 `# pending → picked → done` 這類給人看的註解
+   放在 fenced block 內，Gemini 原樣抄進產物。改法：區塊內不留註解，欄位說明改成區塊下方的對照表。
+   同時把 `to:` 的語意講死（是**專案**不是你在用的工具名）——Gemini 原本填 `gemini-cli`。
+   **同一個 agent、同一句觸發語重驗：兩個瑕疵都消失。**
+2. **誤喚醒，而且會自我延續**：目標有 4 個新鮮候選時 agent 自己挑了「最新啟動的」按下去。
+   修掉自選之後**再測仍失敗**——它改成從舊卡的 `rung-at` 欄位反推路由並「合法沿用」，
+   而那筆路由正是上一輪亂挑的產物。第三輪補上「路由要有出處：只有 `decided-by: user`
+   可免問沿用」才通過。詳見 `docs/TEST_PLAN.md` D-06。
+
+📌 這兩件事都指向同一件事：**驗證的價值不在蓋章，在於它會逼出規格沒寫死的地方。**
+兩個缺陷都不是程式 bug，是規則寫得不夠緊——而只有讓真的 agent 跑一次才看得見。
 
 ## 判斷規則
 
