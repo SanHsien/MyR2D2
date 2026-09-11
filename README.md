@@ -101,7 +101,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### 只用網頁版 Chat？免安裝簡版
 
-不用 CLI、不裝任何東西：[prompts/](prompts/) 有可直接貼進對話（或 custom instructions）的簡版 prompt，規則類 skill 適用——`new-mission`（[繁中](prompts/new-mission.md)｜[EN](prompts/new-mission.en.md)，貼進常駐欄讓它**先問、給計畫、等你點頭才動手、做完交收尾報告**）、`damage-report`（[繁中](prompts/damage-report.md)｜[EN](prompts/damage-report.en.md)；繁中完整版 781 字元、連 ChatGPT Free 都放得下，另有[極簡版](prompts/damage-report.lite.md)供更窄欄位）、`ai-review`（[繁中](prompts/ai-review.md)｜[EN](prompts/ai-review.en.md)，貼進**另一個** AI 就是跨模型二審）與 `ai-search`（[繁中](prompts/ai-search.md)｜[EN](prompts/ai-search.en.md)，貼進**有 browsing 的** AI 就是帶引用的即時查證）。
+不用 CLI、不裝任何東西：[prompts/](prompts/) 有可直接貼進對話（或 custom instructions）的簡版 prompt，規則類 skill 適用——`new-mission`（[繁中](prompts/new-mission.md)｜[EN](prompts/new-mission.en.md)，貼進常駐欄讓它**先問、給計畫、等你點頭才動手、做完交收尾報告**）、`damage-report`（[繁中](prompts/damage-report.md)｜[EN](prompts/damage-report.en.md)；繁中完整版 781 字元、連 ChatGPT Free 都放得下，另有[極簡版](prompts/damage-report.lite.md)供更窄欄位）、`ai-review`（[繁中](prompts/ai-review.md)｜[EN](prompts/ai-review.en.md)，貼進**另一個** AI 就是跨模型二審）、`ai-search`（[繁中](prompts/ai-search.md)｜[EN](prompts/ai-search.en.md)，貼進**有 browsing 的** AI 就是帶引用的即時查證）、`recap`（[繁中](prompts/recap.md)｜[EN](prompts/recap.en.md)，問進度時先重查再用四欄回報；查不到的標「未驗證」）與 `token-optimizer`（[繁中](prompts/token-optimizer.md)｜[EN](prompts/token-optimizer.en.md)，拆多段或多對話分工時的節流守則）。
 
 ### Cowork / claude.ai
 
@@ -171,7 +171,7 @@ MyR2D2/
 ├── prompts/                           ← 免安裝簡版(貼進 Chat 就能用)
 ├── docs/                              ← 測試計畫、外部前提的查證記錄
 │   └── cheatsheet.md                  ← 14 支速查小抄
-├── adapters/openai/                   ← ChatGPT / Codex 移植包
+├── adapters/openai/                   ← ChatGPT / Codex 移植包（其餘工具由 npx skills 直接安裝，不需移植包）
 ├── README.md                          ← 本頁(中文為主)
 └── README.en.md                       ← English
 ```

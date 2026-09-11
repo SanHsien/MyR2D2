@@ -12,6 +12,22 @@ Windows 使用 PowerShell 作 canonical entrypoint，產品 shell 測試由 Git 
 
 Python 維護工具只使用標準庫與 `gh`，不新增 `pyproject.toml` 或 requirements；`package-lock.json` 僅固定 `skills`／`skills-ref` 維護工具及其 integrity。repo 的交付物是 Agent Skills，不是 Python library。
 
+## 2026-09-11：免安裝簡版補齊到判準涵蓋的每一支；`blind-review` 依判準不做
+
+起因很特別：D-06 測試時被**誤按門鈴**的那個 session 真的開工了，交出兩份 MyR2D2 盤點報告
+（adapters 是否過期、prompts 與 skills 是否同步）。誤喚醒的成本因此有了具體形狀——
+一個正在做別的事的 session 被拉去做了兩份報告。但報告本身品質很好，裡面的發現照樣採納：
+
+- **`recap`、`token-optimizer` 補上簡版（中英各一）。** 判準是 `CLAUDE.md` 連動表寫的「規則類 skill 適用」，
+  而 README 相容性矩陣自己就把這兩支標成「規則類」——自己訂的判準、自己標的分類，卻沒有簡版，是缺漏。
+- **`blind-review` 不做簡版。** 它的矩陣格**沒有**標「規則類」（寫的是「需子代理」與「另開空白對話當攻擊者」），
+  判準不命中。它的核心是「攻擊者拿不到對話」這個**操作安排**，不是一段可以貼進常駐欄的規則——
+  貼進常駐欄的東西，恰好就在對話裡。重查條件：若矩陣把它改標為規則類，再補。
+- adapters 的 Codex 版號（0.145／2026-07）補上 0.150.0 的再驗與執行層結果；
+  README 目錄樹補一句「其餘工具由 `npx skills` 直接安裝，不需移植包」，回答「為什麼只有 openai 一個 adapter」。
+
+📌 報告原檔保留在維護者本機 `workspace/notes/handoffs/`（不進 repo），並註記處理結果。
+
 ## 2026-09-07：修掉一個錯誤行為後要再測一次，錯誤常常只是換一件合規的外衣
 
 D-06（誤喚醒防呆）實測跑了三輪，中間那輪是關鍵。

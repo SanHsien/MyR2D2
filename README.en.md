@@ -101,7 +101,7 @@ cp -rn MyR2D2/skills/* ~/.claude/skills/
 
 ### Chat-only? No-install lite prompts
 
-No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `new-mission` ([zh-TW](prompts/new-mission.md) | [EN](prompts/new-mission.en.md) — paste into persistent instructions so it **asks, plans, waits for your go — then closes with a wrap-up report**), `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a 1,260-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free), `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review) and `ai-search` ([zh-TW](prompts/ai-search.md) | [EN](prompts/ai-search.en.md) — paste into an AI **with browsing** for cited, real-time verification).
+No CLI, nothing to install: [prompts/](prompts/) has paste-ready lite versions for rules-type skills — `new-mission` ([zh-TW](prompts/new-mission.md) | [EN](prompts/new-mission.en.md) — paste into persistent instructions so it **asks, plans, waits for your go — then closes with a wrap-up report**), `damage-report` ([zh-TW](prompts/damage-report.md) | [EN](prompts/damage-report.en.md); a 1,260-char [minimal version](prompts/damage-report.lite.en.md) fits narrow fields like ChatGPT Free), `ai-review` ([zh-TW](prompts/ai-review.md) | [EN](prompts/ai-review.en.md) — paste it into **another** AI and that is your cross-model review) `ai-search` ([zh-TW](prompts/ai-search.md) | [EN](prompts/ai-search.en.md) — paste into an AI **with browsing** for cited, real-time verification), `recap` ([zh-TW](prompts/recap.md) | [EN](prompts/recap.en.md) — re-checks before reporting status in four columns; anything it cannot check is marked "unverified") and `token-optimizer` ([zh-TW](prompts/token-optimizer.md) | [EN](prompts/token-optimizer.en.md) — thrift rules for work split into stages or across chats).
 
 ### Cowork / claude.ai
 
@@ -171,7 +171,7 @@ MyR2D2/
 ├── prompts/                           ← no-install lite prompts (paste into any chat)
 ├── docs/                              ← test plan + verification notes for external claims
 │   └── cheatsheet.md                  ← 14-skill cheat sheet
-├── adapters/openai/                   ← ChatGPT / Codex porting kit
+├── adapters/openai/                   ← ChatGPT / Codex porting kit (other tools install directly via npx skills — no kit needed)
 ├── README.md                          ← zh-TW (primary)
 └── README.en.md                       ← this page
 ```
