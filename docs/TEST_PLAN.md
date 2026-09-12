@@ -95,6 +95,7 @@ canonical gate，每次跑 gate 都會重量一次。
 皆 **14 支、0 Skipped**，安裝目標同樣是統一的 `.agents/skills/`——與 `gemini-cli` 同理，
 這證明的是**安裝器行為**，兩者的發現層與執行層皆未驗（本機沒有這兩個工具）。
 至此 CROSS-01 涵蓋 `npx skills` 的五個目標，無未測項。
+**安裝器版本**：全部以 repo 釘住的 `skills` **1.5.23**（`package.json` devDependency，腳本走 `node_modules/.bin/skills` 而不是 `npx` 抓最新）執行——與上游 2026-08-29 那次同版，所以差異只在 repo 支數，不在安裝器。日後這格重跑要一併記當下的釘版，不然「14/14」讀不出是哪一版安裝器量的。
 
 ### CROSS-02 🟡 Gemini CLI 發現層（trusted-folder 關卡）
 
