@@ -167,7 +167,7 @@ def check_dependencies(cwd: Path = ROOT, npm=run_npm) -> tuple[list[dict], dict,
 
 def render_markdown(rows: list[dict], audit: dict, check_error: str = "") -> str:
     lines = [
-        "# MyR2D2 dependency freshness",
+        "# agent-astromech dependency freshness",
         "",
         "| Package | Type | Installed | In-range | Latest | Status |",
         "| --- | --- | --- | --- | --- | --- |",

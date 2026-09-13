@@ -1,5 +1,5 @@
-# MyR2D2 → ChatGPT / Codex 移植包
-# MyR2D2 → ChatGPT / Codex adapter
+# agent-astromech → ChatGPT / Codex 移植包
+# agent-astromech → ChatGPT / Codex adapter
 
 *中文為主,English below per section.*
 
@@ -45,7 +45,7 @@ Installed into `.agents/skills/`, each skill's name+description is injected into
 # 把要用的 skill 內文(去掉 YAML frontmatter)接進 AGENTS.md
 # Append the skill bodies (minus YAML frontmatter) into AGENTS.md
 for s in save-all dropoff pickup recap new-mission damage-report blind-review ai-review ai-search token-optimizer; do
-  echo -e "\n\n<!-- MyR2D2: $s -->" >> AGENTS.md
+  echo -e "\n\n<!-- agent-astromech: $s -->" >> AGENTS.md
   sed '1,/^---$/d' ../../skills/$s/SKILL.md | sed '1,/^---$/d' >> AGENTS.md
 done
 ```
@@ -56,13 +56,13 @@ Or the context-cheaper route — AGENTS.md carries one routing line:
 
 ```markdown
 When the user says "save-all" / "dropoff" / "pickup", read and follow
-docs/myr2d2/<name>.md before acting.
+docs/agent-astromech/<name>.md before acting.
 ```
 
-再把 skill 檔複製到 `docs/myr2d2/`。/ …and copy the skill files into `docs/myr2d2/`.
+再把 skill 檔複製到 `docs/agent-astromech/`。/ …and copy the skill files into `docs/agent-astromech/`.
 
 ## 移植時的三個坑 | Three porting gotchas
 
 1. **觸發詞不會自己生效(備援法/ChatGPT 適用)** — Claude Code 與新版 Codex 靠 description 自動路由;ChatGPT 或走 AGENTS.md 備援法時,要嘛使用者手動說「照 save-all 流程走」,要嘛靠上面那句路由指令。<br>*Triggers don't fire by themselves (fallback path / ChatGPT) — Claude Code and recent Codex auto-route on descriptions; on ChatGPT or the AGENTS.md fallback, the user invokes by name or you add the routing line.*
 2. **「驗證落地」規則照搬** — 寫入靜默失敗不是 Claude 特有的,任何 agent 環境都該回讀驗證。這是全包最值得帶走的一條。<br>*Keep the "verify the write" rule — silent write failures aren't Claude-specific. It's the single most portable rule in this pack.*
-3. **R2-D2 註解可刪** — 那是給人看的調味,不影響行為。<br>*The R2-D2 asides are seasoning for humans; deleting them changes nothing.*
+3. **Astromech 註解可刪** — 那是給人看的調味,不影響行為。<br>*The Astromech asides are seasoning for humans; deleting them changes nothing.*

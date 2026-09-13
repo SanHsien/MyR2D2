@@ -1,8 +1,8 @@
-# MyR2D2 — 開發約定
+# agent-astromech — 開發約定
 
 > **Fork overlay：** 本 checkout 的 `origin` 是 `SanHsien/agent-astromech`、`upstream` 是 `tingyulu/MyR2D2`。先讀 [`AGENTS.md`](AGENTS.md) 的 Windows-first gate、upstream 水位與對外寫入邊界；下列上游產品規則仍完整適用。
 
-MyR2D2 是**公開開源**的 Claude skillset repo（繁中本體、中英雙語觸發詞）。任何 session 在本目錄工作時，必須遵守以下約定。
+agent-astromech 是**公開開源**的 Claude skillset repo（繁中本體、中英雙語觸發詞）。任何 session 在本目錄工作時，必須遵守以下約定。
 
 > 若本機存在 `.claude/local-rules.md`（不進 repo），開工前一併讀 —— 那裡放的是不適合公開的本機守門規則。
 
@@ -101,7 +101,7 @@ for f in sorted(glob.glob('skills/*/SKILL.md')):
 1. `# <name> — <中文副標>`，`<name>` 逐字用 frontmatter 的 `name`（`/` 前綴用於斜線命令型 skill：`/save-all`、`/dropoff`、`/pickup`）
    - 既有例外：`token-optimizer` 的 H1 寫成 `# Token Optimizer`（Title Case）。要美化顯示名稱可以，**詞序不變**。
 2. 一句話展開定位
-3. `> 🤖 R2-D2 時刻：<Star Wars 類比>` —— 品牌彩蛋，放在說明之後、步驟之前。衍生作品改放 attribution blockquote（見 `token-optimizer`）
+3. `> 🤖 Astromech 時刻：<工作流類比>` —— 品牌彩蛋，放在說明之後、步驟之前。衍生作品改放 attribution blockquote（見 `token-optimizer`）
 4. 主體：`## 為什麼需要` → `## 動作` / `## 步驟` → 規則濃縮
 5. **必備一個規則濃縮區塊**（`## 鐵律` 或 `## 🚦 鐵則`）—— 把整份濃縮成幾條不可違反的規則，加粗關鍵詞＋emoji 前綴。位置有彈性，照現況三種都合法：
    - 收在最後（`save-all`）
@@ -129,7 +129,7 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 | 位置（錨點） | 行號快照 | 內容 |
 |---|---|---|
 | `README.md` 開頭定位句 | L13 | 「**14 支** skills」計數字串 |
-| `README.md` skill 總表 | L15–30 | 一句話＋R2-D2 對應 |
+| `README.md` skill 總表 | L15–30 | 一句話＋Astromech 隱喻 |
 | `README.md` `## 這套東西怎麼開發的` | L32–36 | 失憶引言＋自我修正敘事（二審缺陷數、測項數——測試計數一變這裡也要動） |
 | `README.md` `## 相容性矩陣` | L38–67 | 五欄：CLI／Cowork／Gemini／Codex／ChatGPT，含 ✅\* 分級註、trusted-folder、日誌三支資料來源、門鈴註³、ai-review 後端註⁴、fork 新增支數的未實測註⁶⁷ |
 | `README.md` `## 安裝` 末句「裝完打…」 | L110 | 逐一點名可觸發的斜線命令 |
@@ -187,10 +187,10 @@ skill 的行為／觸發詞／依賴一改，**同一個 commit 內**掃完下�
 
 ```
 /plugin marketplace add SanHsien/agent-astromech
-/plugin install myr2d2@myr2d2
+/plugin install agent-astromech@agent-astromech
 ```
 
-plugin skill 用 `plugin-name:skill-name` 命名空間（`myr2d2:pickup`…），**結構上不可能與其他層級衝突**。本機私人版原封不動、照常運作，兩套並存各走各的。
+plugin skill 用 `plugin-name:skill-name` 命名空間（`agent-astromech:pickup`…），**結構上不可能與其他層級衝突**。本機私人版原封不動、照常運作，兩套並存各走各的。
 
 🔴 **不要改用「專案層安裝」當隔離手段** —— 官方文件明訂 `enterprise > personal > project`，**personal 蓋過 project**。把 repo 版放進某專案的 `.claude/skills/` 之後，同名的本機私人版**仍然勝出**：檔案沒被覆蓋（安全），但你以為在測 repo 版、實際跑的是私人版，得到一個不會報錯的錯誤結果。
 

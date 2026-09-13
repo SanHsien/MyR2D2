@@ -7,7 +7,7 @@ description: '跨專案／跨 session 交接「接球」。讓「這個」sessio
 
 讓目前這個 session 立刻撈「交接給本專案、還沒被接手」的事項，讀進 context 並認領。
 
-> 🤖 R2-D2 時刻：R2 滾過 Tatooine 的沙漠找到 Obi-Wan，播放全息訊息 ——
+> 🤖 Astromech 時刻：R2 滾過 Tatooine 的沙漠找到 Obi-Wan，播放全息訊息 ——
 > 「Help me, Obi-Wan Kenobi. You're my only hope.」這就是 pickup：
 > 訊息在機器人肚子裡躺了多久都沒關係，找到對的人就完整送達。
 

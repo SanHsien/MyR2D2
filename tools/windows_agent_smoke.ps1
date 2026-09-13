@@ -17,10 +17,10 @@ if (-not (Test-Path -LiteralPath $skills -PathType Leaf)) {
     throw 'Pinned skills CLI is missing. Run npm ci --ignore-scripts first.'
 }
 $tempBase = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
-$smokeRoot = Join-Path $tempBase ("myr2d2-agent-smoke-{0}-{1}" -f $PID, [guid]::NewGuid().ToString('N'))
+$smokeRoot = Join-Path $tempBase ("astromech-agent-smoke-{0}-{1}" -f $PID, [guid]::NewGuid().ToString('N'))
 $resolvedSmoke = [IO.Path]::GetFullPath($smokeRoot)
 if (-not $resolvedSmoke.StartsWith($tempBase, [StringComparison]::OrdinalIgnoreCase) -or
-    (Split-Path -Leaf $resolvedSmoke) -notmatch '^myr2d2-agent-smoke-[0-9]+-[0-9a-f]{32}$') {
+    (Split-Path -Leaf $resolvedSmoke) -notmatch '^astromech-agent-smoke-[0-9]+-[0-9a-f]{32}$') {
     throw "Unsafe smoke path: $resolvedSmoke"
 }
 
@@ -63,7 +63,7 @@ try {
     if (Test-Path -LiteralPath $resolvedSmoke) {
         $finalPath = [IO.Path]::GetFullPath($resolvedSmoke)
         if ($finalPath.StartsWith($tempBase, [StringComparison]::OrdinalIgnoreCase) -and
-            (Split-Path -Leaf $finalPath) -match '^myr2d2-agent-smoke-[0-9]+-[0-9a-f]{32}$') {
+            (Split-Path -Leaf $finalPath) -match '^astromech-agent-smoke-[0-9]+-[0-9a-f]{32}$') {
             Remove-Item -LiteralPath $finalPath -Recurse -Force
         } else {
             Write-Warning "Refusing to remove unexpected path: $finalPath"

@@ -8,24 +8,24 @@
 
 ---
 
-R2-D2 從來不是主角，但每一集都靠它：把 Death Star 圖紙帶出來、滾過沙漠找到 Obi-Wan、在 X-wing 後座默默修飛船管能源。
+Astromech 隨行機器人從來不是主角，但每場任務都靠它：把關鍵資料帶出來、在後座默默修飛船、對抗系統失憶、管理工作流能源。
 
-MyR2D2 就是這個定位 —— 14 支 skills，管的都是「不做不會死、但做了整個工作流才活得下去」的事:
+agent-astromech 就是這個定位 —— 14 支 skills，管的都是「不做不會死、但做了整個工作流才活得下去」的事:
 
-| Skill | 一句話 | R2-D2 對應 |
+| Skill | 一句話 | Astromech 隱喻 |
 |---|---|---|
-| **save-all** | 收工/重開機前，把只活在對話裡的東西全部落地並**驗證**寫進磁碟 | 圖紙存進 R2、彈射逃生艙 |
-| **dropoff** | 把一件事連同完整脈絡寫成交接卡推給另一個 session；對面在線就即時按門鈴 | Leia 錄下「Help me, Obi-Wan」 |
-| **pickup** | 新 session 開場撈交接卡（或被門鈴叫醒），讀全文、認領、開工，做完回訊收尾 | R2 找到 Obi-Wan，播放訊息 |
+| **save-all** | 收工/重開機前，把只活在對話裡的東西全部落地並**驗證**寫進磁碟 | 重要資料寫進核心、安全落地 |
+| **dropoff** | 把一件事連同完整脈絡寫成交接卡推給另一個 session；對面在線就即時按門鈴 | 錄下任務交接卡、推給下一位 |
+| **pickup** | 新 session 開場撈交接卡（或被門鈴叫醒），讀全文、認領、開工，做完回訊收尾 | 撈起交接卡、播放任務脈絡 |
 | **recap** | 平行 session 太多記不住時的現況重述：先刷新可能過期的東西，再報目標／證據／卡點／下一步 | 投出來的不是回憶，是接上系統讀回來的當下座標 |
 | **mission-log** | 零 token 收割任一天的 session 活動骨架（transcript 本來就在記，只差讀取器） | 飛行記錄器從不休息 |
 | **daily-debrief** | 日結：做了什麼＋reflection，趕在 transcript 30 天蒸發前把價值撈上岸 | 任務歸來的 debrief |
 | **weekly-debrief** | 週結：7 份日結收斂成主線與趨勢 | 看得出補給線問題的是戰役，不是單次任務 |
-| **new-mission** | 開工簡報：先查再問（最多五題）、給計畫、送審、等明確的「做」才動手，順便產出可重用的任務 prompt；執行結束交對照計畫的收尾報告 | R2 投影死星藍圖，反抗軍看完攻擊路線、確認溝渠能飛才升空 |
-| **damage-report** | 收尾自檢五問：寫回報前先對照原始需求跑一輪；建議欄沒有就寫「無」 | 修完飛船自己跑一輪診斷，嗶嗶回報損傷——不等 Luke 問 |
-| **blind-review** | 派一個**沒看過對話**的子代理攻擊你的改動，主代理補上假設與設計決策，產出給人看的導讀 | R2 插進接口時沒讀過作戰簡報——它讀的是儀表上真的亮著的那盞燈 |
-| **ai-review** | 把產出送給**另一個模型**二審，消化意見後才寫回報；沒有後端就明講「僅自審」 | R2 跟 C-3PO 吵了六集，每次都是對方補上你漏的那半 |
-| **ai-search** | 問一句，回你**附來源、可複查**的即時答案；查不到就說查不到，不拿舊知識硬填 | R2 插進帝國終端機，讀的是當下的站內數據，不是背出來的舊情報 |
+| **new-mission** | 開工簡報：先查再問（最多五題）、給計畫、送審、等明確的「做」才動手，順便產出可重用的任務 prompt；執行結束交對照計畫的收尾報告 | 投影作戰藍圖，團隊確認路線可行才升空 |
+| **damage-report** | 收尾自檢五問：寫回報前先對照原始需求跑一輪；建議欄沒有就寫「無」 | 修完系統自己跑一輪診斷，主動回報損傷——不等呼叫 |
+| **blind-review** | 派一個**沒看過對話**的子代理攻擊你的改動，主代理補上假設與設計決策，產出給人看的導讀 | 插進接口時沒讀過作戰簡報——讀的是儀表上真實亮著的燈 |
+| **ai-review** | 把產出送給**另一個模型**二審，消化意見後才寫回報；沒有後端就明講「僅自審」 | 跟另一個模型吵了一整輪，每次都是對方補上你漏的那半 |
+| **ai-search** | 問一句，回你**附來源、可複查**的即時答案；查不到就說查不到，不拿舊知識硬填 | 插進外部終端機，讀的是當下的連線數據，不是背出來的舊情報 |
 | **token-optimizer** | 多代理派工前的節流鐵則：模型分層、壓縮上報、失敗三次就停 | 能源分配，別讓護盾吃光動力 |
 | **flight-to-calendar** | 航班上 Google Calendar：跨時區不出錯、轉機拆段、夕陽座位 | astromech 本職：導航 |
 
@@ -85,16 +85,16 @@ npx skills add SanHsien/agent-astromech
 
 ```
 /plugin marketplace add SanHsien/agent-astromech
-/plugin install myr2d2@myr2d2
+/plugin install agent-astromech@agent-astromech
 ```
 
-skill 掛在 `myr2d2:` 命名空間下（`/myr2d2:dropoff`…）——與你機器上既有的同名 skill 結構上不衝突，且可經 marketplace 集中更新。
+skill 掛在 `agent-astromech:` 命名空間下（`/agent-astromech:dropoff`…）——與你機器上既有的同名 skill 結構上不衝突，且可經 marketplace 集中更新。
 
 ### Claude Code CLI — 手動複製
 
 ```bash
 git clone https://github.com/SanHsien/agent-astromech.git
-cp -rn MyR2D2/skills/* ~/.claude/skills/
+cp -rn agent-astromech/skills/* ~/.claude/skills/
 ```
 
 ⚠️ 用 `-n`（不覆蓋既有檔）：若你 `~/.claude/skills/` 底下已有同名資料夾，`cp -r` 會**直接覆蓋且不提示**。想更新既有的，先自己 diff 過再決定。
@@ -159,7 +159,7 @@ dropoff/pickup 預設是零依賴的檔案版；如果你有自己的任務系�
 ## Repo 結構
 
 ```
-MyR2D2/
+agent-astromech/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json(單一 plugin)
 ├── .github/workflows/                 ← CI(YAML 驗證、守門 grep、行為矩陣、harvest 測試)
 ├── skills/                            ← 14 支 skill(繁中本體、雙語觸發)
@@ -184,4 +184,4 @@ MyR2D2/
 
 MIT — 詳見 [LICENSE](LICENSE)。
 
-*MyR2D2 是粉絲致敬命名，與 Lucasfilm / Disney 無任何關聯；R2-D2 及 Star Wars 為其各自權利人之商標。*
+*agent-astromech 是為 AI Coding Agent 工作流設計的隨行技能包。*

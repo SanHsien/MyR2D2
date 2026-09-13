@@ -7,7 +7,7 @@ description: '零 token 的 session 活動收割器。從 Claude Code 本來就�
 
 把「這一天所有 Claude session 做了什麼」的骨架抽出來 —— 不靠任何背景程序,因為 **Claude Code 本來就在全程記錄**(transcript 落在 `~/.claude/projects/`),本 skill 只是收割器。
 
-> 🤖 R2-D2 時刻:astromech 的飛行記錄器從不休息 —— X-wing 落地後,技師才把記錄拉出來看。
+> 🤖 Astromech 時刻:astromech 的飛行記錄器從不休息 —— X-wing 落地後,技師才把記錄拉出來看。
 > 記錄一直都在,你需要的是讀取器。
 
 ## 用法

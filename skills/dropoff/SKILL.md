@@ -9,7 +9,7 @@ description: '跨專案／跨 session 交接「推球」。把一件事連同完
 
 核心問題：對面 session 讀不到你這個對話的 context。口頭交代會漏、聊天記錄會斷 —— 所以交接卡必須是**磁碟上的檔案**，寫清楚到「陌生 session 光看這張卡就能接手」。
 
-> 🤖 R2-D2 時刻：Leia 把 Death Star 圖紙和求救訊息存進 R2 的記憶體 —— 這就是 dropoff。
+> 🤖 Astromech 時刻：Leia 把 Death Star 圖紙和求救訊息存進 R2 的記憶體 —— 這就是 dropoff。
 > 訊息不靠 Leia 本人送達，靠的是那台會自己滾去找 Obi-Wan 的機器人。
 
 ## 交接卡格式
@@ -57,7 +57,7 @@ priority: normal
 | `status` | `pending` → `picked` → `done` | 新卡一律 `pending`，接手方改 `picked`、完成改 `done` |
 | `from` | 自由文字 | 來源專案或 session 描述 |
 | `from-session` | 名稱或 ID | **選填**——有跨 session 傳訊能力時才填，供對面完成後回訊 |
-| `to` | **專案／repo／目錄的識別** | 🚫 **不是你正在用的工具名稱**。填收件的那個專案，例如 `SanHsien/agent-astromech`、`~/projects/foo`、或「MyR2D2（同專案未來 session）」。填 `codex`／`gemini-cli` 這種**工具名是錯的**——卡是交給專案，不是交給 CLI（實測踩過） |
+| `to` | **專案／repo／目錄的識別** | 🚫 **不是你正在用的工具名稱**。填收件的那個專案，例如 `SanHsien/agent-astromech`、`~/projects/foo`、或「agent-astromech（同專案未來 session）」。填 `codex`／`gemini-cli` 這種**工具名是錯的**——卡是交給專案，不是交給 CLI（實測踩過） |
 | `created` | `YYYY-MM-DD HH:MM` | 從機器取，不要憑印象寫 |
 | `priority` | `high` \| `normal` \| `low` | 預設 `normal` |
 | `notify` | `rung` \| `silent` | **選填**——已按門鈴填 `rung`；使用者說「不用即時通知」或環境無門鈴能力填 `silent` |

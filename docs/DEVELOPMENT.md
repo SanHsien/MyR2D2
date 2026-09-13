@@ -1,6 +1,6 @@
 # 開發環境
 
-MyR2D2 的產品本體是 Markdown、POSIX shell 與一個標準庫 Python 收割器。開發環境的目標是重現公開契約，不建立不必要的套件層。
+agent-astromech 的產品本體是 Markdown、POSIX shell 與一個標準庫 Python 收割器。開發環境的目標是重現公開契約，不建立不必要的套件層。
 
 ## Windows 11
 

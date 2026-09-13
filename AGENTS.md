@@ -4,7 +4,7 @@
 
 ## 專案定位
 
-本 repo 是 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 MIT 維護型 fork：
+本 repo 源自 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 MIT 維護型 fork：
 
 - `origin`：`SanHsien/agent-astromech`
 - `upstream`：`tingyulu/MyR2D2`
@@ -14,7 +14,7 @@
 
 主要開發平台是 Windows 11；Codex／Claude 等 Windows Desktop、Windows TUI 與 Windows CLI 都是一級宿主。Git Bash 只提供必要的 POSIX shell 相容層，Linux CI 補驗 POSIX 權限與多 shell 語義。
 
-保留 MyR2D2 名稱、上游作者歸屬、上游 12 支 skill（fork 另加 `recap`、`blind-review`，共 14 支）、公開介面與 MIT 授權。fork 的維護差異記在 [`FORK.md`](FORK.md)、[`docs/DECISIONS.md`](docs/DECISIONS.md) 與 [`docs/UPSTREAM.md`](docs/UPSTREAM.md)。
+專案名稱為 agent-astromech、保留上游作者歸屬、上游 12 支 skill（fork 另加 `recap`、`blind-review`，共 14 支）、公開介面與 MIT 授權。fork 的維護差異記在 [`FORK.md`](FORK.md)、[`docs/DECISIONS.md`](docs/DECISIONS.md) 與 [`docs/UPSTREAM.md`](docs/UPSTREAM.md)。
 
 ## 硬性邊界
 

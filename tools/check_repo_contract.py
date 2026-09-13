@@ -87,8 +87,8 @@ def validate(root: Path) -> list[str]:
         except (OSError, json.JSONDecodeError) as exc:
             errors.append(f"invalid JSON {relative}: {exc}")
             continue
-        if data.get("name") != "myr2d2":
-            errors.append(f"{relative} must preserve name myr2d2")
+        if data.get("name") != "agent-astromech":
+            errors.append(f"{relative} must preserve name agent-astromech")
 
     baseline_path = root / "tools/upstream_baseline.json"
     if baseline_path.is_file():

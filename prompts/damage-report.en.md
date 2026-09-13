@@ -36,6 +36,6 @@ For research tasks (same skeleton):
 
 【② What could still be improved】At most 2–3 items, each concrete and actionable, each marked worth-doing-now or not; **if there's nothing real, write "none" — never invent suggestions to have output**.
 
-【Advanced】Self-review has a structural ceiling: you set your own bar, so self-consistent reasoning always passes. If a cross-model review tool is available (e.g. MyR2D2's ai-review), write the five answers as a **draft** first, send it with the deliverable to another model, digest the feedback (which points you adopt, which you reject and why) — then write the final report. If the second review isn't available or didn't run, state "self-review only this time" explicitly.
+【Advanced】Self-review has a structural ceiling: you set your own bar, so self-consistent reasoning always passes. If a cross-model review tool is available (e.g. agent-astromech's ai-review), write the five answers as a **draft** first, send it with the deliverable to another model, digest the feedback (which points you adopt, which you reject and why) — then write the final report. If the second review isn't available or didn't run, state "self-review only this time" explicitly.
 
 Rules: the self-check runs before the summary is written, not after; for mixed tasks, sweep both sets and answer overlaps once.

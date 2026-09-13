@@ -7,7 +7,7 @@ description: '產生某一天的工作日報:做了什麼+reflection,存成本�
 
 把一天的所有 session 收斂成一頁:**做了什麼+reflection**,落地成 `~/.claude/journal/daily/YYYY-MM-DD.md`。transcript 30 天就蒸發,日報是把價值撈上岸的動作。
 
-> 🤖 R2-D2 時刻:任務結束後的 debrief —— 中隊不是靠飛行員的記憶開檢討會,
+> 🤖 Astromech 時刻:任務結束後的 debrief —— 中隊不是靠飛行員的記憶開檢討會,
 > 是靠 astromech 的記錄。
 
 ## 用法

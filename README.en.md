@@ -1,6 +1,6 @@
 # agent-astromech 🤖
 
-> This is a Windows-first maintained fork of [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2). See [FORK.md](FORK.md) for attribution and synchronization, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the development entrypoints.
+> A Windows-first maintenance release derived from [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2). See [FORK.md](FORK.md) for attribution and synchronization, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the development entrypoints.
 
 ### Your everyday astromech droid — a Claude skillset (zh-TW body, bilingual triggers)
 
@@ -8,24 +8,24 @@
 
 ---
 
-R2-D2 was never the protagonist, but every episode runs on him: smuggling out the Death Star plans, rolling across a desert to find Obi-Wan, quietly fixing the ship and managing power from the back of an X-wing.
+An astromech droid was never the protagonist, but every mission runs on it: securing mission plans, quietly fixing the ship from the socket, fighting memory loss, and managing workflow power.
 
-That's MyR2D2's job description — 14 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
+That's agent-astromech's job description — 14 skills covering things that "won't kill you if skipped, but keep the whole workflow alive when done":
 
-| Skill | One-liner | R2-D2 parallel |
+| Skill | One-liner | Astromech parallel |
 |---|---|---|
-| **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in R2, escape pod away |
-| **dropoff** | Write a task + full context into a handoff card for another session; rings the doorbell if the target session is live | Leia recording "Help me, Obi-Wan" |
-| **pickup** | New session fetches the cards (or gets doorbell-woken), reads in full, claims, starts, reports back when done | R2 finds Obi-Wan, plays the hologram |
+| **save-all** | Before wrap-up/reboot: land everything that lives only in the conversation, and **verify** it hit disk | Plans stored in core, escape pod away |
+| **dropoff** | Write a task + full context into a handoff card for another session; rings the doorbell if the target session is live | Recording the distress call and handoff card |
+| **pickup** | New session fetches the cards (or gets doorbell-woken), reads in full, claims, starts, reports back when done | Finds the recipient, plays the hologram |
 | **recap** | When too many parallel sessions blur together: refresh whatever may have gone stale, then report goal / evidence / blocker / next steps | The hologram isn't a memory — it's the current coordinates, read live off the system |
 | **mission-log** | Zero-token harvest of any day's session activity (the transcripts were always recording — you just need a reader) | The flight recorder never sleeps |
 | **daily-debrief** | Daily wrap-up: what happened + reflection, landed before transcripts evaporate (30-day retention) | The post-mission debrief |
 | **weekly-debrief** | Weekly wrap-up: 7 dailies condensed into storylines and trends | Campaigns reveal supply-line problems; single sorties don't |
-| **new-mission** | Kickoff brief: look first, ask at most five questions, draft the plan, review it, wait for an explicit "go" — mint a reusable task prompt on the way, and close with a wrap-up report against the plan | R2 projects the Death Star plans; the squadron flies the trench only after the briefing |
-| **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, R2 runs its own diagnostics and beeps the damage report — without waiting for Luke to ask |
-| **blind-review** | Hand the change to a subagent that **never saw the conversation** to attack it; the main agent adds the assumptions and design decisions, and out comes a briefing for a human | Plugged into the port with no mission briefing — R2 reads the light that is actually lit |
-| **ai-review** | Send the work to **another model** for a second opinion, digest it, then write the report; says "self-review only" when no backend is there | R2 and C-3PO bicker for six films — each covering the other's blind half |
-| **ai-search** | Ask once, get a **cited, checkable** live answer; says "not found" instead of filling from stale training data | R2 jacks into an Imperial terminal — reading live station data, not stale intel from memory |
+| **new-mission** | Kickoff brief: look first, ask at most five questions, draft the plan, review it, wait for an explicit "go" — mint a reusable task prompt on the way, and close with a wrap-up report against the plan | Projects the mission plans; the squadron flies the trench only after the briefing |
+| **damage-report** | Five wrap-up questions run against the original ask before you report; the suggestions field says "none" when there's nothing real | Ship repaired, astromech runs diagnostics and reports damage — without waiting to be asked |
+| **blind-review** | Hand the change to a subagent that **never saw the conversation** to attack it; the main agent adds the assumptions and design decisions, and out comes a briefing for a human | Plugged into the port with no mission briefing — reading the light that is actually lit |
+| **ai-review** | Send the work to **another model** for a second opinion, digest it, then write the report; says "self-review only" when no backend is there | Bickering with a different model — each covering the other's blind half |
+| **ai-search** | Ask once, get a **cited, checkable** live answer; says "not found" instead of filling from stale training data | Jacks into an external terminal — reading live station data, not stale intel from memory |
 | **token-optimizer** | Iron rules before multi-agent dispatch: model tiering, compressed reporting, stop after 3 failures | Power allocation — don't let shields drain the engines |
 | **flight-to-calendar** | Booked flights → Google Calendar: timezone-correct, one leg per event, sunset seats | Navigation — the astromech's actual day job |
 
@@ -85,16 +85,16 @@ npx skills add SanHsien/agent-astromech
 
 ```
 /plugin marketplace add SanHsien/agent-astromech
-/plugin install myr2d2@myr2d2
+/plugin install agent-astromech@agent-astromech
 ```
 
-Skills land under the `myr2d2:` namespace (`/myr2d2:dropoff`, …) — structurally conflict-free with any same-name skills you already have, and centrally updatable via the marketplace.
+Skills land under the `agent-astromech:` namespace (`/agent-astromech:dropoff`, …) — structurally conflict-free with any same-name skills you already have, and centrally updatable via the marketplace.
 
 ### Claude Code CLI — manual copy
 
 ```bash
 git clone https://github.com/SanHsien/agent-astromech.git
-cp -rn MyR2D2/skills/* ~/.claude/skills/
+cp -rn agent-astromech/skills/* ~/.claude/skills/
 ```
 
 ⚠️ Note the `-n` (no-clobber): if `~/.claude/skills/` already has folders with these names, plain `cp -r` **overwrites them silently**. Diff first if you're updating an existing install.
@@ -159,7 +159,7 @@ dropoff/pickup default to the zero-dependency file-based version; if you run you
 ## Repo layout
 
 ```
-MyR2D2/
+agent-astromech/
 ├── .claude-plugin/                    ← plugin.json + marketplace.json (single plugin)
 ├── .github/workflows/                 ← CI (YAML validation, content gate, behavior matrix, harvest tests)
 ├── skills/                            ← 14 skills (zh-TW body, bilingual triggers)
@@ -184,4 +184,4 @@ MyR2D2/
 
 MIT — see [LICENSE](LICENSE).
 
-*MyR2D2 is fan-tribute naming, unaffiliated with Lucasfilm / Disney; R2-D2 and Star Wars are trademarks of their respective owners.*
+*agent-astromech is an astromech workflow skills pack designed for AI Coding Agents.*

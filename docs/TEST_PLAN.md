@@ -1,4 +1,4 @@
-# MyR2D2 測試計畫
+# agent-astromech 測試計畫
 
 > 本計畫的存在理由：v0.1.1 帶著 5 支無效 YAML 上線三天無人發現（`npx skills add` 對**所有** agent 0/5 全滅，不只 Claude Code）。教訓＝**發布關卡必須擋在 push 之前，且驗證範圍要涵蓋所有宣稱相容的工具**。
 >
@@ -107,7 +107,7 @@ gemini skills list --all   # 分別在「未信任」與「已信任」的專案
 ⚠️ 這道關卡是無聲的（不報錯），文件必須揭露，否則使用者會以為安裝失敗。建議用隔離 `HOME` 測「已信任」情境，避免動到真實 `~/.gemini/trustedFolders.json`。
 狀態（2026-09-06，gemini-cli **0.58.0**，本 fork 自量，兩情境皆實測）：
 
-| 情境 | 磁碟上的 MyR2D2 skill | `skills list --all` 列出的 MyR2D2 skill | 關卡訊息 |
+| 情境 | 磁碟上的 agent-astromech skill | `skills list --all` 列出的 agent-astromech skill | 關卡訊息 |
 |---|---|---|---|
 | 未信任 | 14 | **0** | `Skipping project agents due to untrusted folder`＋`Project hooks disabled because the folder is not trusted` |
 | 已信任 | 14 | **14，全部 `[Enabled]`** | 關卡訊息消失 |
@@ -175,7 +175,7 @@ Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對�
    那串 `#` 註解是 `dropoff/SKILL.md` 模板裡給人看的說明，被原樣抄進產物。
    YAML 會把它當註解剝掉（故 `status` 仍正確解析為 `pending`），屬美觀問題不是格式錯誤。
 2. **`to` 欄語意偏差**：規格是 `to: <目標專案>`，它填了 `gemini-cli`（工具名而非專案名）。
-   三個 agent 裡只有它這樣填，Codex 填 `SanHsien/agent-astromech`、Claude Code 填「MyR2D2（同專案未來 session）」。
+   三個 agent 裡只有它這樣填，Codex 填 `SanHsien/agent-astromech`、Claude Code 填「agent-astromech（同專案未來 session）」。
 
 📌 **三個 agent 的橫向對照才是本項真正的收穫**：同一份 SKILL.md、同一個觸發語句，
 Codex／Claude Code／Gemini 都產出結構正確的卡並各自獨立走到「無門鈴能力→降級不通知」，

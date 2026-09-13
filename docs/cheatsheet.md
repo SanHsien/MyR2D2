@@ -1,4 +1,4 @@
-# MyR2D2 速查小抄（Cheatsheet）
+# agent-astromech 速查小抄（Cheatsheet）
 
 一張表找齊 14 支 skill 的「什麼時候用、怎麼喊」。安裝與相容性見 [README](../README.md)；觸發詞為節選，完整清單在各 `skills/*/SKILL.md` 的 description。
 

@@ -7,7 +7,7 @@ description: '把已訂的航班行程加進使用者的 Google Calendar，一�
 
 把使用者**已經訂好**的航班行程加進 Google Calendar。
 
-> 🤖 R2-D2 時刻：astromech droid 的本職就是導航 —— 算航線、記座標、
+> 🤖 Astromech 時刻：astromech droid 的本職就是導航 —— 算航線、記座標、
 > 在 Luke 分心的時候把該記的都記好。
 
 ## 🚦 鐵則（每一條都是踩過坑換來的）

@@ -30,7 +30,7 @@
 #   退出碼 ＝ 0（ok 與 skipped_*）／2（failed_*）／1（用法錯誤）／3（--strict 下的 skipped_*）
 #
 # 🔒 資料界線：問題會送給第三方模型，且答案來自公開網路。憑證、個資、客戶資料不要放進問題裡。
-# MIT License — part of MyR2D2 (github.com/tingyulu/MyR2D2)
+# MIT License — part of agent-astromech (github.com/tingyulu/MyR2D2)
 
 set -u
 

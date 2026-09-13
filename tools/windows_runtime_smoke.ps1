@@ -22,7 +22,7 @@ if (-not (Test-Path -LiteralPath $skills -PathType Leaf)) {
 
 $prompt = @'
 Use the project skill $damage-report. First locate and read its SKILL.md with the available skill discovery/read tools. Start the final answer with exactly:
-MYR2D2_RUNTIME_OK: damage-report
+ASTROMECH_RUNTIME_OK: damage-report
 Then reproduce the five numbered development-review question headings from that skill in Traditional Chinese. You may read the skill instructions, but do not modify files.
 '@
 
@@ -74,7 +74,7 @@ function Assert-DamageReportDiscovery {
         [Parameter(Mandatory)][string]$Text,
         [bool]$RequireSentinel = $true
     )
-    if ($RequireSentinel -and $Text -notmatch 'MYR2D2_RUNTIME_OK:\s*damage-report') {
+    if ($RequireSentinel -and $Text -notmatch 'ASTROMECH_RUNTIME_OK:\s*damage-report') {
         throw 'Runtime output omitted the required discovery sentinel.'
     }
     foreach ($number in 1..5) {
@@ -101,10 +101,10 @@ function Assert-DamageReportConcepts {
 }
 
 $tempBase = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
-$smokeRoot = Join-Path $tempBase ("myr2d2-runtime-smoke-{0}-{1}" -f $PID, [guid]::NewGuid().ToString('N'))
+$smokeRoot = Join-Path $tempBase ("astromech-runtime-smoke-{0}-{1}" -f $PID, [guid]::NewGuid().ToString('N'))
 $resolvedSmoke = [IO.Path]::GetFullPath($smokeRoot)
 if (-not $resolvedSmoke.StartsWith($tempBase, [StringComparison]::OrdinalIgnoreCase) -or
-    (Split-Path -Leaf $resolvedSmoke) -notmatch '^myr2d2-runtime-smoke-[0-9]+-[0-9a-f]{32}$') {
+    (Split-Path -Leaf $resolvedSmoke) -notmatch '^astromech-runtime-smoke-[0-9]+-[0-9a-f]{32}$') {
     throw "Unsafe smoke path: $resolvedSmoke"
 }
 
@@ -208,7 +208,7 @@ For this isolated runtime smoke, reproduce the five numbered development-review 
     if (Test-Path -LiteralPath $resolvedSmoke) {
         $finalPath = [IO.Path]::GetFullPath($resolvedSmoke)
         if ($finalPath.StartsWith($tempBase, [StringComparison]::OrdinalIgnoreCase) -and
-            (Split-Path -Leaf $finalPath) -match '^myr2d2-runtime-smoke-[0-9]+-[0-9a-f]{32}$') {
+            (Split-Path -Leaf $finalPath) -match '^astromech-runtime-smoke-[0-9]+-[0-9a-f]{32}$') {
             Remove-Item -LiteralPath $finalPath -Recurse -Force
         } else {
             Write-Warning "Refusing to remove unexpected path: $finalPath"

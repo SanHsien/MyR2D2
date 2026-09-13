@@ -11,7 +11,7 @@
 # - **不弄髒你的目錄**：所有產出寫在 mktemp 暫存區，跑完自動清掉。
 # - 退出碼 0＝全過，1＝有失敗（可直接放進 CI）。
 #
-# MIT License — part of MyR2D2 (github.com/SanHsien/agent-astromech maintained fork)
+# MIT License — part of agent-astromech (github.com/SanHsien/agent-astromech maintained fork)
 
 set -u
 

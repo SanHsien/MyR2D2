@@ -1,6 +1,6 @@
 # 貢獻指南
 
-感謝你協助改善 MyR2D2。本 fork 接受產品修正、測試、文件與維護工具的貢獻；請先確認變更屬於 `SanHsien/agent-astromech`，不要把 fork 專屬治理誤送到 upstream。
+感謝你協助改善 agent-astromech。本 fork 接受產品修正、測試、文件與維護工具的貢獻；請先確認變更屬於 `SanHsien/agent-astromech`，不要把 fork 專屬治理誤送到 upstream。
 
 ## 開始之前
 
