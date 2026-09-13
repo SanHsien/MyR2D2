@@ -30,4 +30,4 @@ git fetch upstream main
 python tools/check_upstream_updates.py --strict
 ```
 
-逐筆判斷後才 merge、cherry-pick 或最小重作。決策先寫入 [`docs/UPSTREAM.md`](docs/UPSTREAM.md)，完整 gate 通過後才推進 baseline。除非維護者在當次對話明確授權，所有對外寫入只指向 `SanHsien/MyR2D2`。
+逐筆判斷後才 merge、cherry-pick 或最小重作。決策先寫入 [`docs/UPSTREAM.md`](docs/UPSTREAM.md)，完整 gate 通過後才推進 baseline。除非維護者在當次對話明確授權，所有對外寫入只指向 `SanHsien/agent-astromech`。

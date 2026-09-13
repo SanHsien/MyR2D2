@@ -57,7 +57,7 @@ priority: normal
 | `status` | `pending` → `picked` → `done` | 新卡一律 `pending`，接手方改 `picked`、完成改 `done` |
 | `from` | 自由文字 | 來源專案或 session 描述 |
 | `from-session` | 名稱或 ID | **選填**——有跨 session 傳訊能力時才填，供對面完成後回訊 |
-| `to` | **專案／repo／目錄的識別** | 🚫 **不是你正在用的工具名稱**。填收件的那個專案，例如 `SanHsien/MyR2D2`、`~/projects/foo`、或「MyR2D2（同專案未來 session）」。填 `codex`／`gemini-cli` 這種**工具名是錯的**——卡是交給專案，不是交給 CLI（實測踩過） |
+| `to` | **專案／repo／目錄的識別** | 🚫 **不是你正在用的工具名稱**。填收件的那個專案，例如 `SanHsien/agent-astromech`、`~/projects/foo`、或「MyR2D2（同專案未來 session）」。填 `codex`／`gemini-cli` 這種**工具名是錯的**——卡是交給專案，不是交給 CLI（實測踩過） |
 | `created` | `YYYY-MM-DD HH:MM` | 從機器取，不要憑印象寫 |
 | `priority` | `high` \| `normal` \| `low` | 預設 `normal` |
 | `notify` | `rung` \| `silent` | **選填**——已按門鈴填 `rung`；使用者說「不用即時通知」或環境無門鈴能力填 `silent` |

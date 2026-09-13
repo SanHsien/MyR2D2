@@ -21,7 +21,7 @@ pwsh -NoProfile -File tools\windows_agent_smoke.ps1
 ## Claude for Windows
 
 - `npx skills add <repo> --agent claude-code -y` 驗證 Claude Code project skill 格式，供 Windows TUI／CLI 工作流使用。
-- plugin 路徑使用 `/plugin marketplace add SanHsien/MyR2D2`；這是 Claude Code／Cowork 能力，不代表所有 Claude Desktop 對話都能讀本機 skill。
+- plugin 路徑使用 `/plugin marketplace add SanHsien/agent-astromech`；這是 Claude Code／Cowork 能力，不代表所有 Claude Desktop 對話都能讀本機 skill。
 - 不反向覆蓋既有 user-level 同名私人 skills；需要並存時使用 plugin namespace。
 
 ## ChatGPT Desktop for Windows

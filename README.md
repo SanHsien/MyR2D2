@@ -1,6 +1,6 @@
-# MyR2D2 🤖
+# agent-astromech 🤖
 
-> 這是 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 Windows-first 維護型 fork；差異、歸屬與同步方式見 [FORK.md](FORK.md)，開發入口見 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
+> 這是源自 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 Windows-first 維護發行版；差異、歸屬與同步方式見 [FORK.md](FORK.md)，開發入口見 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
 
 ### 你的隨行 astromech droid — Claude skillset（繁中本體、中英雙語觸發）
 
@@ -33,7 +33,7 @@ MyR2D2 就是這個定位 —— 14 支 skills，管的都是「不做不會死�
 
 Claude 的 session 是**失憶的**：對話一關，沒寫進磁碟的東西全部蒸發。這套 skills 的共同主題就是對抗失憶——上表每一支，管的都是失憶鏈上的一段。全部是在真實日常使用中踩坑迭代出來的，不是理論設計。
 
-開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，46 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，fork 每一版修了什麼見 [Releases](https://github.com/SanHsien/MyR2D2/releases)。
+開發流程自己也吃同一套規矩：**每版出貨前，先把產出送給另一個模型家族審一輪**（同一個模型再檢查一次，只會確認它本來就相信的事）。`ai-review` 這支就是這樣做出來的——三輪跨模型二審抓出 21 個缺陷、其中 13 個是前一輪修法自己帶出來的，46 項回歸測試隨包出貨。這些都查得到：測試方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md)，fork 每一版修了什麼見 [Releases](https://github.com/SanHsien/agent-astromech/releases)。
 
 ## 相容性矩陣
 
@@ -72,11 +72,11 @@ ChatGPT / Codex 的移植方法（首選 `npx skills`、備援 AGENTS.md 併入�
 
 ### skills.sh（`npx skills`）——推薦，一行裝完
 
-[![skills.sh](https://skills.sh/b/SanHsien/MyR2D2)](https://skills.sh/SanHsien/MyR2D2) [![CI](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml)
+[![skills.sh](https://skills.sh/b/SanHsien/agent-astromech)](https://skills.sh/SanHsien/agent-astromech) [![CI](https://github.com/SanHsien/agent-astromech/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/agent-astromech/actions/workflows/ci.yml)
 （skills.sh badge 的數字＝累計安裝次數，不是 skill 支數。）
 
 ```bash
-npx skills add SanHsien/MyR2D2
+npx skills add SanHsien/agent-astromech
 ```
 
 [`npx skills`](https://github.com/vercel-labs/skills) 支援 Claude Code 與其他多種 agent（`gemini-cli`、`codex`、`cursor`…，完整清單見上游 README）。本 repo 已實測 `codex`／`claude-code`／`gemini-cli`／`cursor`／`github-copilot` **五個目標的安裝層**，各 14/14、0 Skipped（方法與證據見 [docs/TEST_PLAN.md](docs/TEST_PLAN.md) CROSS-01）。**預設裝到專案層** `./.claude/skills/`；要裝成全域才加 `-g`。想只裝其中幾支用 `--skill`。
@@ -84,7 +84,7 @@ npx skills add SanHsien/MyR2D2
 ### Claude Code CLI — Plugin（深度整合）
 
 ```
-/plugin marketplace add SanHsien/MyR2D2
+/plugin marketplace add SanHsien/agent-astromech
 /plugin install myr2d2@myr2d2
 ```
 
@@ -93,7 +93,7 @@ skill 掛在 `myr2d2:` 命名空間下（`/myr2d2:dropoff`…）——與你機�
 ### Claude Code CLI — 手動複製
 
 ```bash
-git clone https://github.com/SanHsien/MyR2D2.git
+git clone https://github.com/SanHsien/agent-astromech.git
 cp -rn MyR2D2/skills/* ~/.claude/skills/
 ```
 

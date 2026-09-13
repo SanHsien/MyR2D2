@@ -1,8 +1,8 @@
 {
-  "name": "myr2d2-maintainer-tools",
+  "name": "agent-astromech-maintainer-tools",
   "private": true,
   "version": "0.0.0",
-  "description": "Pinned maintainer tooling for MyR2D2",
+  "description": "Pinned maintainer tooling for agent-astromech",
   "engines": {
     "node": ">=22.20.0"
   },

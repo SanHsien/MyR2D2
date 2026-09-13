@@ -2,7 +2,7 @@
 
 ## 回報漏洞
 
-請使用 GitHub 的 private vulnerability reporting 向 `SanHsien/MyR2D2` 回報。若該功能不可用，請先建立不含利用細節的最小 issue，等維護者提供私人管道。不要在公開 issue、PR 或 review 輸出中放入 token、個資、未公開漏洞細節或可直接利用的 payload。
+請使用 GitHub 的 private vulnerability reporting 向 `SanHsien/agent-astromech` 回報。若該功能不可用，請先建立不含利用細節的最小 issue，等維護者提供私人管道。不要在公開 issue、PR 或 review 輸出中放入 token、個資、未公開漏洞細節或可直接利用的 payload。
 
 ## 資料邊界
 

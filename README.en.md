@@ -1,4 +1,4 @@
-# MyR2D2 🤖
+# agent-astromech 🤖
 
 > This is a Windows-first maintained fork of [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2). See [FORK.md](FORK.md) for attribution and synchronization, and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the development entrypoints.
 
@@ -33,7 +33,7 @@ That's MyR2D2's job description — 14 skills covering things that "won't kill y
 
 Claude sessions are **amnesiac**: close the conversation and everything not written to disk evaporates. The common theme here is fighting that amnesia — every skill in the table covers one link of the amnesia chain. All of it was iterated out of real daily-driver usage, not theory.
 
-The development process eats the same rules: **before every release, the work goes to a different model family for review** (asking the same model to "check again" mostly re-confirms what it already believed). `ai-review` itself was built this way — three rounds of cross-model review caught 21 defects, 13 of which were introduced by the previous round's own fixes, and 46 regression tests ship in the box. All of it is checkable: method and evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md), maintained-fork fixes in [Releases](https://github.com/SanHsien/MyR2D2/releases).
+The development process eats the same rules: **before every release, the work goes to a different model family for review** (asking the same model to "check again" mostly re-confirms what it already believed). `ai-review` itself was built this way — three rounds of cross-model review caught 21 defects, 13 of which were introduced by the previous round's own fixes, and 46 regression tests ship in the box. All of it is checkable: method and evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md), maintained-fork fixes in [Releases](https://github.com/SanHsien/agent-astromech/releases).
 
 ## Compatibility matrix
 
@@ -72,11 +72,11 @@ Porting guide for ChatGPT / Codex (preferred `npx skills` path, AGENTS.md fallba
 
 ### skills.sh (`npx skills`) — recommended, one command
 
-[![skills.sh](https://skills.sh/b/SanHsien/MyR2D2)](https://skills.sh/SanHsien/MyR2D2) [![CI](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/MyR2D2/actions/workflows/ci.yml)
+[![skills.sh](https://skills.sh/b/SanHsien/agent-astromech)](https://skills.sh/SanHsien/agent-astromech) [![CI](https://github.com/SanHsien/agent-astromech/actions/workflows/ci.yml/badge.svg)](https://github.com/SanHsien/agent-astromech/actions/workflows/ci.yml)
 (The skills.sh badge counts cumulative installs, not the number of skills.)
 
 ```bash
-npx skills add SanHsien/MyR2D2
+npx skills add SanHsien/agent-astromech
 ```
 
 [`npx skills`](https://github.com/vercel-labs/skills) supports Claude Code and many other agents (`gemini-cli`, `codex`, `cursor`, … — full list in the upstream README). This repo has verified the **install layer on five targets** — `codex`, `claude-code`, `gemini-cli`, `cursor`, `github-copilot` — at 14/14 with 0 Skipped each (method & evidence in [docs/TEST_PLAN.md](docs/TEST_PLAN.md) CROSS-01). It installs to the **project scope** `./.claude/skills/` by default; add `-g` for a global install. Use `--skill` to pick individual skills.
@@ -84,7 +84,7 @@ npx skills add SanHsien/MyR2D2
 ### Claude Code CLI — Plugin (deep integration)
 
 ```
-/plugin marketplace add SanHsien/MyR2D2
+/plugin marketplace add SanHsien/agent-astromech
 /plugin install myr2d2@myr2d2
 ```
 
@@ -93,7 +93,7 @@ Skills land under the `myr2d2:` namespace (`/myr2d2:dropoff`, …) — structura
 ### Claude Code CLI — manual copy
 
 ```bash
-git clone https://github.com/SanHsien/MyR2D2.git
+git clone https://github.com/SanHsien/agent-astromech.git
 cp -rn MyR2D2/skills/* ~/.claude/skills/
 ```
 

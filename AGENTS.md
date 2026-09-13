@@ -6,7 +6,7 @@
 
 本 repo 是 [`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2) 的 MIT 維護型 fork：
 
-- `origin`：`SanHsien/MyR2D2`
+- `origin`：`SanHsien/agent-astromech`
 - `upstream`：`tingyulu/MyR2D2`
 - 預設分支：`main`
 - Windows 權威入口：`pwsh -NoProfile -File tools\dev_check.ps1`
@@ -55,10 +55,10 @@ Baseline 只表示「已審查」，不表示「全部已合併」。
 
 ## 對外邊界
 
-- PR、push、release 一律指向 `SanHsien/MyR2D2`。
+- PR、push、release 一律指向 `SanHsien/agent-astromech`。
 - 未經維護者在當次對話明確同意，不得對 `tingyulu/MyR2D2` push、開 PR、發 release 或觸發 workflow。
-- 每個 clone 先執行 `gh repo set-default SanHsien/MyR2D2`，並以 `gh repo set-default --view` 核對。
-- 建立 PR 時仍須明寫 `--repo SanHsien/MyR2D2`，並檢查輸出 URL 的 owner。
+- 每個 clone 先執行 `gh repo set-default SanHsien/agent-astromech`，並以 `gh repo set-default --view` 核對。
+- 建立 PR 時仍須明寫 `--repo SanHsien/agent-astromech`，並檢查輸出 URL 的 owner。
 
 ## 完成條件
 

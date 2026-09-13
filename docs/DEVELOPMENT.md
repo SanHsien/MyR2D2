@@ -47,7 +47,7 @@ for d in skills/*/; do ./node_modules/.bin/skills-ref validate "$d"; done
 
 ## 遠端驗證
 
-維護者的日常變更直接推 `origin/main`，只有需要他人審查或高風險改動才走 branch → `SanHsien/MyR2D2` PR → required checks → merge；外部貢獻一律走 PR。直推一樣會觸發 CI（`ci.yml` 同時掛 `push: [main]` 與 `pull_request`），差別在時機：走 PR 時紅燈擋住合併，直推時 CI 在 commit 已經落在 `main` 之後才跑，紅燈只會留下壞掉的 `main`。**推之前要在本機跑完 `tools\dev_check.ps1`**——那是取代「合併前那道閘」的東西。whitespace gate 在兩條路徑都檢查整個引入範圍（PR 用合併目標，直推用 `github.event.before`），以 merge-base 為錨，沒有可用 base 時退回只檢查 tip 並印出原因。推送或合併後以 exact SHA 核對 GitHub Actions，不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
+維護者的日常變更直接推 `origin/main`，只有需要他人審查或高風險改動才走 branch → `SanHsien/agent-astromech` PR → required checks → merge；外部貢獻一律走 PR。直推一樣會觸發 CI（`ci.yml` 同時掛 `push: [main]` 與 `pull_request`），差別在時機：走 PR 時紅燈擋住合併，直推時 CI 在 commit 已經落在 `main` 之後才跑，紅燈只會留下壞掉的 `main`。**推之前要在本機跑完 `tools\dev_check.ps1`**——那是取代「合併前那道閘」的東西。whitespace gate 在兩條路徑都檢查整個引入範圍（PR 用合併目標，直推用 `github.event.before`），以 merge-base 為錨，沒有可用 base 時退回只檢查 tip 並印出原因。推送或合併後以 exact SHA 核對 GitHub Actions，不要只看「最近一次」綠燈。上游審查方式見 [`UPSTREAM.md`](UPSTREAM.md)。
 
 各 Windows AI Desktop／TUI／CLI 的能力與抽測邊界見 [`WINDOWS-AI-ENVIRONMENTS.md`](WINDOWS-AI-ENVIRONMENTS.md)。
 最近一次完整 repository review、finding 與殘餘風險見 [`REVIEW.md`](REVIEW.md)。

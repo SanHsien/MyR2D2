@@ -18,7 +18,7 @@
 | R-03 | P2 | 同專案兩個 transcript 若前八碼相同會被合併，造成 session 與 token 數錯誤。 | 聚合 key 改用完整檔名，輸出使用最短可區分前綴；新增 collision fixture。 |
 | R-04 | P2 | upstream 發生 rewrite／diverge 且 compare 沒有 commit 時，報告會把 merge-base 誤寫成 current head。 | current head 改由 branches API 的 default branch 取得；新增 rewritten-branch fixture。 |
 | R-05 | P2 | 測試計畫仍複製舊 gate、使用浮動 npm 指令；README 行數與 lockfile 決策文件也已漂移。 | 測試計畫改指向 canonical scripts 與 locked CLIs；同步 180 行與 Node lockfile 決策。 |
-| R-06 | P2 | Dependabot 設定引用 `dependencies`、`github-actions`、`npm` labels，但遠端 repo 尚未建立。 | 在 `SanHsien/MyR2D2` 建立三個 labels；不對 upstream 寫入。 |
+| R-06 | P2 | Dependabot 設定引用 `dependencies`、`github-actions`、`npm` labels，但遠端 repo 尚未建立。 | 在 `SanHsien/agent-astromech` 建立三個 labels；不對 upstream 寫入。 |
 | R-07 | P3 | Actions 現在雖已釘 full SHA，repo contract 沒有阻止未來退回 major tag。 | contract 新增 workflow action full-SHA 規則與反例測試。 |
 | R-08 | P1 | `ai-review` 後端沒有 wall-clock 上限，CLI 或自訂命令卡住會無界等待。 | 新增預設 600 秒的 `--timeout`／`AI_REVIEW_TIMEOUT_SECONDS`，涵蓋自訂後端、Codex 登入檢查與 review；三條逾時路徑及非法值納入矩陣（現為 46 項）。 |
 | R-09 | P1 | Windows package smoke 被誤當成 Desktop／TUI／CLI runtime 證據。 | 新增需明確 `-AllowModelUse` 的有界 runtime smoke 與 evidence ledger；Codex CLI 三層通過，Claude Code 非互動 runtime 失敗並降級 README 宣稱，Desktop／TUI 保持 `unknown`。 |
@@ -40,5 +40,5 @@
 
 - **已關閉：無界等待。** 內建 timeout 與三條 wiring 回歸案例已進 canonical gates；狀態明確為 `failed_timeout`。
 - **已關閉：跨介面過度宣稱。** package、discovery、runtime、UI 分欄記錄；未通過的 Claude Code 非互動 runtime 與未測 Desktop／TUI 都不能顯示為支援。
-- **已關閉：未保護 main。** `SanHsien/MyR2D2` 的 branch protection 隨本次交付啟用並由 GitHub API 回讀；required checks 綁 `ci`、`Windows AI environment gate`、`actions security scan`、`python security scan`。
+- **已關閉：未保護 main。** `SanHsien/agent-astromech` 的 branch protection 隨本次交付啟用並由 GitHub API 回讀；required checks 綁 `ci`、`Windows AI environment gate`、`actions security scan`、`python security scan`。
 - **審查限制，不列產品通過證據。** Agent Advisor 的 fresh reviewer thread 因宿主未暴露可驗證的 model／effort／sandbox metadata 而中止；其內容未被採信。主代理完成完整 diff review、canonical gates 與 exact-SHA 遠端驗證。

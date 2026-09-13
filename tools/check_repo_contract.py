@@ -59,7 +59,7 @@ def validate(root: Path) -> list[str]:
         if len(zh_lines) != len(en_lines):
             errors.append(f"README line counts differ: {len(zh_lines)} != {len(en_lines)}")
         for path, lines in ((readme, zh_lines), (readme_en, en_lines)):
-            if not any("SanHsien/MyR2D2" in line for line in lines):
+            if not any("SanHsien/agent-astromech" in line for line in lines):
                 errors.append(f"{path.name} does not identify the maintained fork")
 
     skills = sorted((root / "skills").glob("*/SKILL.md"))
@@ -140,7 +140,7 @@ def validate(root: Path) -> list[str]:
     agents = root / "AGENTS.md"
     if agents.is_file():
         text = agents.read_text(encoding="utf-8")
-        for phrase in ("SanHsien/MyR2D2", "tingyulu/MyR2D2", "gh repo set-default"):
+        for phrase in ("SanHsien/agent-astromech", "tingyulu/MyR2D2", "gh repo set-default"):
             if phrase not in text:
                 errors.append(f"AGENTS.md is missing boundary: {phrase}")
 

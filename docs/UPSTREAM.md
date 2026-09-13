@@ -2,7 +2,7 @@
 
 Upstream：[`tingyulu/MyR2D2`](https://github.com/tingyulu/MyR2D2)
 
-除非維護者在當次對話明確授權，所有 PR、push、release 與 workflow dispatch 只指向 `SanHsien/MyR2D2`。
+除非維護者在當次對話明確授權，所有 PR、push、release 與 workflow dispatch 只指向 `SanHsien/agent-astromech`。
 
 ## 2026-08-24 初始水位
 

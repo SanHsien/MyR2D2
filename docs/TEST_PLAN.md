@@ -175,7 +175,7 @@ Claude Code 以 `notify: silent` 記錄同一件事——這正是 SKILL.md 對�
    那串 `#` 註解是 `dropoff/SKILL.md` 模板裡給人看的說明，被原樣抄進產物。
    YAML 會把它當註解剝掉（故 `status` 仍正確解析為 `pending`），屬美觀問題不是格式錯誤。
 2. **`to` 欄語意偏差**：規格是 `to: <目標專案>`，它填了 `gemini-cli`（工具名而非專案名）。
-   三個 agent 裡只有它這樣填，Codex 填 `SanHsien/MyR2D2`、Claude Code 填「MyR2D2（同專案未來 session）」。
+   三個 agent 裡只有它這樣填，Codex 填 `SanHsien/agent-astromech`、Claude Code 填「MyR2D2（同專案未來 session）」。
 
 📌 **三個 agent 的橫向對照才是本項真正的收穫**：同一份 SKILL.md、同一個觸發語句，
 Codex／Claude Code／Gemini 都產出結構正確的卡並各自獨立走到「無門鈴能力→降級不通知」，
